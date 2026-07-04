@@ -60,7 +60,6 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
             <div style="display:flex;gap:6px;padding:4px 16px 0;flex-shrink:0;overflow-x:auto;">
                 <button class="notif-tab" data-tab="support" @click="switchTab('support')">الدعم الفني</button>
                 <button class="notif-tab" data-tab="offer" @click="switchTab('offer')">العروض</button>
-                <button class="notif-tab" data-tab="consult" @click="switchTab('consult')">الاستشارات</button>
                 <button class="notif-tab" data-tab="service" @click="switchTab('service')">طلب الخدمة</button>
                 <button class="notif-tab" data-tab="quote_request" id="tab-quote-request" style="display:none;" @click="switchTab('quote_request')">طلبات العروض</button>
                 <button class="notif-tab" data-tab="service_request" id="tab-service-request" style="display:none;" @click="switchTab('service_request')">طلب الخدمة</button>
@@ -131,9 +130,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                         { id: 3, type: 'offer', read: false, offerId: 2, title: 'عرض من شركة البناء الذكي', preview: 'عرض تنافسي من شركة البناء الذكي لتنفيذ مشروعك بقيمة 82,500,000 دينار.', time: 'منذ 5 ساعات', company: 'شركة البناء الذكي', price: '82,500,000 د.ع', duration: '6 أشهر', details: 'تتشرف شركة البناء الذكي بتقديم عرضها لتنفيذ مشروعكم بأعلى معايير الجودة وباستخدام أحدث التقنيات في مجال البناء.', companyLink: 'company.html' },
                         { id: 4, type: 'service', read: true, title: 'تم استلام طلب الخدمة', preview: 'تم إرسال طلب الخدمة الخاصة بك بنجاح، سيتم الرد عليك من قبل المختصين قريباً.', time: 'منذ يوم', message: 'تم استلام طلب الخدمة الذي أرسلته بنجاح. فريقنا المختص سيقوم بمراجعة طلبك والرد عليك في أقرب وقت ممكن.\n\nشكراً لثقتك ببنيان.' },
                         { id: 5, type: 'support', read: true, title: 'تم تحديث تذكرتك الدعم', preview: 'تم تحديث حالة تذكرتك الدعم الفني رقم #BN-2505-88901', time: 'منذ يومين', message: 'تذكرة الدعم الفني الخاصة بك رقم #BN-2505-88901\nالحالة: قيد المعالجة\n\nسيتم إعلامك فور اكتمال المعالجة.' },
-                        { id: 6, type: 'offer', read: true, offerId: 3, title: 'عرض من شركة دار الإنجاز', preview: 'عرض جديد من شركة دار الإنجاز لتنفيذ مشروعك بقيمة 87,000,000 دينار.', time: 'منذ 3 أيام', company: 'شركة دار الإنجاز', price: '87,000,000 د.ع', duration: '7 أشهر', details: 'شركة دار الإنجاز للمقاولات تقدم لكم عرضها المتكامل لتنفيذ المشروع. الشركة متخصصة في المشاريع السكنية والتجارية مع سجل حافل من المشاريع الناجحة.', companyLink: 'company.html' },
-                        { id: 7, type: 'consult', read: false, title: 'استشارة هندسية متاحة', preview: 'يمكنك الآن حجز استشارة هندسية مع مهندس متخصص لمشروعك', time: 'منذ ساعة', message: 'نقدم لك خدمة الاستشارات الهندسية المجانية. يمكنك حجز موعد استشارة مع أحد مهندسينا المتخصصين لمناقشة تفاصيل مشروعك والحصول على نصائح قيمة.' },
-                        { id: 8, type: 'consult', read: false, title: 'طلب استشارة جديد', preview: 'تم استلام طلب الاستشارة الخاصة بك، سيتم التواصل معك قريباً', time: 'منذ 4 ساعات', message: 'تم استلام طلب الاستشارة الذي أرسلته بنجاح. فريقنا المختص سيقوم بمراجعة طلبك والتواصل معك لتحديد موعد الاستشارة.' }
+                        { id: 6, type: 'offer', read: true, offerId: 3, title: 'عرض من شركة دار الإنجاز', preview: 'عرض جديد من شركة دار الإنجاز لتنفيذ مشروعك بقيمة 87,000,000 دينار.', time: 'منذ 3 أيام', company: 'شركة دار الإنجاز', price: '87,000,000 د.ع', duration: '7 أشهر', details: 'شركة دار الإنجاز للمقاولات تقدم لكم عرضها المتكامل لتنفيذ المشروع. الشركة متخصصة في المشاريع السكنية والتجارية مع سجل حافل من المشاريع الناجحة.', companyLink: 'company.html' }
                     ];
                 });
 
@@ -182,7 +179,6 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                     if (type === 'offer') return 'request_quote';
                     if (type === 'quote_request') return 'edit_note';
                     if (type === 'service_request') return 'build';
-                    if (type === 'consult') return 'psychology';
                     return 'handyman';
                 }
 
@@ -191,7 +187,6 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                     if (type === 'offer') return 'var(--accent-gold)';
                     if (type === 'quote_request') return '#f59e0b';
                     if (type === 'service_request') return '#f59e0b';
-                    if (type === 'consult') return '#8b5cf6';
                     return '#4caf50';
                 }
 
@@ -207,8 +202,6 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                         showQuoteRequestModal(n);
                     } else if (n.type === 'service_request') {
                         showServiceRequestModal(n);
-                    } else if (n.type === 'consult') {
-                        showBrandAlert(n.message || n.title);
                     } else {
                         showServiceModal(n);
                     }
