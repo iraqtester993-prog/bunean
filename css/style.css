@@ -5209,6 +5209,21 @@ html.light-mode .mkt-calc-item-pill.active span:last-child { color: #3a6a95; }
 .mkt-add-cart:hover { transform: scale(1.1); }
 .mkt-add-cart .material-symbols-outlined { font-size: 16px; }
 
+.mkt-card-detail-btn {
+  display: block;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--accent-gold);
+  color: #000;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 0.2s;
+}
+.mkt-card-detail-btn:hover { opacity: 0.85; }
+
 .mkt-card-actions {
   display: flex;
   gap: 3px;
