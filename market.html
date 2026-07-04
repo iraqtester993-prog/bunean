@@ -279,8 +279,8 @@
                                     <span class="mkt-old-price">{{ o.oldPrice }} د.ع</span>
                                     <span class="mkt-new-price">{{ o.price }} د.ع</span>
                                 </div>
-                                <button class="mkt-add-cart" @click.stop="addToCart(o)">
-                                    <span class="material-symbols-outlined">add_shopping_cart</span>
+                                <button class="mkt-add-cart" @click.stop="openProduct(o)">
+                                    عرض التفاصيل
                                 </button>
                             </div>
                         </div>
@@ -301,9 +301,8 @@
                                     <span class="mkt-old-price" style="font-size:11px;">{{ o.oldPrice }} د.ع</span>
                                     <span class="mkt-new-price" style="font-size:14px;">{{ o.price }} د.ع</span>
                                 </div>
-                                <button class="mkt-grid-add-btn" @click.stop="addToCart(o)">
-                                    <span class="material-symbols-outlined">add_shopping_cart</span>
-                                    أضف للسلة
+                                <button class="mkt-grid-add-btn" @click.stop="openProduct(o)">
+                                    عرض التفاصيل
                                 </button>
                             </div>
                         </div>
@@ -326,8 +325,8 @@
                                     <span v-for="s in 5" :key="s" class="star" :class="{ filled: s <= p.rating }">star</span>
                                 </div>
                             </div>
-                            <button class="mkt-add-cart" @click.stop="addToCart(p)">
-                                <span class="material-symbols-outlined">add_shopping_cart</span>
+                            <button class="mkt-add-cart" @click.stop="openProduct(p)">
+                                عرض التفاصيل
                             </button>
                         </div>
                     </div>
@@ -344,9 +343,8 @@
                                 <div class="mkt-prod-rating">
                                     <span v-for="s in 5" :key="s" class="star" :class="{ filled: s <= p.rating }">star</span>
                                 </div>
-                                <button class="mkt-grid-add-btn" @click.stop="addToCart(p)">
-                                    <span class="material-symbols-outlined">add_shopping_cart</span>
-                                    أضف للسلة
+                                <button class="mkt-grid-add-btn" @click.stop="openProduct(p)">
+                                    عرض التفاصيل
                                 </button>
                             </div>
                         </div>
