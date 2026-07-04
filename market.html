@@ -170,7 +170,7 @@
                 </div>
 
                 <!-- ===== المنتجات الأكثر طلباً ===== -->
-                <div v-if="!activeCatView && !cartView && !calculatorView && !checkoutView && !showAllView && !showAllOffers && !showAllSuppliers">
+                <div v-if="!productDetailView && !activeCatView && !cartView && !calculatorView && !checkoutView && !showAllView && !showAllOffers && !showAllSuppliers">
                     <div class="section-header">
                         <span class="section-title">المنتجات الأكثر طلباً</span>
                         <span class="section-link" @click="showAllView = true">عرض الكل</span>
@@ -192,7 +192,7 @@
                 </div>
 
                 <!-- ===== صفحة عرض كل المنتجات ===== -->
-                <div v-if="showAllView && !cartView && !calculatorView && !checkoutView" class="mkt-cat-view">
+                <div v-if="!productDetailView && showAllView && !cartView && !calculatorView && !checkoutView" class="mkt-cat-view">
                     <div class="mkt-cat-products-grid">
                         <div v-for="(p, i) in allTopProducts" :key="i" class="mkt-grid-prod" @click="openProduct(p)">
                              <div class="mkt-grid-prod-img">
@@ -210,7 +210,7 @@
                  </div>
 
                 <!-- ===== الموردون المعتمدون ===== -->
-                <div v-if="!activeCatView && !cartView && !calculatorView && !checkoutView && !showAllView && !showAllOffers && !showAllSuppliers">
+                <div v-if="!productDetailView && !activeCatView && !cartView && !calculatorView && !checkoutView && !showAllView && !showAllOffers && !showAllSuppliers">
                     <div class="section-header">
                         <span class="section-title">الموردون المعتمدون</span>
                         <span class="section-link" @click="showAllSuppliers = true">عرض الكل</span>
@@ -239,7 +239,7 @@
                 </div>
 
                 <!-- ===== صفحة عرض كل الموردين ===== -->
-                <div v-if="showAllSuppliers" class="mkt-cat-view">
+                <div v-if="!productDetailView && showAllSuppliers" class="mkt-cat-view">
                     <div class="mkt-suppliers-all" style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                         <div v-for="(s, i) in suppliers" :key="i" class="mkt-supplier-card-all" @click="openSupplier(s)">
                             <div class="mkt-supplier-logo">
@@ -264,7 +264,7 @@
                 </div>
 
                 <!-- ===== عروض خاصة ===== -->
-                <div v-if="!activeCatView && !cartView && !calculatorView && !checkoutView && !showAllView && !showAllOffers && !showAllSuppliers">
+                <div v-if="!productDetailView && !activeCatView && !cartView && !calculatorView && !checkoutView && !showAllView && !showAllOffers && !showAllSuppliers">
                     <div class="section-header">
                         <span class="section-title">عروض خاصة</span>
                         <span class="section-link" @click="showAllOffers = true">عرض الكل</span>
@@ -290,7 +290,7 @@
                 </div>
 
                 <!-- ===== صفحة عرض كل العروض ===== -->
-                <div v-if="showAllOffers && !cartView && !calculatorView && !checkoutView" class="mkt-cat-view">
+                <div v-if="!productDetailView && showAllOffers && !cartView && !calculatorView && !checkoutView" class="mkt-cat-view">
                     <div class="mkt-cat-products-grid">
                         <div v-for="(o, i) in offers" :key="i" class="mkt-grid-prod" @click="openProduct(o)">
                             <div class="mkt-grid-prod-img">
@@ -312,7 +312,7 @@
                 </div>
 
                 <!-- ===== عرض منتجات القسم ===== -->
-                <div v-if="activeCatView && !cartView && !calculatorView && !checkoutView" class="mkt-cat-view">
+                <div v-if="!productDetailView && activeCatView && !cartView && !calculatorView && !checkoutView" class="mkt-cat-view">
 
                     <!-- أفقية -->
                     <div class="mkt-cat-products-scroll">
