@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - ملف الشركة</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/companies.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <!-- كارت الرجوع تحت الهدر -->
+            <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;">
+                <a href="javascript:history.back()" style="display:flex;align-items:center;gap:4px;color:var(--text-light);text-decoration:none;font-size:13px;font-weight:500;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                </a>
+                <div style="flex:1;text-align:center;">
+                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">{{ company.name }}</span>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <!-- الغلاف والشعار -->
+                <div style="position:relative;">
+                    <img :src="company.cover" class="company-cover" alt="cover" style="display:block;width:100%;">
+                    <div class="company-logo">
+                        <img :src="company.logo" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+                    </div>
+                </div>
+
+                <!-- اسم الشركة -->
+                <div class="company-info">
+                    <div class="company-name">
+                        {{ company.name }}
+                        <svg v-if="company.verified" class="verified" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <div class="company-type">مقاولات عامة - {{ company.location }}</div>
+                </div>
+
+                <!-- نبذة + تخصصات -->
+                <div style="padding:0 16px 16px;display:flex;gap:12px;">
+                    <div style="flex:1;background:var(--bg-card-light);border-radius:12px;padding:12px;border:1px solid var(--border-light);">
+                        <h3 style="font-size:12px;font-weight:700;color:var(--accent-gold);margin:0 0 8px;display:flex;align-items:center;gap:4px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;">info</span>
+                            نبذة عنا
+                        </h3>
+                        <p style="font-size:12px;color:var(--text-light);line-height:1.7;margin:0;">{{ aboutPreview }}</p>
+                    </div>
+                    <div style="flex:1;background:var(--bg-card-light);border-radius:12px;padding:12px;border:1px solid var(--border-light);">
+                        <h3 style="font-size:12px;font-weight:700;color:var(--accent-gold);margin:0 0 8px;display:flex;align-items:center;gap:4px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;">sell</span>
+                            التخصصات
+                        </h3>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <div v-for="(spec, i) in company.specs" :key="i" style="display:flex;align-items:center;gap:4px;">
+                                <span class="material-symbols-outlined" style="font-size:14px;color:#4caf50;">check_circle</span>
+                                <span style="font-size:12px;color:var(--text-light);">{{ spec }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الإحصائيات -->
+                <div style="padding:0 16px 16px;display:flex;gap:8px;">
+                    <div class="stat-box">
+                        <span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-gold);margin-bottom:2px;">checklist</span>
+                        <div class="stat-number">{{ company.done }}</div>
+                        <div class="stat-label">مشروع منجز</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-gold);margin-bottom:2px;">calendar_month</span>
+                        <div class="stat-number">{{ company.years }}</div>
+                        <div class="stat-label">سنة خبرة</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-gold);margin-bottom:2px;">engineering</span>
+                        <div class="stat-number">{{ company.engineers }}</div>
+                        <div class="stat-label">مهندس</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-gold);margin-bottom:2px;">groups</span>
+                        <div class="stat-number">{{ company.workers }}</div>
+                        <div class="stat-label">عامل</div>
+                    </div>
+                </div>
+
+                <!-- أعمال الشركة -->
+                <div v-if="company.workImages && company.workImages.length" style="padding:0 16px 16px;">
+                    <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                        <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">image</span>
+                        أعمال الشركة
+                    </h3>
+                    <div class="exec-slider" style="border-radius:12px;overflow:hidden;"
+                         @touchstart.passive="workSwipe.onTouchStart"
+                         @touchend="workSwipe.onTouchEnd">
+                        <div class="exec-slider-track" dir="ltr" :style="{ transform: 'translateX(-' + (workSlide * 100) + '%)' }">
+                            <div v-for="(imgSrc, i) in company.workImages" :key="i" class="exec-slider-slide">
+                                <img :src="imgSrc" alt="" style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                        </div>
+                        <div v-if="company.workImages.length > 1" class="exec-slider-dots">
+                            <span v-for="(imgSrc, i) in company.workImages" :key="i" class="dot" :class="{ active: i === workSlide }" @click.stop="workSlide = i; resetWorkTimer()"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- معرض المشاريع -->
+                <div style="padding:0 16px 16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;">
+                        <h3 style="font-size:14px;font-weight:700;color:var(--accent-gold);display:flex;align-items:center;gap:6px;margin:0;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">gallery_thumbnail</span>
+                            معرض المشاريع
+                        </h3>
+                        <button v-if="company.projects.length > 4" @click="showAllProjects = !showAllProjects"
+                                style="background:none;border:none;color:var(--accent-gold);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;">
+                            {{ showAllProjects ? 'عرض أقل' : 'عرض الكل' }} ({{ company.projects.length }})
+                        </button>
+                    </div>
+                    <div class="projects-grid" style="padding:0;">
+                        <div v-for="(project, i) in visibleProjects" :key="i" class="project-card" @click="selectedProject = project; detailSlide = 0;">
+                            <div class="card-image">
+                                <img :src="project.images ? project.images[0] : project.image" alt="" style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <div class="card-body">
+                                <div class="card-title">{{ project.title || project.name }}</div>
+                                <div class="card-author">{{ (project.desc || '').slice(0, 40) }}{{ (project.desc || '').length > 40 ? '...' : '' }}</div>
+                                <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                                    <span style="font-size:11px;color:var(--accent-gold);font-weight:600;">{{ project.year || '' }}</span>
+                                    <span v-if="project.cost" style="font-size:11px;color:#4caf50;font-weight:600;">{{ project.cost }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أزرار الإجراءات -->
+                <div v-if="!isCompany" style="padding:20px 16px 30px;">
+                    <a :href="'service-request.html?company=' + encodeURIComponent(company.name)" class="btn-outline" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:700;">
+                        <span class="material-symbols-outlined" style="font-size:20px;">handyman</span>
+                        طلب خدمة
+                    </a>
+                </div>
+            </div>
+
+            <!-- مودال معاينة المشروع -->
+            <div v-if="selectedProject" class="project-modal" @click.self="closeProjectModal">
+                <div class="modal-content" :style="{ transform: pullTransform }"
+                     @touchstart.passive="modalTouch.onTouchStart"
+                     @touchmove.passive="modalTouch.onTouchMove"
+                     @touchend="modalTouch.onTouchEnd($event, closeProjectModal)">
+                    <div class="modal-pull-bar"><span></span></div>
+                    <button class="modal-close" @click="closeProjectModal">
+                        <span class="material-symbols-outlined close-icon">close</span>
+                        <span class="material-symbols-outlined arrow-icon">arrow_back</span>
+                    </button>
+                    <div class="modal-slider" @click="openViewer(detailSlide)">
+                        <div class="modal-slider-track" dir="ltr" :style="{ transform: `translateX(-${detailSlide * 100}%)` }">
+                            <div v-for="(img, i) in (selectedProject.images || [selectedProject.image])" :key="i" class="modal-slide">
+                                <div class="modal-slide-img">
+                                    <img :src="img" alt="">
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="(selectedProject.images || []).length > 1" class="modal-slider-dots">
+                            <span v-for="(img, i) in selectedProject.images" :key="i"
+                                  class="dot" :class="{ active: i === detailSlide }"
+                                  @click.stop="detailSlide = i"></span>
+                        </div>
+                    </div>
+                    <div v-if="(selectedProject.images || []).length > 1" class="modal-thumbs">
+                        <div v-for="(img, i) in selectedProject.images" :key="i"
+                             class="modal-thumb" :class="{ active: i === detailSlide }"
+                             @click="detailSlide = i">
+                            <img :src="img" alt="">
+                        </div>
+                    </div>
+                    <div class="modal-details">
+                        <h2>{{ selectedProject.title || selectedProject.name }}</h2>
+                        <div v-if="selectedProject.cost" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
+                            <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ selectedProject.cost }}</span>
+                        </div>
+                        <div class="modal-company">
+                            <span class="material-symbols-outlined">business</span>
+                            <a :href="'company.html?id=' + encodeURIComponent(company.name)" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">
+                                {{ company.name }}
+                            </a>
+                        </div>
+                        <p class="modal-desc">{{ selectedProject.desc }}</p>
+                        <div v-if="selectedProject.meta" class="modal-meta">
+                            <div v-for="(item, i) in selectedProject.meta" :key="i" class="modal-meta-item">
+                                <span class="material-symbols-outlined">{{ item.icon }}</span>
+                                <span>{{ item.label }}: {{ item.value }}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:16px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));">
+                            <button class="btn-outline" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 0;color:var(--accent-gold);border-color:var(--accent-gold);" @click="showProjectDetail(selectedProject)">
+                                <span class="material-symbols-outlined" style="font-size:18px;">description</span>
+                                تفاصيل
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مودال تفاصيل المشروع كاملة (شاشة كاملة) -->
+            <div v-if="projectDetail" class="project-modal" @click.self="closeProjectDetail">
+                <div class="modal-content" style="padding-top:calc(62px + env(safe-area-inset-top,0px));position:relative;">
+                    <button class="modal-close" @click="backToPreview" style="z-index:301;right:12px;left:auto;top:calc(62px + env(safe-area-inset-top,0px));">
+                        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                    </button>
+                    <button class="modal-close" @click="closeProjectDetail" style="z-index:301;left:12px;right:auto;top:calc(62px + env(safe-area-inset-top,0px));">
+                        <span class="material-symbols-outlined close-icon">close</span>
+                        <span class="material-symbols-outlined arrow-icon">arrow_back</span>
+                    </button>
+                    <div class="modal-slider" style="border-radius:0;"
+                         @touchstart.passive="detailSwipe.onTouchStart"
+                         @touchmove.passive="detailSwipe.onTouchMove"
+                         @touchend="detailSwipe.onTouchEnd"
+                         @click="openDetailViewer(detailSlide2)">
+                        <div class="modal-slider-track" dir="ltr" :style="{ transform: `translateX(-${detailSlide2 * 100}%)` }">
+                            <div v-for="(img, i) in (projectDetail.images || [projectDetail.image])" :key="i" class="modal-slide">
+                                <div class="modal-slide-img">
+                                    <img :src="img" alt="" @click.stop="openDetailViewer(i)">
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="(projectDetail.images || []).length > 1" class="modal-slider-dots">
+                            <span v-for="(img, i) in projectDetail.images" :key="i"
+                                  class="dot" :class="{ active: i === detailSlide2 }"
+                                  @click.stop="detailSlide2 = i"></span>
+                        </div>
+                    </div>
+                    <div class="modal-details">
+                        <h2>{{ projectDetail.title || projectDetail.name }}</h2>
+                        <div v-if="projectDetail.cost" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
+                            <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ projectDetail.cost }}</span>
+                        </div>
+                        <div class="modal-company">
+                            <span class="material-symbols-outlined">business</span>
+                            <a :href="'company.html?id=' + encodeURIComponent(company.name)" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">{{ company.name }}</a>
+                        </div>
+                        <p class="modal-desc">{{ projectDetail.desc }}</p>
+                        <div v-if="projectDetail.meta" class="modal-meta">
+                            <div v-for="(item, i) in projectDetail.meta" :key="i" class="modal-meta-item">
+                                <span class="material-symbols-outlined">{{ item.icon }}</span>
+                                <span>{{ item.label }}: {{ item.value }}</span>
+                            </div>
+                        </div>
+                        <div v-if="projectDetail.materials" style="margin-top:20px;">
+                            <h3 style="color:var(--text-white);font-size:16px;font-weight:700;margin:0 0 12px;">
+                                <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
+                                المواد المستخدمة
+                            </h3>
+                            <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
+                                <div v-for="(mat, i) in projectDetail.materials" :key="i" style="flex-shrink:0;width:120px;background:var(--card-bg);border-radius:12px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;" @click.stop="openDetailViewer((projectDetail.images || []).indexOf(mat.image))">
+                                    <div style="width:120px;height:90px;overflow:hidden;">
+                                        <img :src="mat.image" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">
+                                    </div>
+                                    <div style="padding:6px 8px 10px;text-align:center;">
+                                        <span style="color:var(--text-white);font-size:12px;font-weight:600;">{{ mat.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:24px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- معرض الصور كامل الشاشة -->
+            <div v-if="viewerOpen" class="image-viewer"
+                 @touchstart.passive="viewerTouch.onTouchStart"
+                 @touchmove.passive="viewerTouch.onTouchMove"
+                 @touchend="viewerTouch.onTouchEnd($event, closeViewer)">
+                <button class="viewer-close" @click="closeViewer">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <button v-if="viewerImages.length > 1" class="viewer-nav viewer-prev" @click="prevViewer">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+                <div class="viewer-image-wrap" @click="closeViewer">
+                    <img :src="viewerImages[viewerIndex]" class="viewer-image" alt=""
+                         :style="{ transform: 'scale(' + viewerScale + ') translate(' + viewerPanX/viewerScale + 'px, ' + viewerPanY/viewerScale + 'px)', transition: isPinch ? 'none' : 'transform 0.2s' }">
+                </div>
+                <button v-if="viewerImages.length > 1" class="viewer-nav viewer-next" @click="nextViewer">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <div v-if="viewerImages.length > 1" class="viewer-counter">{{ viewerIndex + 1 }} / {{ viewerImages.length }}</div>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({});
+        document.getElementById('bottomNav').innerHTML = renderNav('execute');
+
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+        var params = new URLSearchParams(window.location.search);
+        var urlCompanyId = params.get('id') ? decodeURIComponent(params.get('id')) : null;
+
+        // Load company from shared data or localStorage fallback
+        var profileData = urlCompanyId ? getCompanyByName(urlCompanyId) : null;
+        if (!profileData) {
+            try {
+                var stored = localStorage.getItem('bunean-company-profile');
+                if (stored) {
+                    var parsed = JSON.parse(stored);
+                    if (!urlCompanyId || parsed.name === urlCompanyId) {
+                        profileData = {
+                            name: parsed.name || 'الشركة',
+                            about: parsed.about || '',
+                            specs: parsed.specs || [],
+                            location: parsed.location || '',
+                            phone: parsed.phone || '',
+                            email: parsed.email || '',
+                            logo: parsed.logo || 'images/img1.jpg',
+                            cover: parsed.cover || 'images/img2.jpg',
+                            years: parsed.years || 1,
+                            workers: parsed.workers || 0,
+                            engineers: parsed.engineers || 0,
+                            done: parsed.done || 0,
+                            rating: parsed.rating || 0,
+                            verified: true,
+                            workImages: parsed.workImages || [],
+                            projects: (parsed.projects || []).map(function(p) {
+                                return {
+                                    title: p.title || p.name || 'مشروع',
+                                    desc: p.desc || '',
+                                    images: p.images || (p.image ? [p.image] : ['images/img1.jpg']),
+                                    cost: p.cost || '',
+                                    area: p.area || '',
+                                    year: p.date ? p.date.split('-')[0] : (p.year || '2025'),
+                                    materials: p.materials || [],
+                                    meta: p.meta || []
+                                };
+                            }),
+                            reviews: parsed.reviews || []
+                        };
+                    }
+                }
+            } catch (e) {}
+        }
+        if (!profileData) {
+            profileData = { name: urlCompanyId || 'الشركة', about: '', specs: [], location: '', phone: '', email: '', logo: 'images/img1.jpg', cover: 'images/img2.jpg', years: 0, workers: 0, engineers: 0, done: 0, rating: 0, verified: false, workImages: [], projects: [], reviews: [] };
+        }
+
+        createApp({
+            setup() {
+                initTheme();
+                var company = ref(profileData);
+                var userData = (function() { try { return JSON.parse(localStorage.getItem('bunean-user-data')); } catch(e) { return null; } })();
+                var isCompany = userData && userData.role === 'company';
+                var selectedProject = ref(null);
+                var detailSlide = ref(0);
+                var projectDetail = ref(null);
+                var detailSlide2 = ref(0);
+                var workSlide = ref(0);
+                var workTimer = null;
+                var showAllProjects = ref(false);
+                var pullY = ref(0);
+                var modalClosing = ref(false);
+
+                /* Viewer state */
+                var viewerOpen = ref(false);
+                var viewerIndex = ref(0);
+                var viewerScale = ref(1);
+                var viewerPanX = ref(0);
+                var viewerPanY = ref(0);
+                var viewerImages = ref([]);
+                var isPinch = ref(false);
+
+                var pullTransform = computed(function() {
+                    var y = pullY.value;
+                    if (y <= 0) return '';
+                    return 'translateY(' + y + 'px)';
+                });
+
+                /* Modal touch (swipe slides + pull down to close) */
+                var modalSX = 0, modalSY = 0;
+                var modalTouch = {
+                    onTouchStart: function(e) { modalSX = e.touches[0].clientX; modalSY = e.touches[0].clientY; pullY.value = 0; },
+                    onTouchMove: function(e) { var dy = e.touches[0].clientY - modalSY; if (dy > 0) pullY.value = dy * 0.5; },
+                    onTouchEnd: function(e, onClose) {
+                        var dx = e.changedTouches[0].clientX - modalSX;
+                        var dy = e.changedTouches[0].clientY - modalSY;
+                        if (Math.abs(dy) > Math.abs(dx) && dy > 100) { if (onClose) onClose(); }
+                        else if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                            var imgs = selectedProject.value ? (selectedProject.value.images || [selectedProject.value.image]) : [];
+                            if (imgs.length < 2) return;
+                            var next = detailSlide.value + (dx < 0 ? 1 : -1);
+                            if (next >= 0 && next < imgs.length) detailSlide.value = next;
+                        } else { pullY.value = 0; }
+                    }
+                };
+
+                /* Detail modal swipe */
+                var dSX = 0, dSY = 0;
+                var detailSwipe = {
+                    onTouchStart: function(e) { dSX = e.touches[0].clientX; dSY = e.touches[0].clientY; },
+                    onTouchMove: function(e) {},
+                    onTouchEnd: function(e) {
+                        var dx = e.changedTouches[0].clientX - dSX;
+                        var dy = e.changedTouches[0].clientY - dSY;
+                        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                            var imgs = projectDetail.value ? (projectDetail.value.images || [projectDetail.value.image]) : [];
+                            if (imgs.length < 2) return;
+                            var next = detailSlide2.value + (dx < 0 ? 1 : -1);
+                            if (next >= 0 && next < imgs.length) detailSlide2.value = next;
+                        }
+                    }
+                };
+
+                /* Viewer touch (swipe + pinch-zoom + double-tap) */
+                var vSX = 0, vSY = 0, vDist0 = 0, vPinch = false, vLastTap = 0;
+                var viewerTouch = {
+                    onTouchStart: function(e) {
+                        if (e.touches.length === 2) { vPinch = true; vDist0 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); return; }
+                        vPinch = false; vSX = e.touches[0].clientX; vSY = e.touches[0].clientY;
+                        var now = Date.now();
+                        if (now - vLastTap < 300) {
+                            if (viewerScale.value > 1.1) { viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                            else { viewerScale.value = 2.5; viewerPanX.value = 0; viewerPanY.value = 0; }
+                        }
+                        vLastTap = now;
+                    },
+                    onTouchMove: function(e) {
+                        if (e.touches.length === 2 && vPinch) {
+                            var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                            var s = d / (vDist0 || 1);
+                            viewerScale.value = Math.max(1, Math.min(5, viewerScale.value * (1 + (s - 1) * 0.5)));
+                            vDist0 = d; return;
+                        }
+                        if (viewerScale.value > 1.1) {
+                            viewerPanX.value += (e.touches[0].clientX - vSX); viewerPanY.value += (e.touches[0].clientY - vSY);
+                            vSX = e.touches[0].clientX; vSY = e.touches[0].clientY;
+                        }
+                    },
+                    onTouchEnd: function(e, onClose) {
+                        if (vPinch) { vPinch = false; return; }
+                        if (viewerScale.value > 1.1) return;
+                        var dx = e.changedTouches[0].clientX - vSX; var dy = e.changedTouches[0].clientY - vSY;
+                        if (Math.abs(dy) > Math.abs(dx) && dy > 80) { if (onClose) onClose(); }
+                        else if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                            var len = viewerImages.value.length;
+                            if (len < 2) return;
+                            var next = viewerIndex.value + (dx < 0 ? 1 : -1);
+                            if (next >= 0 && next < len) { viewerIndex.value = next; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                        }
+                    }
+                };
+
+                function openViewer(idx) {
+                    if (!selectedProject.value) return;
+                    viewerImages.value = selectedProject.value.images || [selectedProject.value.image];
+                    viewerIndex.value = idx || 0;
+                    viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0;
+                    viewerOpen.value = true;
+                }
+                function closeViewer() { viewerOpen.value = false; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                function nextViewer() {
+                    if (viewerIndex.value < viewerImages.value.length - 1) { viewerIndex.value++; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                }
+                function prevViewer() {
+                    if (viewerIndex.value > 0) { viewerIndex.value--; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                }
+                function openViewerFromMaterial(imgIdx) {
+                    if (!selectedProject.value) return;
+                    if (imgIdx >= 0) { openViewer(imgIdx); } else { openViewer(0); }
+                }
+
+                function closeProjectModal() {
+                    if (modalClosing.value) return;
+                    modalClosing.value = true;
+                    setTimeout(function() {
+                        selectedProject.value = null;
+                        modalClosing.value = false;
+                        pullY.value = 0;
+                    }, 350);
+                }
+
+                function showProjectDetail(p) {
+                    projectDetail.value = p;
+                    detailSlide2.value = 0;
+                }
+                function closeProjectDetail() {
+                    projectDetail.value = null;
+                    selectedProject.value = null;
+                }
+                function backToPreview() {
+                    projectDetail.value = null;
+                }
+                function openDetailViewer(idx) {
+                    if (!projectDetail.value) return;
+                    viewerImages.value = projectDetail.value.images || [projectDetail.value.image];
+                    viewerIndex.value = idx || 0;
+                    viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0;
+                    viewerOpen.value = true;
+                }
+
+                var visibleProjects = computed(function() {
+                    var all = company.value.projects || [];
+                    if (showAllProjects.value) return all;
+                    return all.slice(0, 4);
+                });
+
+                var aboutPreview = computed(function() {
+                    var a = company.value.about || '';
+                    return a.length > 120 ? a.slice(0, 120) + '...' : a;
+                });
+
+                function resetWorkTimer() {
+                    if (workTimer) clearInterval(workTimer);
+                    var imgs = company.value.workImages || [];
+                    if (imgs.length < 2) return;
+                    workTimer = setInterval(function() {
+                        workSlide.value = (workSlide.value + 1) % imgs.length;
+                    }, 2000);
+                }
+
+                var workSwipe = (function() {
+                    var sx = 0;
+                    return {
+                        onTouchStart: function(e) { sx = e.touches[0].clientX; },
+                        onTouchEnd: function(e) {
+                            var dx = e.changedTouches[0].clientX - sx;
+                            var imgs = company.value.workImages || [];
+                            if (Math.abs(dx) > 40 && imgs.length > 1) {
+                                var next = workSlide.value + (dx < 0 ? 1 : -1);
+                                if (next >= 0 && next < imgs.length) { workSlide.value = next; resetWorkTimer(); }
+                            }
+                        }
+                    };
+                })();
+
+                onMounted(function() { resetWorkTimer(); });
+                onUnmounted(function() { if (workTimer) clearInterval(workTimer); });
+
+                return { isCompany, company, aboutPreview, selectedProject, detailSlide, projectDetail, detailSlide2, workSlide, workSwipe, resetWorkTimer, showAllProjects, visibleProjects,
+                         pullTransform, pullY, modalTouch, detailSwipe, viewerTouch,
+                         viewerOpen, viewerIndex, viewerScale, viewerPanX, viewerPanY, viewerImages, isPinch,
+                         openViewer, closeViewer, nextViewer, prevViewer, openViewerFromMaterial,
+                         closeProjectModal, showProjectDetail, closeProjectDetail, backToPreview, openDetailViewer };
+            }
+        }).mount('#app');
+    </script>
+    <script>
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function(err) { console.log('SW registration failed: ' + err); });
+        }
+    </script>
+</body>
+</html>

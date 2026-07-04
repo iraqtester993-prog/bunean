@@ -1,0 +1,29 @@
+{
+    "name": "بنيان - تطبيق البناء والمقاولات",
+    "short_name": "بنيان",
+    "description": "تطبيق بنيان للبناء والمقاولات وسوق مواد البناء",
+    "start_url": "/bnn/",
+    "scope": "/bnn/",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "background_color": "#1a3a5c",
+    "theme_color": "#1a3a5c",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/bnn/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/bnn/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["business", "utilities"],
+    "lang": "ar",
+    "dir": "rtl"
+}

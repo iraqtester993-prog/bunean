@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - تفاصيل الطلب</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <div style="background:var(--primary-blue);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:4px;padding:8px 16px 8px;flex-shrink:0;">
+                <a href="javascript:history.back()" style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;color:var(--text-white);text-decoration:none;flex-shrink:0;background:rgba(255,255,255,0.06);">
+                    <span class="material-symbols-outlined" style="font-size:24px;">arrow_forward</span>
+                </a>
+                <div style="flex:1;">
+                    <h2 style="color:var(--text-white);font-size:17px;font-weight:700;margin:0;">تفاصيل الطلب</h2>
+                    <div style="color:var(--text-muted);font-size:12px;margin:0;">طلب خدمة واستشارة</div>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <div v-if="!item" style="padding:60px 16px;text-align:center;">
+                    <span class="material-symbols-outlined" style="font-size:48px;color:var(--text-muted);opacity:.5;">search_off</span>
+                    <div style="color:var(--text-muted);font-size:14px;margin-top:8px;">لم يتم العثور على الطلب</div>
+                </div>
+
+                <template v-if="item">
+                    <!-- Service Request Section -->
+                    <div style="padding:16px 16px 0;">
+                        <div style="background:var(--bg-card);border-radius:16px;overflow:hidden;border:1px solid var(--border-light);margin-bottom:16px;">
+                            <div style="background:linear-gradient(135deg,rgba(201,162,67,0.12),rgba(201,162,67,0.03));padding:14px 16px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;">
+                                <span class="material-symbols-outlined" style="color:var(--accent-gold);font-size:22px;">assignment</span>
+                                <span style="color:var(--text-white);font-size:15px;font-weight:700;">طلب الخدمة</span>
+                                <span :style="consultStatusStyle(item.status || 'قيد المراجعة')" style="margin-right:auto;">{{ item.status || 'قيد المراجعة' }}</span>
+                            </div>
+                            <div style="padding:14px 16px;">
+                                <div class="detail-row">
+                                    <span class="detail-label"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">person</span> الاسم</span>
+                                    <span class="detail-value">{{ item.name }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">call</span> الهاتف</span>
+                                    <span class="detail-value" dir="ltr" style="text-align:left;">{{ item.phone }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">location_city</span> المحافظة</span>
+                                    <span class="detail-value">{{ item.gov }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">category</span> نوع الاستشارة</span>
+                                    <span class="detail-value">{{ item.consultType }}</span>
+                                </div>
+                                <div class="detail-row" style="border-bottom:none;padding-bottom:0;">
+                                    <span class="detail-label"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">calendar_today</span> تاريخ الإرسال</span>
+                                    <span class="detail-value">{{ formatDate(item.createdAt) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description Card -->
+                    <div style="padding:0 16px;">
+                        <div style="background:var(--bg-card);border-radius:16px;overflow:hidden;border:1px solid var(--border-light);margin-bottom:16px;">
+                            <div style="background:linear-gradient(135deg,rgba(79,195,247,0.12),rgba(79,195,247,0.03));padding:14px 16px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;">
+                                <span class="material-symbols-outlined" style="color:#4fc3f7;font-size:22px;">description</span>
+                                <span style="color:var(--text-white);font-size:15px;font-weight:700;">تفاصيل الاستشارة</span>
+                            </div>
+                            <div style="padding:14px 16px;">
+                                <p style="color:var(--text-light);font-size:13px;line-height:1.8;margin:0;">{{ item.desc }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Consultation Response Section -->
+                    <div style="padding:0 16px 20px;">
+                        <div style="background:var(--bg-card);border-radius:16px;overflow:hidden;border:1px solid var(--border-light);">
+                            <div style="background:linear-gradient(135deg,rgba(46,204,113,0.12),rgba(46,204,113,0.03));padding:14px 16px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;">
+                                <span class="material-symbols-outlined" style="color:#2ecc71;font-size:22px;">psychology</span>
+                                <span style="color:var(--text-white);font-size:15px;font-weight:700;">الاستشارة</span>
+                            </div>
+                            <div style="padding:14px 16px;">
+                                <div v-if="item.reply" style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.15);border-radius:12px;padding:14px;">
+                                    <p style="color:var(--text-light);font-size:13px;line-height:1.8;margin:0;">{{ item.reply }}</p>
+                                </div>
+                                <div v-else style="text-align:center;padding:20px 0;">
+                                    <span class="material-symbols-outlined" style="font-size:36px;color:var(--text-muted);opacity:.4;">hourglass_empty</span>
+                                    <p style="color:var(--text-muted);font-size:13px;margin:8px 0 0;">الاستشارة قيد المراجعة<br>سيتم الرد عليك قريباً</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        initTheme();
+        document.getElementById('header').innerHTML = renderHeader({});
+        document.getElementById('bottomNav').innerHTML = renderNav('home');
+
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+
+                var item = ref(null);
+
+                function getQueryParam(name) {
+                    var params = new URLSearchParams(window.location.search);
+                    return params.get(name);
+                }
+
+                function loadItem() {
+                    var id = getQueryParam('id');
+                    if (!id) return;
+                    var stored = loadFromStorage('bunean-service-requests');
+                    if (!stored) return;
+                    item.value = stored.find(function(r) { return String(r.id) === String(id); });
+                }
+                loadItem();
+
+                function formatDate(iso) {
+                    if (!iso) return '—';
+                    var d = new Date(iso);
+                    return d.toLocaleDateString('ar-IQ', { year:'numeric', month:'short', day:'numeric' });
+                }
+
+                function consultStatusStyle(status) {
+                    if (status === 'تم الرد') return { background: 'rgba(201,162,67,0.15)', color: 'var(--accent-gold)', fontSize:'11px', padding:'3px 8px', borderRadius:'20px', fontWeight:'600', whiteSpace:'nowrap' };
+                    if (status === 'مقبول') return { background: 'rgba(46,204,113,0.15)', color: '#2ecc71', fontSize:'11px', padding:'3px 8px', borderRadius:'20px', fontWeight:'600', whiteSpace:'nowrap' };
+                    if (status === 'ملغي') return { background: 'rgba(231,76,60,0.15)', color: '#e74c3c', fontSize:'11px', padding:'3px 8px', borderRadius:'20px', fontWeight:'600', whiteSpace:'nowrap' };
+                    return { background: 'rgba(79,195,247,0.15)', color: '#4fc3f7', fontSize:'11px', padding:'3px 8px', borderRadius:'20px', fontWeight:'600', whiteSpace:'nowrap' };
+                }
+
+                return { item, formatDate, consultStatusStyle };
+            }
+        }).mount('#app');
+
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function(err) { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>

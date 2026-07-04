@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - طلب منتج</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+    <script src="js/router.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <div class="page-content">
+                <!-- صورة المنتج -->
+                <div class="product-gallery" style="display:flex;align-items:center;justify-content:center;">
+                    <div style="text-align:center;">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="rgba(201,162,67,0.4)" stroke-width="1">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <div style="color:#c9a243;font-size:28px;font-weight:800;margin-top:12px;">Jotun</div>
+                    </div>
+                </div>
+
+                <!-- معلومات المنتج -->
+                <div class="product-detail-header">
+                    <div class="product-detail-name">دهان جوتن للجدران - أبيض ناصع</div>
+                    <div class="product-detail-price">{{ selectedColor.price }} د.ع / جالون</div>
+                </div>
+
+                <!-- خيارات المنتج -->
+                <div class="product-options">
+                    <!-- اللون -->
+                    <div class="option-group">
+                        <label class="option-label">
+                            اللون
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20z"/>
+                            </svg>
+                        </label>
+                        <div class="color-options">
+                            <div v-for="(color, index) in colors" :key="index"
+                                 class="color-dot"
+                                 :class="{ active: selectedColorIndex === index }"
+                                 :style="{ background: color.hex }"
+                                 @click="selectedColorIndex = index">
+                            </div>
+                        </div>
+                        <div style="margin-top:8px;font-size:13px;color:#8a9bb0;">اللون المحدد: {{ selectedColor.name }}</div>
+                    </div>
+
+                    <!-- الحجم -->
+                    <div class="option-group">
+                        <label class="option-label">
+                            الحجم
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            </svg>
+                        </label>
+                        <div class="size-options">
+                            <button v-for="(size, index) in sizes" :key="index"
+                                    class="size-btn"
+                                    :class="{ active: selectedSize === index }"
+                                    @click="selectedSize = index">
+                                {{ size.name }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- الكمية -->
+                    <div class="option-group">
+                        <label class="option-label">
+                            الكمية
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                        </label>
+                        <div class="quantity-control">
+                            <button class="qty-btn" @click="quantity > 1 && quantity--">-</button>
+                            <span class="qty-value">{{ quantity }}</span>
+                            <button class="qty-btn" @click="quantity++">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ملخص الطلب -->
+                <div class="product-summary">
+                    <div class="summary-row">
+                        <span class="summary-label">المنتج</span>
+                        <span class="summary-value">دهان جوتن</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">اللون</span>
+                        <span class="summary-value">{{ selectedColor.name }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">الحجم</span>
+                        <span class="summary-value">{{ sizes[selectedSize].name }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">الكمية</span>
+                        <span class="summary-value">{{ quantity }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">سعر الوحدة</span>
+                        <span class="summary-value">{{ selectedColor.price.toLocaleString() }} د.ع</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span class="summary-label">المجموع</span>
+                        <span class="summary-value">{{ total.toLocaleString() }} د.ع</span>
+                    </div>
+                </div>
+
+                <!-- أزرار الإجراءات -->
+                <div class="product-actions">
+                    <button class="btn-cart btn-outline" style="flex:1;" @click="addToCart">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                        أضف للسلة
+                    </button>
+                    <button class="btn-primary" style="flex:1;" @click="orderNow">اطلب الآن</button>
+                </div>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({ showBack: true, backLink: 'javascript:history.back()', cartBadge: true });
+        document.getElementById('bottomNav').innerHTML = renderNav('market');
+
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+                const cartCount = ref(2);
+                const quantity = ref(1);
+                const selectedColorIndex = ref(0);
+                const selectedSize = ref(1);
+
+                const colors = ref([
+                    { name: 'أبيض ناصع', hex: '#ffffff', price: 45000 },
+                    { name: 'كريمي', hex: '#f5f0e1', price: 48000 },
+                    { name: 'بيج', hex: '#d4c5a9', price: 46000 },
+                    { name: 'أزرق فاتح', hex: '#b8c5d6', price: 50000 },
+                    { name: 'رمادي', hex: '#8fa5b8', price: 47000 }
+                ]);
+
+                const sizes = ref([
+                    { name: 'جالون صغير', multiplier: 0.5 },
+                    { name: 'جالون', multiplier: 1 },
+                    { name: '2 جالون', multiplier: 2 }
+                ]);
+
+                const selectedColor = computed(() => colors.value[selectedColorIndex.value]);
+
+                const total = computed(() => {
+                    return quantity.value * selectedColor.value.price * sizes.value[selectedSize.value].multiplier;
+                });
+
+                const addToCart = () => {
+                    cartCount.value++;
+                    showBrandAlert('تمت الإضافة للسلة!');
+                };
+
+                const orderNow = () => {
+                    showBrandAlert('تم إرسال طلب المنتج بنجاح!');
+                };
+
+                return { cartCount, quantity, selectedColorIndex, selectedSize, colors, sizes, selectedColor, total, addToCart, orderNow };
+            }
+        }).mount('#app');
+    </script>
+    <script>
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('SW registered'))
+                .catch(err => console.log('SW registration failed'));
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,68 @@
+// ===== متغيرات المشروع =====
+
+// الألوان الرئيسية
+$primary-dark: #0b1a2e;
+$primary-blue: #1a3a5c;
+$primary-blue-light: #1e4068;
+$accent-gold: #c9a243;
+$accent-gold-hover: #d4b050;
+$accent-orange: #e8943a;
+
+// النصوص
+$text-white: #ffffff;
+$text-light: #8a9bb0;
+$text-muted: #5a7088;
+
+// الخلفيات
+$bg-card: rgba(20, 45, 75, 0.6);
+$bg-input: rgba(15, 30, 50, 0.8);
+$bg-card-light: rgba(255, 255, 255, 0.06);
+
+// الحدود
+$border-light: rgba(255, 255, 255, 0.08);
+$border-input: rgba(255, 255, 255, 0.1);
+
+// الأحجام
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 20px;
+$radius-full: 50px;
+
+// الخطوط
+$font-family: 'Cairo', sans-serif;
+$font-size-xs: 11px;
+$font-size-sm: 12px;
+$font-size-base: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-2xl: 24px;
+$font-size-3xl: 32px;
+$font-size-4xl: 38px;
+
+// الشadow
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+$shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.2);
+
+// الأيقونات
+$icon-sm: 16px;
+$icon-md: 20px;
+$icon-lg: 24px;
+$icon-xl: 32px;
+
+// Light Mode - الهوية البصرية: أبيض + أزرق
+$light-primary-dark: #ffffff;
+$light-primary-blue: #eef3f9;
+$light-primary-blue-light: #f5f8fc;
+$light-text-white: #1a2a3a;
+$light-text-light: #4a6a8a;
+$light-text-muted: #8a9bb0;
+$light-bg-card: rgba(238, 243, 249, 0.92);
+$light-bg-input: rgba(238, 243, 249, 0.9);
+$light-bg-card-light: rgba(26, 58, 92, 0.04);
+$light-border-light: rgba(26, 58, 92, 0.1);
+$light-border-input: rgba(26, 58, 92, 0.12);
+$light-shadow-card: 0 4px 20px rgba(26, 58, 92, 0.08);
+$light-bg-bottomnav: rgba(255, 255, 255, 0.98);

@@ -1,0 +1,11 @@
+{
+  "name": "bnean",
+  "private": true,
+  "scripts": {
+    "sass": "sass --watch scss/style.scss css/style.css",
+    "build": "sass scss/style.scss css/style.css"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0"
+  }
+}

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - الاستشارات وطلبات عروض الأسعار</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+                <a href="javascript:history.back()" style="display:flex;align-items:center;gap:4px;color:var(--text-light);text-decoration:none;font-size:13px;font-weight:500;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                </a>
+                <div style="flex:1;text-align:center;">
+                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">طلبات عروض الأسعار</span>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <!-- Tabs -->
+                <div style="display:flex;gap:8px;padding:12px 16px;">
+                    <button @click="activeForm = 'quote'" style="flex:1;padding:10px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;border:1px solid var(--border-light);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;"
+                        :style="activeForm === 'quote' ? { background:'var(--accent-gold)', color:'var(--primary-dark)', borderColor:'var(--accent-gold)' } : { background:'var(--bg-card)', color:'var(--text-white)' }">
+                        <span class="material-symbols-outlined" style="font-size:18px;">request_quote</span>
+                        طلب عرض سعر
+                    </button>
+                    <button @click="activeForm = 'consult'" style="flex:1;padding:10px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;border:1px solid var(--border-light);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;"
+                        :style="activeForm === 'consult' ? { background:'#4fc3f7', color:'#0b1a2e', borderColor:'#4fc3f7' } : { background:'var(--bg-card)', color:'var(--text-white)' }">
+                        <span class="material-symbols-outlined" style="font-size:18px;">psychology</span>
+                        طلب استشارة
+                    </button>
+                </div>
+
+                <!-- Forms Area -->
+                <div style="padding:0 16px 24px;">
+                    <!-- طلب عرض سعر Form -->
+                    <div v-if="activeForm === 'quote'" class="mkt-checkout-form" style="background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-light);">
+                        <div style="color:var(--text-white);font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:var(--accent-gold);">request_quote</span>
+                            طلب عرض سعر جديد
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">person</span> الاسم</label>
+                            <input type="text" class="form-input" v-model="newQR.name" placeholder="الاسم" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">call</span> الهاتف</label>
+                            <input type="tel" class="form-input" v-model="newQR.phone" placeholder="رقم الهاتف" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">location_on</span> الموقع</label>
+                            <input type="text" class="form-input" v-model="newQR.location" placeholder="الموقع" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">square_foot</span> المساحة <span style="color:var(--text-muted);font-size:10px;">(اختياري)</span></label>
+                            <input type="text" class="form-input" v-model="newQR.size" placeholder="مثال: 150 م²" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">account_balance</span> الميزانية <span style="color:var(--text-muted);font-size:10px;">(اختياري)</span></label>
+                            <input type="text" class="form-input" v-model="newQR.budget" placeholder="مثال: 50,000,000 د.ع" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">category</span> التصنيف</label>
+                            <select class="form-input" v-model="newQR.category" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                                <option value="">اختر التصنيف</option>
+                                <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+                            </select>
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">description</span> التفاصيل</label>
+                            <textarea class="form-input" v-model="newQR.details" placeholder="وصف المشروع والمواصفات المطلوبة..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;min-height:80px;font-family:Cairo,sans-serif;"></textarea>
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">image</span> صور المشروع <span style="color:var(--text-muted);font-size:10px;">(اختياري)</span></label>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                                <div v-for="(img, idx) in newQR.images" :key="idx" style="width:72px;height:72px;border-radius:10px;overflow:hidden;position:relative;border:1px solid var(--border-light);">
+                                    <img :src="img" style="width:100%;height:100%;object-fit:cover;">
+                                    <button type="button" @click="newQR.images.splice(idx,1)" style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,0.6);color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:Cairo,sans-serif;">
+                                        <span class="material-symbols-outlined" style="font-size:12px;">close</span>
+                                    </button>
+                                </div>
+                                <label v-if="newQR.images.length < 5" style="width:72px;height:72px;border-radius:10px;border:1px dashed var(--border-light);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:10px;gap:2px;">
+                                    <span class="material-symbols-outlined" style="font-size:20px;">add_photo_alternate</span>
+                                    إضافة
+                                    <input type="file" accept="image/*" style="display:none;" @change="addQuoteImage">
+                                </label>
+                            </div>
+                        </div>
+                        <button @click="submitNewQuoteRequest" style="width:100%;padding:12px;border:none;border-radius:12px;background:var(--accent-gold);color:var(--primary-dark);font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">
+                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;">send</span> إرسال طلب عرض السعر
+                        </button>
+                    </div>
+
+                    <!-- طلب استشارة Form -->
+                    <div v-if="activeForm === 'consult'" class="mkt-checkout-form" style="background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-light);">
+                        <div style="color:var(--text-white);font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:#4fc3f7;">psychology</span>
+                            طلب استشارة جديد
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">person</span> الاسم</label>
+                            <input type="text" class="form-input" v-model="newConsult.name" placeholder="الاسم" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">call</span> الهاتف</label>
+                            <input type="tel" class="form-input" v-model="newConsult.phone" placeholder="رقم الهاتف" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">location_city</span> المحافظة</label>
+                            <select class="form-input" v-model="newConsult.gov" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                                <option value="">اختر المحافظة</option>
+                                <option v-for="g in governorates" :key="g" :value="g">{{ g }}</option>
+                            </select>
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">category</span> نوع الاستشارة</label>
+                            <select class="form-input" v-model="newConsult.type" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;">
+                                <option value="">اختر</option>
+                                <option value="هندسية">هندسية</option>
+                                <option value="تصميم داخلي">تصميم داخلي</option>
+                                <option value="تشطيبات">تشطيبات</option>
+                                <option value="مواد بناء">مواد بناء</option>
+                                <option value="قانونية">قانونية</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">description</span> تفاصيل الاستشارة</label>
+                            <textarea class="form-input" v-model="newConsult.desc" placeholder="اكتب تفاصيل استشارتك هنا..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;min-height:80px;font-family:Cairo,sans-serif;"></textarea>
+                        </div>
+                        <div class="mkt-form-group">
+                            <label style="color:var(--text-white);font-size:12px;font-weight:600;display:block;margin-bottom:4px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">image</span> صور <span style="color:var(--text-muted);font-size:10px;">(اختياري)</span></label>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                                <div v-for="(img, idx) in newConsult.images" :key="idx" style="width:72px;height:72px;border-radius:10px;overflow:hidden;position:relative;border:1px solid var(--border-light);">
+                                    <img :src="img" style="width:100%;height:100%;object-fit:cover;">
+                                    <button type="button" @click="newConsult.images.splice(idx,1)" style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,0.6);color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:Cairo,sans-serif;">
+                                        <span class="material-symbols-outlined" style="font-size:12px;">close</span>
+                                    </button>
+                                </div>
+                                <label v-if="newConsult.images.length < 5" style="width:72px;height:72px;border-radius:10px;border:1px dashed var(--border-light);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:10px;gap:2px;">
+                                    <span class="material-symbols-outlined" style="font-size:20px;">add_photo_alternate</span>
+                                    إضافة
+                                    <input type="file" accept="image/*" style="display:none;" @change="addConsultImage">
+                                </label>
+                            </div>
+                        </div>
+                        <button @click="submitNewConsult" style="width:100%;padding:12px;border:none;border-radius:12px;background:#4fc3f7;color:#0b1a2e;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">
+                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;">send</span> إرسال الاستشارة
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+
+        <!-- Success Popup -->
+        <div v-if="showSuccess" class="success-overlay" @click="showSuccess = false">
+            <div class="success-modal" @click.stop>
+                <div class="success-icon-wrap">
+                    <span class="material-symbols-outlined success-icon">check_circle</span>
+                </div>
+                <h2 class="success-title">تم الإرسال بنجاح</h2>
+                <p class="success-desc" v-if="lastSubmitType === 'consult'">تم استلام استشارتك بنجاح<br>سيتم التواصل معك من قبل المختصين قريباً</p>
+                <p class="success-desc" v-else>تم إرسال طلب عرض السعر<br>سيتم الرد عليك من قبل الشركات المختصة</p>
+                <button class="success-btn" @click="showSuccess = false">حسناً</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        initTheme();
+        document.getElementById('header').innerHTML = renderHeader({ title: 'الاستشارات' });
+        document.getElementById('bottomNav').innerHTML = renderNav('home');
+
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+                var activeForm = ref('quote');
+                var showSuccess = ref(false);
+                var lastSubmitType = ref('quote');
+
+                var governorates = ['بغداد', 'البصرة', 'نينوى', 'أربيل', 'كركوك', 'النجف', 'كربلاء', 'السليمانية', 'ديالى', 'واسط', 'ميسان', 'المثنى', 'ذي قار', 'بابل', 'الأنبار', 'صلاح الدين'];
+                var categories = ['بناء سكني', 'بناء تجاري', 'تشطيبات', 'خرسانة', 'أعمال صحية', 'أعمال كهربائية', 'دهانات', 'أرضيات', 'واجهات', 'حدائق', 'أخرى'];
+
+                // New Quote Request
+                var newQR = ref({ name: '', phone: '', location: '', size: '', budget: '', category: '', details: '', images: [] });
+                function addQuoteImage(e) {
+                    var file = e.target.files[0];
+                    if (!file) return;
+                    if (newQR.value.images.length >= 5) { showBrandAlert('الحد الأقصى 5 صور'); e.target.value = ''; return; }
+                    var reader = new FileReader();
+                    reader.onload = function(ev) { newQR.value.images.push(ev.target.result); };
+                    reader.readAsDataURL(file);
+                    e.target.value = '';
+                }
+                function submitNewQuoteRequest() {
+                    requireAccount(function() {
+                    if (!newQR.value.name.trim()) { showBrandAlert('أدخل الاسم'); return; }
+                    if (!newQR.value.phone.trim()) { showBrandAlert('أدخل رقم الهاتف'); return; }
+                    if (!newQR.value.location.trim()) { showBrandAlert('أدخل الموقع'); return; }
+                    if (!newQR.value.category) { showBrandAlert('اختر التصنيف'); return; }
+                    if (!newQR.value.details.trim()) { showBrandAlert('أدخل تفاصيل المشروع'); return; }
+                    var reqs = JSON.parse(localStorage.getItem('bunean-quote-requests') || '[]');
+                    reqs.push({
+                        id: Date.now(),
+                        name: newQR.value.name.trim(),
+                        phone: newQR.value.phone.trim(),
+                        location: newQR.value.location.trim(),
+                        size: newQR.value.size.trim(),
+                        budget: newQR.value.budget.trim(),
+                        category: newQR.value.category,
+                        details: newQR.value.details.trim(),
+                        images: newQR.value.images,
+                        replied: false,
+                        replyMessage: '',
+                        createdAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('bunean-quote-requests', JSON.stringify(reqs));
+                    newQR.value = { name: '', phone: '', location: '', size: '', budget: '', category: '', details: '', images: [] };
+                    lastSubmitType.value = 'quote';
+                    showSuccess.value = true;
+                    });
+                }
+
+                // New Consultation
+                var newConsult = ref({ name: '', phone: '', gov: '', type: '', desc: '', images: [] });
+                function addConsultImage(e) {
+                    var file = e.target.files[0];
+                    if (!file) return;
+                    if (newConsult.value.images.length >= 5) { showBrandAlert('الحد الأقصى 5 صور'); e.target.value = ''; return; }
+                    var reader = new FileReader();
+                    reader.onload = function(ev) { newConsult.value.images.push(ev.target.result); };
+                    reader.readAsDataURL(file);
+                    e.target.value = '';
+                }
+                function submitNewConsult() {
+                    requireAccount(function() {
+                    if (!newConsult.value.name.trim()) { showBrandAlert('أدخل الاسم'); return; }
+                    if (!newConsult.value.phone.trim()) { showBrandAlert('أدخل رقم الهاتف'); return; }
+                    if (!newConsult.value.gov) { showBrandAlert('اختر المحافظة'); return; }
+                    if (!newConsult.value.type) { showBrandAlert('اختر نوع الاستشارة'); return; }
+                    if (!newConsult.value.desc.trim()) { showBrandAlert('أدخل تفاصيل الاستشارة'); return; }
+                    var reqs = JSON.parse(localStorage.getItem('bunean-service-requests') || '[]');
+                    reqs.push({
+                        id: Date.now(),
+                        submitType: 'consult',
+                        name: newConsult.value.name.trim(),
+                        phone: newConsult.value.phone.trim(),
+                        gov: newConsult.value.gov,
+                        consultType: newConsult.value.type,
+                        desc: newConsult.value.desc.trim(),
+                        images: newConsult.value.images,
+                        status: 'قيد المراجعة',
+                        reply: '',
+                        createdAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('bunean-service-requests', JSON.stringify(reqs));
+                    newConsult.value = { name: '', phone: '', gov: '', type: '', desc: '', images: [] };
+                    lastSubmitType.value = 'consult';
+                    showSuccess.value = true;
+                    });
+                }
+
+                return {
+                    activeForm, showSuccess, lastSubmitType,
+                    governorates, categories,
+                    newQR, submitNewQuoteRequest, addQuoteImage,
+                    newConsult, submitNewConsult, addConsultImage
+                };
+            }
+        }).mount('#app');
+
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function(err) { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>

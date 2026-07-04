@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - تتبع الطلب</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+    <script src="js/router.js"></script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { display: none; }
+
+
+
+        .tr-status { text-align:center; padding:20px 16px 4px; }
+        .tr-status-icon { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:rgba(46,204,113,0.15); color:#2ecc71; vertical-align:middle; margin-left:8px; }
+        .tr-status-icon .material-symbols-outlined { font-size:16px; }
+        .tr-status-title { display:inline; color:var(--text-white); font-size:17px; font-weight:700; }
+        .tr-status-sub { color:var(--text-muted); font-size:12px; margin-top:4px; }
+
+        .tr-stepper { display:flex; align-items:flex-start; justify-content:center; padding:16px 16px 20px; gap:0; }
+        .tr-step { display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
+        .tr-step-dot { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; background:transparent; border:2px solid rgba(255,255,255,0.08); color:var(--text-muted); transition:all .3s; }
+        .tr-step-dot.done, .tr-step-dot.active { background:#3b82f6; border-color:#3b82f6; color:#fff; box-shadow:0 0 14px rgba(59,130,246,0.3); }
+        .tr-step-label { font-size:10px; color:var(--text-muted); text-align:center; font-weight:500; min-height:28px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; }
+        .tr-step-label.done, .tr-step-label.active { color:#3b82f6; font-weight:600; }
+        .tr-step-time { font-size:8px; color:var(--text-muted); }
+        .tr-line { flex:1; height:0; border-top:2px dotted rgba(255,255,255,0.08); margin:0 -4px; position:relative; top:17px; }
+        .tr-line.done { border-top-color:#3b82f6; }
+
+        .tr-info-bar { margin:0 16px 12px; padding:10px 14px; border-radius:12px; background:rgba(201,162,67,0.08); border:1px solid rgba(201,162,67,0.15); display:flex; align-items:center; justify-content:center; gap:8px; }
+        html.light-mode .tr-info-bar { background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.15); }
+        html.light-mode .tr-info-bar .material-symbols-outlined { color:#3b82f6; }
+        html.light-mode .tr-info-bar span { color:#1e3a8a; }
+        .tr-info-bar .material-symbols-outlined { font-size:16px; color:var(--accent-gold); }
+        .tr-info-bar span { color:var(--text-light); font-size:11px; font-weight:500; }
+
+        .tr-card { margin:0 16px 12px; background:var(--bg-card); border:1px solid var(--border-light); border-radius:16px; padding:16px; }
+        .tr-card-title { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--text-white); margin-bottom:12px; }
+        .tr-card-title .material-symbols-outlined { font-size:18px; color:var(--accent-gold); }
+
+        .tr-product { display:flex; gap:12px; align-items:center; }
+        .tr-product-img { width:64px; height:64px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--bg-input); display:flex; align-items:center; justify-content:center; }
+        .tr-product-img img { width:100%; height:100%; object-fit:cover; }
+        .tr-product-info { flex:1; min-width:0; }
+        .tr-product-name { font-size:13px; font-weight:600; color:var(--text-white); margin-bottom:2px; }
+        .tr-product-meta { font-size:11px; color:var(--text-muted); line-height:1.5; }
+        .tr-product-price { font-size:14px; font-weight:700; color:var(--accent-gold); white-space:nowrap; }
+
+        .tr-pricing { margin-top:12px; padding-top:12px; border-top:1px solid var(--border-light); display:flex; flex-direction:column; gap:8px; }
+        .tr-pricing-row { display:flex; justify-content:space-between; align-items:center; }
+        .tr-pricing-label { font-size:12px; color:var(--text-muted); }
+        .tr-pricing-value { font-size:12px; color:var(--text-white); font-weight:600; }
+        .tr-pricing-value.gold { color:var(--accent-gold); font-size:16px; font-weight:800; }
+        .tr-pricing-value.green { color:#2ecc71; }
+        .tr-pricing-total { display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px dashed var(--border-light); margin-top:4px; }
+        .tr-pricing-total .tr-pricing-label { font-size:14px; font-weight:700; color:var(--text-white); }
+
+        .tr-delivery-row { display:flex; align-items:flex-start; gap:8px; padding:8px 0; }
+        .tr-delivery-row:not(:last-child) { border-bottom:1px solid var(--border-light); }
+        .tr-delivery-label { font-size:12px; color:var(--text-muted); min-width:60px; flex-shrink:0; }
+        .tr-delivery-value { font-size:12px; color:var(--text-white); font-weight:600; text-align:left; flex:1; }
+        .tr-delivery-sub { font-size:10px; color:var(--text-muted); display:block; }
+
+        .tr-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:0 16px 12px; }
+        .tr-action-btn { display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border-radius:12px; border:1px solid var(--border-light); background:var(--bg-card); cursor:pointer; font-family:Cairo,sans-serif; transition:all .15s; }
+        .tr-action-btn:active { opacity:.7; }
+        .tr-action-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+        .tr-action-icon .material-symbols-outlined { font-size:18px; }
+        .tr-action-label { font-size:10px; font-weight:600; color:var(--text-light); }
+
+        .tr-banner { margin:0 16px 12px; border-radius:16px; padding:16px; background:rgba(201,162,67,0.06); border:1px solid rgba(201,162,67,0.12); display:flex; align-items:center; gap:12px; }
+        .tr-banner-content { flex:1; }
+        .tr-banner-title { font-size:13px; font-weight:700; color:var(--text-white); margin-bottom:2px; }
+        .tr-banner-desc { font-size:10px; color:var(--text-muted); line-height:1.5; }
+        .tr-banner-icon { color:var(--accent-gold); display:flex; align-items:center; justify-content:center; }
+        .tr-banner-icon .material-symbols-outlined { font-size:28px; }
+
+        .tr-trust { margin:0 16px 24px; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; padding-top:16px; border-top:1px solid var(--border-light); }
+        .tr-trust-item { display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
+        .tr-trust-icon { width:36px; height:36px; border-radius:50%; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted); }
+        .tr-trust-icon .material-symbols-outlined { font-size:16px; }
+        .tr-trust-label { font-size:9px; color:var(--text-muted); font-weight:500; line-height:1.3; }
+
+        .cancel-order-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:calc(100% - 32px); margin:0 16px 8px; padding:14px; background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.3); border-radius:14px; color:#e74c3c; font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; font-family:"Cairo",sans-serif; }
+        .cancel-order-btn:hover { background:rgba(231,76,60,0.2); }
+        .cancel-order-btn .material-symbols-outlined { font-size:20px; }
+
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:100; padding:24px; backdrop-filter:blur(4px); }
+        .modal-box { background:var(--primary-blue); border:1px solid var(--border-light); border-radius:20px; padding:24px; width:100%; max-width:360px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.4); }
+        .modal-box h3 { font-size:17px; font-weight:700; color:var(--text-white); margin:0 0 8px; }
+        .modal-box p { font-size:13px; color:var(--text-light); margin:0 0 18px; }
+        .modal-box textarea { width:100%; padding:12px; border-radius:12px; background:var(--bg-input); border:1px solid var(--border-input); color:var(--text-white); font-size:13px; font-family:"Cairo",sans-serif; resize:vertical; min-height:80px; box-sizing:border-box; outline:none; }
+        .modal-box textarea:focus { border-color:var(--accent-gold); }
+        .modal-box .modal-btns { display:flex; gap:10px; margin-top:16px; }
+        .modal-box .modal-btns button { flex:1; padding:12px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; font-family:"Cairo",sans-serif; border:none; }
+        .modal-box .modal-btn-cancel { background:var(--bg-card-light); color:var(--text-light); border:1px solid var(--border-input); }
+        .modal-box .modal-btn-confirm { background:#e74c3c; color:#fff; }
+        .modal-box .modal-btn-confirm:disabled { opacity:.4; cursor:default; }
+
+        html.light-mode .tr-line { border-top-color:rgba(0,0,0,0.12); }
+        html.light-mode .tr-step-dot { border-color:rgba(0,0,0,0.15); }
+        html.light-mode .tr-step-dot.pending { border-color:rgba(0,0,0,0.15); }
+
+        .toast-message { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--primary-blue); border:1px solid var(--border-light); border-radius:14px; padding:14px 20px; color:var(--text-white); font-size:13px; font-weight:500; z-index:200; opacity:0; transition:all .4s ease; pointer-events:none; box-shadow:0 8px 30px rgba(0,0,0,0.3); text-align:center; max-width:320px; }
+        .toast-message.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        .tr-status-card { background:var(--primary-blue); border-bottom:1px solid var(--border-light); padding:8px 16px 8px; }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+                <!-- كارد: طلباتي -->
+                <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+                    <a href="javascript:history.back()" style="display:flex;align-items:center;gap:4px;color:var(--text-light);text-decoration:none;font-size:13px;font-weight:500;">
+                        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                    </a>
+                    <div style="flex:1;text-align:center;">
+                        <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">تتبع الطلب</span>
+                    </div>
+                </div>
+
+            <div class="page-content">
+
+                <!-- Order Stepper -->
+                <div class="tr-stepper">
+                    <template v-for="(step, index) in steps" :key="index">
+                        <div class="tr-step">
+                            <div class="tr-step-dot" :class="step.status">
+                                <span class="material-symbols-outlined">{{ step.icon }}</span>
+                            </div>
+                            <span class="tr-step-label" :class="step.status">{{ step.label }}</span>
+                            <span v-if="step.time" class="tr-step-time">{{ step.time }}</span>
+                        </div>
+                        <div v-if="index < steps.length - 1" class="tr-line" :class="step.lineClass"></div>
+                    </template>
+                </div>
+
+                <!-- Info Banner -->
+                <div class="tr-info-bar">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span>سنقوم بإبلاغك عند أي تحديث في حالة طلبك</span>
+                </div>
+
+                <!-- Order Details Card -->
+                <div class="tr-card">
+                    <div class="tr-card-title">
+                        <span class="material-symbols-outlined">receipt_long</span>
+                        تفاصيل الطلب
+                    </div>
+
+                    <!-- Product -->
+                    <div class="tr-product">
+                        <div class="tr-product-img">
+                            <img :src="product.img" :alt="product.name">
+                        </div>
+                        <div class="tr-product-info">
+                            <div class="tr-product-name">{{ product.name }}</div>
+                            <div class="tr-product-meta">
+                                <div>{{ product.color }}</div>
+                                <div>{{ product.size }}</div>
+                                <div>الكمية: {{ product.qty }}</div>
+                            </div>
+                        </div>
+                        <div class="tr-product-price">{{ fmt(product.price) }} د.ع</div>
+                    </div>
+
+                    <!-- Pricing Breakdown -->
+                    <div class="tr-pricing">
+                        <div class="tr-pricing-row">
+                            <span class="tr-pricing-label">قيمة المنتجات</span>
+                            <span class="tr-pricing-value">{{ fmt(product.price) }} د.ع</span>
+                        </div>
+                        <div class="tr-pricing-row">
+                            <span class="tr-pricing-label">أجور التوصيل</span>
+                            <span class="tr-pricing-value">{{ fmt(deliveryFee) }} د.ع</span>
+                        </div>
+                        <div class="tr-pricing-row">
+                            <span class="tr-pricing-label">خصم الكمية</span>
+                            <span class="tr-pricing-value green">{{ fmt(discount) }} د.ع-</span>
+                        </div>
+                        <div class="tr-pricing-total">
+                            <span class="tr-pricing-label">الإجمالي</span>
+                            <span class="tr-pricing-value gold">{{ fmt(total) }} د.ع</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Info -->
+                <div class="tr-card">
+                    <div class="tr-card-title">
+                        <span class="material-symbols-outlined">location_on</span>
+                        معلومات التوصيل
+                    </div>
+                    <div>
+                        <div class="tr-delivery-row">
+                            <span class="tr-delivery-label">المحافظة</span>
+                            <span class="tr-delivery-value">{{ delivery.governorate }}</span>
+                        </div>
+                        <div class="tr-delivery-row">
+                            <span class="tr-delivery-label">المدينة</span>
+                            <span class="tr-delivery-value">{{ delivery.city }}</span>
+                        </div>
+                        <div class="tr-delivery-row">
+                            <span class="tr-delivery-label">العنوان</span>
+                            <span class="tr-delivery-value">{{ delivery.address }}</span>
+                        </div>
+                        <div class="tr-delivery-row">
+                            <span class="tr-delivery-label">موعد التوصيل المتوقع</span>
+                            <div style="text-align:left;">
+                                <span class="tr-delivery-value" style="font-size:12px;">{{ delivery.expected }}</span>
+                                <span class="tr-delivery-sub">{{ delivery.expectedRange }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Management Actions -->
+                <div class="tr-card">
+                    <div class="tr-card-title">
+                        <span class="material-symbols-outlined">settings</span>
+                        إدارة الطلب
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                        <button class="tr-action-btn" @click="openCancelModal">
+                            <div class="tr-action-icon" style="background:rgba(231,76,60,0.12);color:#e74c3c;">
+                                <span class="material-symbols-outlined">cancel</span>
+                            </div>
+                            <span class="tr-action-label">إلغاء الطلب</span>
+                        </button>
+                        <button class="tr-action-btn" @click="contactSupport">
+                            <div class="tr-action-icon" style="background:rgba(201,162,67,0.12);color:var(--accent-gold);">
+                                <span class="material-symbols-outlined">chat</span>
+                            </div>
+                            <span class="tr-action-label">تواصل مع الدعم</span>
+                        </button>
+                        <button class="tr-action-btn" @click="viewInvoice">
+                            <div class="tr-action-icon" style="background:var(--bg-input);color:var(--text-muted);">
+                                <span class="material-symbols-outlined">description</span>
+                            </div>
+                            <span class="tr-action-label">عرض الفاتورة</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- padding -->
+                <div style="height:24px;"></div>
+            </div>
+
+            <!-- Cancel Modal -->
+            <div v-if="showCancelModal" class="modal-overlay" @click.self="showCancelModal = false">
+                <div class="modal-box">
+                    <h3>إلغاء الطلب</h3>
+                    <p>هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟ يرجى ذكر السبب.</p>
+                    <textarea v-model="cancelReason" placeholder="اذكر سبب الإلغاء..." rows="3"></textarea>
+                    <div class="modal-btns">
+                        <button class="modal-btn-cancel" @click="showCancelModal = false">رجوع</button>
+                        <button class="modal-btn-confirm" @click="submitCancel" :disabled="!cancelReason.trim()">تأكيد الإلغاء</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Modal -->
+            <div v-if="showInvoiceModal" class="modal-overlay" @click.self="showInvoiceModal = false">
+                <div class="modal-box" style="text-align:right;">
+                    <h3 style="text-align:center;margin-bottom:16px;">
+                        <span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;color:var(--accent-gold);">receipt</span>
+                        فاتورة الطلب
+                    </h3>
+                    <div style="background:var(--bg-input);border-radius:12px;padding:14px;margin-bottom:12px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                            <span style="color:var(--text-muted);font-size:13px;">{{ product.name }}</span>
+                            <span style="color:var(--text-white);font-size:13px;font-weight:600;">{{ fmt(product.price) }} د.ع</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--text-muted);font-size:13px;">أجور التوصيل</span>
+                            <span style="color:var(--text-white);font-size:13px;">{{ fmt(deliveryFee) }} د.ع</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--text-muted);font-size:13px;">الخصم</span>
+                            <span style="color:#2ecc71;font-size:13px;">{{ fmt(discount) }} د.ع-</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px dashed var(--border-light);">
+                            <span style="color:var(--text-white);font-size:15px;font-weight:700;">المجموع الكلي</span>
+                            <span style="color:var(--accent-gold);font-size:18px;font-weight:800;">{{ fmt(total) }} د.ع</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <button class="modal-btn-cancel" style="width:100%;padding:12px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:Cairo,sans-serif;border:none;background:var(--accent-gold);color:var(--primary-dark);" @click="showInvoiceModal = false">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toast -->
+            <div class="toast-message" :class="{ show: toastVisible }">{{ toastText }}</div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({});
+
+        document.getElementById('bottomNav').innerHTML = renderNav('account');
+
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+
+                var steps = ref([
+                    { label: 'تم استلام الطلب', status: 'done', icon: 'assignment', lineClass: 'done', time: '20 مايو 2025 - 12:13 م' },
+                    { label: 'قيد التجهيز', status: 'active', icon: 'inventory_2', lineClass: '', time: '' },
+                    { label: 'تم الشحن', status: 'pending', icon: 'local_shipping', lineClass: '', time: '' },
+                    { label: 'تم التوصيل', status: 'pending', icon: 'check', lineClass: '', time: '' }
+                ]);
+
+                var order = ref({
+                    id: '#BN-2505-78932'
+                });
+
+                var product = ref({
+                    name: 'جوتن فينوماستك الداخلي',
+                    color: 'لون: أبيض نقي - مطفي',
+                    size: 'حجم العبوة: 4 لتر',
+                    qty: 1,
+                    price: 75000,
+                    img: 'images/img6.jpg'
+                });
+
+                var deliveryFee = 5000;
+                var discount = 0;
+
+                var total = ref(product.value.price + deliveryFee - discount);
+
+                var delivery = ref({
+                    governorate: 'بغداد',
+                    city: 'الكرخ',
+                    address: 'شارع الربيعي، مقابل مجمع البناء',
+                    expected: 'خلال 24-48 ساعة',
+                    expectedRange: 'بين 1 - 22 مايو 2025'
+                });
+
+                var showCancelModal = ref(false);
+                var cancelReason = ref('');
+                var showInvoiceModal = ref(false);
+                var toastVisible = ref(false);
+                var toastText = ref('');
+
+                function fmt(num) {
+                    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                }
+
+                function showToast(msg) {
+                    toastText.value = msg;
+                    toastVisible.value = true;
+                    setTimeout(function() { toastVisible.value = false; }, 3500);
+                }
+
+                function openCancelModal() {
+                    cancelReason.value = '';
+                    showCancelModal.value = true;
+                }
+
+                function submitCancel() {
+                    if (!cancelReason.value.trim()) return;
+                    showCancelModal.value = false;
+                    showToast('سيتم مراجعة طلب إلغاء الطلب');
+                }
+
+                function contactSupport() {
+                    showToast('سيتم توجيهك إلى فريق الدعم الفني');
+                }
+
+                function viewInvoice() {
+                    showInvoiceModal.value = true;
+                }
+
+                return {
+                    steps, order, product,
+                    deliveryFee, discount, total,
+                    delivery,
+                    showCancelModal, cancelReason, showInvoiceModal,
+                    toastVisible, toastText,
+                    fmt, openCancelModal, submitCancel, contactSupport, viewInvoice
+                };
+            }
+        }).mount('#app');
+    </script>
+    <script>
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function(err) { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>

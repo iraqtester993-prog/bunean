@@ -1,0 +1,8 @@
+node_modules/
+*.txt
+1.jpg
+construction_b64.txt
+construction_base64.txt
+logo_b64.txt
+logo_base64.txt
+test-css.html

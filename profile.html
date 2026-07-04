@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - الملف الشخصي</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <!-- Card outside page-content, flush with header -->
+            <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+                <a href="javascript:history.back()" style="display:flex;align-items:center;gap:4px;color:var(--text-light);text-decoration:none;font-size:13px;font-weight:500;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                </a>
+                <div style="flex:1;text-align:center;">
+                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">الملف الشخصي</span>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <div class="profile-edit-page">
+                    <!-- Avatar -->
+                    <div class="profile-edit-avatar">
+                        <div class="profile-edit-avatar-circle">{{ user.name.charAt(0) || '?' }}</div>
+                        <div class="profile-edit-avatar-label">صورتك الشخصية</div>
+                    </div>
+
+                    <!-- Form -->
+                    <div class="profile-edit-form">
+                        <div class="mkt-form-group">
+                            <label class="profile-edit-label">
+                                <span class="material-symbols-outlined">person</span>
+                                الاسم
+                            </label>
+                            <input type="text" class="form-input" v-model="editUser.name" placeholder="الاسم الكامل">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label class="profile-edit-label">
+                                <span class="material-symbols-outlined">phone</span>
+                                رقم الهاتف
+                            </label>
+                            <input type="tel" class="form-input" v-model="editUser.phone" placeholder="رقم الهاتف">
+                        </div>
+                        <div class="mkt-form-group">
+                            <label class="profile-edit-label">
+                                <span class="material-symbols-outlined">location_on</span>
+                                المحافظة
+                            </label>
+                            <select class="form-input" v-model="editUser.governorate">
+                                <option value="">اختر المحافظة</option>
+                                <option v-for="g in governorates" :key="g" :value="g">{{ g }}</option>
+                            </select>
+                        </div>
+                        <div class="mkt-form-group">
+                            <label class="profile-edit-label">
+                                <span class="material-symbols-outlined">home</span>
+                                العنوان
+                            </label>
+                            <input type="text" class="form-input" v-model="editUser.address" placeholder="العنوان">
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="profile-edit-actions">
+                        <a href="account.html" class="profile-edit-cancel" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">
+                            <span class="material-symbols-outlined">close</span>
+                            رجوع
+                        </a>
+                        <button class="profile-edit-save" @click="saveProfile">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            تأكيد التغيرات
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({ userNameVue: true });
+        document.getElementById('bottomNav').innerHTML = renderNav('account');
+
+        const { createApp, ref, onMounted } = Vue;
+
+        var governorates = ['بغداد', 'البصرة', 'نينوى', 'أربيل', 'كركوك', 'النجف', 'كربلاء', 'السليمانية', 'ديالى', 'واسط', 'ميسان', 'ذي قار', 'المثنى', 'القادسية', 'بابل', 'صلاح الدين', 'الأنبار', 'دهوك'];
+
+        createApp({
+            setup() {
+                initTheme();
+
+                var myData = null;
+                try { myData = JSON.parse(localStorage.getItem('bunean-user-data')); } catch(e) {}
+
+                var user = ref(myData ? {
+                    name: myData.name || '',
+                    phone: myData.phone || '',
+                    governorate: myData.governorate || '',
+                    address: myData.address || ''
+                } : {
+                    name: 'مستخدم',
+                    phone: '',
+                    governorate: '',
+                    address: ''
+                });
+
+                var editUser = ref({
+                    name: user.value.name,
+                    phone: user.value.phone,
+                    governorate: user.value.governorate,
+                    address: user.value.address
+                });
+
+                function saveProfile() {
+                    if (!editUser.value.name.trim()) { showBrandAlert('أدخل الاسم'); return; }
+                    var data = myData || {};
+                    data.name = editUser.value.name.trim();
+                    data.phone = editUser.value.phone.trim();
+                    data.governorate = editUser.value.governorate;
+                    data.address = editUser.value.address.trim();
+                    localStorage.setItem('bunean-user-data', JSON.stringify(data));
+                    localStorage.setItem('bunean-user', data.name);
+                    showBrandAlert('✅ تم حفظ التعديلات بنجاح');
+                    setTimeout(function() { window.location.href = 'account.html'; }, 1500);
+                }
+
+                return {
+                    user, editUser, governorates, saveProfile
+                };
+            }
+        }).mount('#app');
+    </script>
+    <script>
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function(err) { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>

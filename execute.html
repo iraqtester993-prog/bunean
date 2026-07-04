@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - خدمات التنفيذ</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/companies.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <!-- Exec-header outside page-content, flush with header -->
+            <div v-if="activeCategory" style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+                <button @click="activeCategory = null" style="display:flex;align-items:center;gap:4px;color:var(--text-light);background:none;border:none;padding:0;cursor:pointer;font-size:13px;font-weight:500;font-family:Cairo,sans-serif;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                </button>
+                <div style="flex:1;text-align:center;">
+                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">{{ activeCategory.name }}</span>
+                </div>
+            </div>
+
+            <div class="page-content" style="padding-top:0;">
+
+                <!-- Hero Slider -->
+                <div v-if="!activeCategory" class="exec-slider"
+                     @touchstart.passive="execSwipe.onTouchStart"
+                     @touchend="execSwipe.onTouchEnd">
+                    <div class="exec-slider-track" dir="ltr" :style="{ transform: 'translateX(-' + (execSlide * 100) + '%)' }">
+                        <div v-for="(s, i) in execSlides" :key="i" class="exec-slider-slide">
+                            <img :src="s.img" alt="">
+                        </div>
+                    </div>
+                    <div v-if="execSlides.length > 1" class="exec-slider-dots">
+                        <span v-for="(s, i) in execSlides" :key="i" class="dot" :class="{ active: i === execSlide }" @click="execSlide = i; resetExecTimer()"></span>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div v-if="!activeCategory" class="exec-title">
+                    <h2>أنواع التنفيذ</h2>
+                </div>
+
+                <!-- Categories Grid -->
+                <div v-if="!activeCategory" class="exec-categories">
+                    <div v-for="(cat, i) in categories" :key="i" class="exec-cat-card" @click="selectCategory(cat)">
+                        <div class="exec-cat-icon-wrap">
+                            <img :src="cat.image" alt="" class="exec-cat-img">
+                        </div>
+                        <span class="exec-cat-name">{{ cat.name }}</span>
+                        <div class="exec-cat-divider"></div>
+                    </div>
+                </div>
+
+                <!-- Companies Grid -->
+                <div v-if="activeCategory" class="exec-companies">
+                    <div class="exec-company-grid">
+                        <div v-for="(comp, i) in activeCategory.companies" :key="i" class="exec-company-card" @click="goToCompany(comp)">
+                            <div class="exec-company-logo">
+                                <img :src="comp.logo" alt="">
+                                <div class="exec-company-badge" v-if="comp.verified">
+                                    <span class="material-symbols-outlined">verified</span>
+                                </div>
+                            </div>
+                            <div class="exec-company-info">
+                                <h3>{{ comp.name }}</h3>
+                                <div class="exec-company-rating">
+                                    <span v-for="s in 5" :key="s" class="star" :class="{ filled: s <= comp.rating }">star</span>
+                                </div>
+                                <div class="exec-company-specs">
+                                    <span>{{ comp.years }} سنة</span>
+                                    <span>{{ comp.done }} مشروع</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader();
+        document.getElementById('bottomNav').innerHTML = renderNav('execute');
+
+        // Build categories with full company data from shared file
+        var builtCategories = [];
+        for (var ci = 0; ci < categoriesList.length; ci++) {
+            var cat = categoriesList[ci];
+            var companies = [];
+            for (var cj = 0; cj < cat.companies.length; cj++) {
+                var cData = getCompanyByName(cat.companies[cj]);
+                if (cData) companies.push(cData);
+            }
+            builtCategories.push({
+                name: cat.name,
+                image: cat.image,
+                companies: companies
+            });
+        }
+
+        const { createApp, ref, watch, nextTick, onMounted, onUnmounted } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+
+                var categories = ref(builtCategories);
+                var activeCategory = ref(null);
+                watch(activeCategory, function(v) { if (v !== null) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); });
+
+                var execSlide = ref(0);
+                var execTimer = null;
+                var execSlides = ref([
+                    { img: 'images/img16.jpg' },
+                    { img: 'images/img17.jpg' },
+                    { img: 'images/img18.jpg' },
+                    { img: 'images/img19.jpg' },
+                    { img: 'images/img20.jpg' }
+                ]);
+
+                function resetExecTimer() {
+                    if (execTimer) clearInterval(execTimer);
+                    var len = execSlides.value.length;
+                    if (len < 2) return;
+                    execTimer = setInterval(function() {
+                        execSlide.value = (execSlide.value + 1) % len;
+                    }, 3000);
+                }
+
+                var execSwipe = (function() {
+                    var sx = 0;
+                    return {
+                        onTouchStart: function(e) { sx = e.touches[0].clientX; },
+                        onTouchEnd: function(e) {
+                            var dx = e.changedTouches[0].clientX - sx;
+                            if (Math.abs(dx) > 40) {
+                                var len = execSlides.value.length;
+                                var next = execSlide.value + (dx < 0 ? 1 : -1);
+                                if (next >= 0 && next < len) { execSlide.value = next; resetExecTimer(); }
+                            }
+                        }
+                    };
+                })();
+
+                function selectCategory(cat) {
+                    activeCategory.value = cat;
+                }
+
+                function goToCompany(comp) {
+                    window.location.href = 'company.html?id=' + encodeURIComponent(comp.name);
+                }
+
+                function handlePopState() {
+                    if (activeCategory.value) { activeCategory.value = null; return; }
+                }
+
+                onMounted(function() {
+                    window.addEventListener('popstate', handlePopState);
+                    var catName = new URLSearchParams(window.location.search).get('cat');
+                    if (catName) {
+                        for (var ci = 0; ci < builtCategories.length; ci++) {
+                            if (builtCategories[ci].name === catName) {
+                                activeCategory.value = builtCategories[ci];
+                                break;
+                            }
+                        }
+                    }
+                    resetExecTimer();
+                });
+
+                onUnmounted(function() {
+                    if (execTimer) clearInterval(execTimer);
+                    window.removeEventListener('popstate', handlePopState);
+                });
+
+                return { categories, activeCategory, selectCategory, goToCompany, execSlide, execSlides, execSwipe, resetExecTimer };
+            }
+        }).mount('#app');
+    </script>
+    <script>
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function() { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>

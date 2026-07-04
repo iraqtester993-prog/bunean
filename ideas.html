@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - أفكار وتصاميم</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .ideas-cat-strip {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 14px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            flex-shrink: 0;
+            background: var(--bg-card, #0b1a2e);
+            direction: rtl;
+        }
+        .ideas-cat-strip::-webkit-scrollbar { display: none; }
+        .ideas-cat-square {
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .ideas-cat-square.active {
+            border-color: #c9a243;
+        }
+        .ideas-cat-square-img {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+        .ideas-cat-all-img {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(201,162,67,0.15);
+        }
+        .ideas-cat-all-img .material-symbols-outlined {
+            font-size: 32px;
+            color: #c9a243;
+        }
+        html.light-mode .ideas-cat-all-img {
+            background: rgba(44,95,138,0.1);
+        }
+        html.light-mode .ideas-cat-all-img .material-symbols-outlined {
+            color: #2c5f8a;
+        }
+        .ideas-cat-square-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 6px 4px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        html.light-mode .ideas-cat-square.active {
+            border-color: #2c5f8a;
+        }
+        @media (max-width: 360px) {
+            .ideas-cat-strip { padding: 8px 10px; gap: 8px; }
+            .ideas-cat-square { width: 76px; height: 76px; }
+        }
+
+        /* ===== Filter Bar ===== */
+        .filter-bar {
+            display: flex;
+            gap: 5px;
+            padding: 0 14px;
+            margin-bottom: 4px;
+        }
+        .filter-bar-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 6px 2px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #b0c4d9;
+            font-size: 10px;
+            font-weight: 500;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 36px;
+        }
+        .filter-bar-btn .material-symbols-outlined { font-size: 16px; }
+        .filter-bar-btn.active {
+            background: rgba(201,162,67,0.15);
+            border-color: rgba(201,162,67,0.3);
+            color: #c9a243;
+        }
+        html.light-mode .filter-bar-btn {
+            background: rgba(26,58,92,0.05);
+            border-color: rgba(26,58,92,0.1);
+            color: #4a5a6a;
+        }
+        html.light-mode .filter-bar-btn.active {
+            background: rgba(44,95,138,0.1);
+            border-color: rgba(44,95,138,0.2);
+            color: #2c5f8a;
+        }
+
+        /* Floating dropdown backdrop */
+        .filter-dropdown-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 90;
+            background: rgba(0,0,0,0.3);
+        }
+        .filter-dropdown-wrap {
+            position: relative;
+            z-index: 91;
+        }
+        .filter-bar-dropdown {
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            top: 0;
+            padding: 10px;
+            background: rgba(15,30,50,0.97);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 180px;
+            overflow-y: auto;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        .filter-bar-option {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #b0c4d9;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .filter-bar-option.selected {
+            background: rgba(201,162,67,0.2);
+            color: #c9a243;
+        }
+        html.light-mode .filter-bar-dropdown {
+            background: rgba(255,255,255,0.97);
+            border-color: rgba(26,58,92,0.1);
+        }
+        html.light-mode .filter-bar-option {
+            background: rgba(26,58,92,0.06);
+            color: #4a5a6a;
+        }
+        html.light-mode .filter-bar-option.selected {
+            background: rgba(44,95,138,0.15);
+            color: #2c5f8a;
+        }
+
+        .filter-bar-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Cairo', sans-serif;
+            text-align: center;
+            direction: rtl;
+        }
+        .filter-bar-input::placeholder { color: #5a7088; }
+        html.light-mode .filter-bar-input {
+            background: rgba(26,58,92,0.05);
+            border-color: rgba(26,58,92,0.15);
+            color: #1a3a5c;
+        }
+        html.light-mode .filter-bar-input::placeholder { color: #8a9bb0; }
+    </style>
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/project-modal.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <!-- Hero -->
+            <div class="ideas-hero" style="padding:10px 14px 0;">
+                <h1 style="font-size:14px;font-weight:500;">اكتشف آلاف المشاريع والأفكار الملهمة</h1>
+            </div>
+
+            <!-- Horizontal scrollable categories strip -->
+            <div class="ideas-cat-strip" style="flex-shrink:0;">
+                <div class="ideas-cat-square" :class="{ active: !activeCategory }" @click="activeCategory = null">
+                    <div class="ideas-cat-square-img ideas-cat-all-img">
+                        <span class="material-symbols-outlined">grid_view</span>
+                    </div>
+                    <div class="ideas-cat-square-name">عرض الكل</div>
+                </div>
+                <div v-for="(cat, i) in categories" :key="i" class="ideas-cat-square" :class="{ active: activeCategory === cat }" @click="selectCategory(cat)">
+                    <div class="ideas-cat-square-img" :style="{ backgroundImage: 'url(' + cat.cover + ')' }"></div>
+                    <div class="ideas-cat-square-name">{{ cat.name }}</div>
+                </div>
+            </div>
+
+            <div class="page-content">
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <button class="filter-bar-btn" :class="{ active: activeFilter === 'location' }" @click="toggleFilter('location')">
+                        <span class="material-symbols-outlined">location_on</span>
+                        <span>الموقع</span>
+                    </button>
+                    <button class="filter-bar-btn" :class="{ active: activeFilter === 'style' }" @click="toggleFilter('style')">
+                        <span class="material-symbols-outlined">palette</span>
+                        <span>النمط</span>
+                    </button>
+                    <button class="filter-bar-btn" :class="{ active: activeFilter === 'budget' }" @click="toggleFilter('budget')">
+                        <span class="material-symbols-outlined">payments</span>
+                        <span>الميزانية</span>
+                    </button>
+                    <button class="filter-bar-btn" :class="{ active: activeFilter === 'area' }" @click="toggleFilter('area')">
+                        <span class="material-symbols-outlined">straighten</span>
+                        <span>المساحة</span>
+                    </button>
+                    <button class="filter-bar-btn" :class="{ active: sortLatest }" @click="toggleLatest">
+                        <span class="material-symbols-outlined">schedule</span>
+                        <span>الأحدث</span>
+                    </button>
+                </div>
+
+                <!-- Floating Filter Dropdowns -->
+                <div v-if="activeFilter" class="filter-dropdown-backdrop" @click="activeFilter = null"></div>
+                <div class="filter-dropdown-wrap">
+                    <div v-if="activeFilter === 'location'" class="filter-bar-dropdown">
+                        <div v-for="g in governorates" :key="g" class="filter-bar-option" :class="{ selected: filters.gov === g }" @click="filters.gov = (filters.gov === g ? '' : g); activeFilter = null">{{ g }}</div>
+                    </div>
+                    <div v-if="activeFilter === 'style'" class="filter-bar-dropdown">
+                        <div v-for="s in styles" :key="s" class="filter-bar-option" :class="{ selected: filters.style === s }" @click="filters.style = (filters.style === s ? '' : s); activeFilter = null">{{ s }}</div>
+                    </div>
+                    <div v-if="activeFilter === 'budget'" class="filter-bar-dropdown">
+                        <input type="text" inputmode="numeric" :value="filters.budget" @input="filters.budget = formatInput($event.target.value)" placeholder="أدخل المبلغ" class="filter-bar-input">
+                    </div>
+                    <div v-if="activeFilter === 'area'" class="filter-bar-dropdown">
+                        <input type="text" inputmode="numeric" :value="filters.area" @input="filters.area = $event.target.value.replace(/[^0-9]/g,'')" placeholder="أدخل المساحة" class="filter-bar-input">
+                    </div>
+                </div>
+
+                <!-- Active Filter Tags -->
+                <div v-if="hasActiveFilters" class="active-filters" style="margin-top:8px;">
+                    <span v-if="filters.gov" class="active-filter-tag">{{ filters.gov }}<span class="material-symbols-outlined" @click="filters.gov = ''">close</span></span>
+                    <span v-if="filters.style" class="active-filter-tag">{{ filters.style }}<span class="material-symbols-outlined" @click="filters.style = ''">close</span></span>
+                    <span v-if="filters.budget" class="active-filter-tag">الميزانية: {{ filters.budget }}<span class="material-symbols-outlined" @click="filters.budget = ''">close</span></span>
+                    <span v-if="filters.area" class="active-filter-tag">المساحة: {{ filters.area }} م²<span class="material-symbols-outlined" @click="filters.area = ''">close</span></span>
+                    <button class="active-filters-clear" @click="clearFilters">مسح الكل</button>
+                </div>
+
+                <!-- Projects View - مشاريع منجزة -->
+                <div class="ideas-projects">
+                    <div class="ideas-projects-header">
+                        <h2>{{ projectsTitle }}</h2>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <button v-if="isCompany && companyProfile" @click="showAddProject = true" style="padding:6px 12px;border-radius:8px;border:none;background:var(--accent-gold);color:var(--primary-dark);font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+                                <span class="material-symbols-outlined" style="font-size:14px;">add</span> إضافة مشروع
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="filteredProjects.length === 0" style="text-align:center;padding:40px 0;color:var(--text-muted);">
+                        <span class="material-symbols-outlined" style="font-size:48px;margin-bottom:12px;display:block;">search_off</span>
+                        لا توجد نتائج للبحث
+                    </div>
+                    <div v-else class="ideas-projects-grid">
+                        <div v-for="(proj, i) in filteredProjects" :key="i" class="idea-project-card" @click="openProject(proj)">
+                            <div class="idea-project-img">
+                                <img :src="proj.images[0]" alt="">
+                                <div class="idea-project-badge">{{ proj.governorate }}</div>
+                            </div>
+                            <div class="idea-project-info">
+                                <h3>{{ proj.title }}</h3>
+                                <div class="idea-project-company">
+                                    <span class="material-symbols-outlined">business</span>
+                                    {{ proj.company }}
+                                </div>
+                                <div class="idea-project-meta">
+                                     <span><span class="material-symbols-outlined">payments</span> {{ proj.price }}</span>
+                                     <span class="idea-meta-divider">|</span>
+                                     <span><span class="material-symbols-outlined">straighten</span> {{ proj.area }} م²</span>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== مودال معاينة المشروع ===== -->
+            <div v-if="selectedProject" class="project-modal" @click.self="closeModal">
+                <div class="modal-content"
+                     :style="{ transform: pullTransform }"
+                     @touchstart.passive="modalTouch.onTouchStart"
+                     @touchmove.passive="modalTouch.onTouchMove"
+                     @touchend="modalTouch.onTouchEnd">
+                    <div class="modal-pull-bar"><span></span></div>
+                    <div style="position:relative;">
+                        <button class="modal-close" @click="closeModal">
+                            <span class="material-symbols-outlined close-icon">close</span>
+                            <span class="material-symbols-outlined arrow-icon">arrow_back</span>
+                        </button>
+                        <div class="modal-slider" @click="openViewer(modalSlide)">
+                            <div class="modal-slider-track" dir="ltr" :style="{ transform: 'translateX(-' + (modalSlide * 100) + '%)' }">
+                                <div v-for="(img, i) in selectedProject.images" :key="i" class="modal-slide">
+                                    <div class="modal-slide-img"><img :src="img" alt=""></div>
+                                </div>
+                            </div>
+                            <div v-if="selectedProject.images.length > 1" class="modal-slider-dots">
+                                <span v-for="(img, i) in selectedProject.images" :key="i" class="dot" :class="{ active: i === modalSlide }" @click.stop="modalSlide = i"></span>
+                            </div>
+                        </div>
+                        <div v-if="selectedProject.images.length > 1" class="modal-thumbs">
+                            <div v-for="(img, i) in selectedProject.images" :key="i" class="modal-thumb" :class="{ active: i === modalSlide }" @click="modalSlide = i">
+                                <img :src="img" alt="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-details">
+                        <h2>{{ selectedProject.title }}</h2>
+                        <div class="modal-company">
+                            <span class="material-symbols-outlined">business</span>
+                            <a v-if="selectedProject.companyLink" :href="selectedProject.companyLink" class="modal-company-link">
+                                <span>{{ selectedProject.company }}</span>
+                                <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span>
+                            </a>
+                            <span v-else>{{ selectedProject.company }}</span>
+                        </div>
+                        <p class="modal-desc">{{ selectedProject.details }}</p>
+                        <div v-if="selectedProject.meta" class="modal-meta">
+                            <div v-for="(item, i) in selectedProject.meta" :key="i" class="modal-meta-item">
+                                <span class="material-symbols-outlined">{{ item.icon }}</span>
+                                <span>{{ item.label }}: {{ item.value }}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:16px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));">
+                            <button class="btn-outline" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 0;color:var(--accent-gold);border-color:var(--accent-gold);" @click="showProjectDetail(selectedProject)">
+                                <span class="material-symbols-outlined" style="font-size:18px;">description</span>
+                                تفاصيل
+                            </button>
+                            <a :href="selectedProject.companyLink || '#'" class="btn-outline" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 0;text-decoration:none;color:var(--accent-gold);border-color:var(--accent-gold);">
+                                <span class="material-symbols-outlined" style="font-size:18px;">business</span>
+                                صفحة الشركة
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== مودال تفاصيل المشروع كاملة (شاشة كاملة) ===== -->
+            <div v-if="projectDetail" class="project-modal" @click.self="closeProjectDetail">
+                <div class="modal-content" style="padding-top:calc(62px + env(safe-area-inset-top,0px));position:relative;">
+                    <button class="modal-close" @click="backToPreview" style="z-index:301;right:12px;left:auto;top:calc(62px + env(safe-area-inset-top,0px));">
+                        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                    </button>
+                    <button class="modal-close" @click="closeProjectDetail" style="z-index:301;left:12px;right:auto;top:calc(62px + env(safe-area-inset-top,0px));">
+                        <span class="material-symbols-outlined close-icon">close</span>
+                        <span class="material-symbols-outlined arrow-icon">arrow_back</span>
+                    </button>
+                    <div class="modal-slider" style="border-radius:0;"
+                         @touchstart.passive="detailSwipe.onTouchStart"
+                         @touchmove.passive="detailSwipe.onTouchMove"
+                         @touchend="detailSwipe.onTouchEnd"
+                         @click="openDetailViewer(detailSlide)">
+                        <div class="modal-slider-track" dir="ltr" :style="{ transform: 'translateX(-' + (detailSlide * 100) + '%)' }">
+                            <div v-for="(img, i) in projectDetail.images" :key="i" class="modal-slide">
+                                <div class="modal-slide-img">
+                                    <img :src="img" alt="" @click.stop="openDetailViewer(i)">
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="projectDetail.images.length > 1" class="modal-slider-dots">
+                            <span v-for="(img, i) in projectDetail.images" :key="i" class="dot" :class="{ active: i === detailSlide }" @click.stop="detailSlide = i"></span>
+                        </div>
+                    </div>
+                    <div class="modal-details">
+                        <h2>{{ projectDetail.title }}</h2>
+                        <div v-if="projectDetail.price" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
+                            <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ projectDetail.price }}</span>
+                        </div>
+                        <div v-if="projectDetail.details" class="modal-desc">{{ projectDetail.details }}</div>
+                        <div v-if="projectDetail.meta" class="modal-meta">
+                            <div v-for="(item, i) in projectDetail.meta" :key="i" class="modal-meta-item">
+                                <span class="material-symbols-outlined">{{ item.icon }}</span>
+                                <span>{{ item.label }}: {{ item.value }}</span>
+                            </div>
+                        </div>
+                        <div v-if="projectDetail.materials && projectDetail.materials.length" style="margin-top:20px;">
+                            <h3 style="color:var(--text-white);font-size:16px;font-weight:700;margin:0 0 12px;">
+                                <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
+                                المواد المستخدمة
+                            </h3>
+                            <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
+                                <div v-for="(mat, i) in projectDetail.materials" :key="i" style="flex-shrink:0;width:120px;background:var(--card-bg);border-radius:12px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;" @click.stop="openDetailViewer(projectDetail.images ? projectDetail.images.indexOf(mat.image) : 0)">
+                                    <div style="width:120px;height:90px;overflow:hidden;">
+                                        <img :src="mat.image" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">
+                                    </div>
+                                    <div style="padding:6px 8px 10px;text-align:center;">
+                                        <span style="color:var(--text-white);font-size:12px;font-weight:600;">{{ mat.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:24px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));">
+                            <a v-if="projectDetail.companyLink" :href="projectDetail.companyLink" class="btn-outline" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 0;text-decoration:none;color:var(--accent-gold);border-color:var(--accent-gold);">
+                                <span class="material-symbols-outlined" style="font-size:18px;">business</span>
+                                <span style="font-size:15px;font-weight:700;">صفحة الشركة</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Project Modal -->
+            <div v-if="showAddProject" class="project-modal" @click.self="showAddProject = false">
+                <div class="modal-content" style="padding-bottom:calc(24px + env(safe-area-inset-bottom));">
+                    <div class="modal-pull-bar"><span></span></div>
+                    <button class="modal-close" @click="showAddProject = false"><span class="material-symbols-outlined close-icon">close</span><span class="material-symbols-outlined arrow-icon">arrow_back</span></button>
+                    <div style="padding:16px 0;">
+                        <h3 style="color:var(--text-white);font-size:16px;margin:0 16px 12px;">إضافة مشروع</h3>
+                        <div class="mkt-checkout-form" style="padding:0 16px;">
+                            <div class="mkt-form-group"><label>اسم المشروع</label><input class="form-input" v-model="newIdeaProject.title"></div>
+                            <div class="mkt-form-group"><label>الوصف</label><textarea class="form-input" v-model="newIdeaProject.desc" rows="3"></textarea></div>
+                            <div class="mkt-form-group"><label>التصنيف</label>
+                                <select class="form-input" v-model="newIdeaProject.category">
+                                    <option v-for="c in ideaProjectCategories" :key="c" :value="c">{{ c }}</option>
+                                </select>
+                            </div>
+                            <div class="mkt-form-group">
+                                <label>صور المشروع (حد أقصى 5)</label>
+                                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                                    <div v-for="(img, idx) in newIdeaProject.images" :key="idx" style="width:60px;height:60px;border-radius:8px;overflow:hidden;position:relative;background:var(--bg-input);border:1px solid var(--border-light);">
+                                        <img :src="img" style="width:100%;height:100%;object-fit:cover;">
+                                        <div style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(231,76,60,0.9);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;" @click="removeIdeaImage(idx)">×</div>
+                                    </div>
+                                </div>
+                                <button v-if="newIdeaProject.images.length < 5" type="button" class="form-input" style="padding:10px;cursor:pointer;text-align:center;border:1px dashed var(--accent-gold);background:transparent;color:var(--accent-gold);font-size:12px;font-family:Cairo,sans-serif;" @click="triggerIdeaUpload">
+                                    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">add_photo_alternate</span> اختر صور
+                                </button>
+                                <input type="file" accept="image/*" multiple ref="ideaProjectInput" style="display:none" @change="handleIdeaImages($event)">
+                            </div>
+                            <button class="mkt-confirm-btn" @click="submitIdeaProject">إضافة المشروع</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full-Screen Image Viewer -->
+            <div v-if="viewerOpen" class="image-viewer"
+                 @touchstart.passive="viewerTouch.onTouchStart"
+                 @touchmove.passive="viewerTouch.onTouchMove"
+                 @touchend="viewerTouch.onTouchEnd($event, closeViewer)">
+                <button class="viewer-close" @click="closeViewer"><span class="material-symbols-outlined">close</span></button>
+                <button v-if="viewerImages.length > 1" class="viewer-nav viewer-prev" @click="prevViewer"><span class="material-symbols-outlined">chevron_right</span></button>
+                <div class="viewer-image-wrap" @click="closeViewer">
+                    <img :src="viewerImages[viewerIndex]" class="viewer-image" alt=""
+                         :style="{ transform: 'scale(' + viewerScale + ') translate(' + viewerPanX/viewerScale + 'px, ' + viewerPanY/viewerScale + 'px)' }">
+                </div>
+                <button v-if="viewerImages.length > 1" class="viewer-nav viewer-next" @click="nextViewer"><span class="material-symbols-outlined">chevron_left</span></button>
+                <div v-if="viewerImages.length > 1" class="viewer-counter">{{ viewerIndex + 1 }} / {{ viewerImages.length }}</div>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({ searchVModel: 'searchQuery', searchPlaceholder: 'ابحث عن أفكار ومشاريع...' });
+        document.getElementById('bottomNav').innerHTML = renderNav('ideas');
+
+        const { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } = Vue;
+
+        function img(n) { return 'images/img' + n + '.jpg'; }
+
+        function fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+        function fmtM(n) { return (n / 1000000) + ' مليون'; }
+
+        function parseNum(s) { return parseInt(s.replace(/,/g, ''), 10) || 0; }
+
+        function makeProjects(baseIdx, count, prefix, opts) {
+            var names = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح'];
+            var govs = ['بغداد', 'البصرة', 'نينوى', 'أربيل', 'كركوك', 'النجف', 'كربلاء', 'السليمانية'];
+            var areas = [120, 200, 350, 500, 85, 650, 75, 150];
+            var priceVals = [15000000, 25000000, 40000000, 60000000, 12000000, 80000000, 10000000, 35000000];
+            var sty = ['كلاسيكي', 'عصري', 'أندلسي', 'بسيط', 'فاخر', 'حديث', 'مودرن', 'عربي'];
+            var result = [];
+            for (var i = 0; i < count; i++) {
+                var idx = (baseIdx + i) % 31;
+                var images = [];
+                for (var j = 0; j < 5; j++) images.push(img(((idx + j * 7) % 31) + 1));
+                var matNames = ['رخام كارارا', 'خشب زان', 'زجاج سيكوريت', 'سيراميك بورسلين', 'دهان خارجي', 'بلاط إنترلوك', 'طوب عازل', 'أسمنت'];
+                var matImgs = [img(16), img(17), img(18), img(19), img(28), img(29), img(30), img(31)];
+                result.push({
+                    title: prefix + ' ' + names[i % 8],
+                    company: opts.company || 'شركة البناء الحديث',
+                    companyLink: 'company.html?id=' + encodeURIComponent(opts.company || 'شركة البناء الحديث'),
+                    governorate: govs[i % 8],
+                    style: sty[i % 8],
+                    areaNum: areas[i % 8],
+                    area: areas[i % 8],
+                    priceNum: priceVals[i % 8],
+                    price: fmtM(priceVals[i % 8]),
+                    images: images,
+                    details: prefix + ' من إنجاز شركة ' + (opts.company || 'البناء الحديث') + ' بمساحة ' + areas[i % 8] + ' م² في محافظة ' + govs[i % 8] + '.',
+                    materials: [
+                        { name: matNames[(i * 2) % 8], image: matImgs[(i * 2) % 8] },
+                        { name: matNames[(i * 2 + 1) % 8], image: matImgs[(i * 2 + 1) % 8] },
+                        { name: matNames[(i * 2 + 2) % 8], image: matImgs[(i * 2 + 2) % 8] }
+                    ],
+                    meta: [
+                        { icon: 'location_on', label: 'الموقع', value: opts.location || 'حي ' + names[i % 8] },
+                        { icon: 'straighten', label: 'المساحة', value: areas[i % 8] + ' م²' },
+                        { icon: 'payments', label: 'السعر', value: fmt(priceVals[i % 8]) + ' د.ع' },
+                        { icon: 'map', label: 'المحافظة', value: govs[i % 8] }
+                    ]
+                });
+            }
+            return result;
+        }
+
+        function makeCat(name, icon, cover, baseIdx, opts) {
+            return { name: name, icon: icon, cover: cover, projects: makeProjects(baseIdx, 8, name, opts) };
+        }
+
+        createApp({
+            setup() {
+                initTheme();
+
+                // ===== Auth =====
+                var myData = (function() { try { return JSON.parse(localStorage.getItem('bunean-user-data')); } catch(e) { return null; } })();
+                var isCompany = ref(myData && myData.role === 'company');
+                var companyProfile = ref(null);
+                if (isCompany.value) {
+                    try { var cp = JSON.parse(localStorage.getItem('bunean-company-profile')); if (cp) companyProfile.value = cp; } catch(e) {}
+                }
+
+                // ===== Add project form =====
+                var showAddProject = ref(false);
+                var newIdeaProject = ref({ title: '', desc: '', category: '', images: [] });
+                var ideaProjectInput = ref(null);
+                var ideaProjectCategories = ['بناء سكني', 'بناء تجاري', 'جسور وطرق', 'تشطيبات', 'خرسانة', 'أعمال صحية', 'أعمال كهربائية', 'دهانات', 'أرضيات', 'واجهات', 'حدائق', 'أخرى'];
+
+                function triggerIdeaUpload() { if (ideaProjectInput.value) ideaProjectInput.value.click(); }
+                function handleIdeaImages(e) {
+                    var files = Array.from(e.target.files || []);
+                    var remaining = 5 - newIdeaProject.value.images.length;
+                    if (files.length > remaining) files = files.slice(0, remaining);
+                    files.forEach(function(file) {
+                        if (!file) return;
+                        var reader = new FileReader();
+                        reader.onload = function(ev) { newIdeaProject.value.images.push(ev.target.result); };
+                        reader.readAsDataURL(file);
+                    });
+                    e.target.value = '';
+                }
+                function removeIdeaImage(idx) { newIdeaProject.value.images.splice(idx, 1); }
+
+                var submitIdeaProject = function() {
+                    if (!newIdeaProject.value.title.trim()) { showBrandAlert('أدخل اسم المشروع'); return; }
+                    if (!companyProfile.value) { showBrandAlert('لا يوجد ملف شركة'); return; }
+                    var imgs = newIdeaProject.value.images.length ? newIdeaProject.value.images : ['images/img1.jpg'];
+                    var proj = {
+                        title: newIdeaProject.value.title,
+                        desc: newIdeaProject.value.desc,
+                        category: newIdeaProject.value.category,
+                        image: imgs[0],
+                        images: imgs,
+                        date: new Date().toISOString().split('T')[0],
+                        status: 'قيد المراجعة'
+                    };
+                    var p = JSON.parse(localStorage.getItem('bunean-company-profile') || '{}');
+                    if (!p.projects) p.projects = [];
+                    p.projects.push(proj);
+                    localStorage.setItem('bunean-company-profile', JSON.stringify(p));
+                    companyProfile.value = p;
+                    newIdeaProject.value = { title: '', desc: '', category: '', images: [] };
+                    showAddProject.value = false;
+                    showBrandAlert('✅ تم إضافة المشروع\nسيتم مراجعة الطلب من قبل الدعم الفني');
+                };
+
+                var companyProjectList = computed(function() {
+                    if (!companyProfile.value || !companyProfile.value.projects) return [];
+                    var userData = (function() { try { return JSON.parse(localStorage.getItem('bunean-user-data')); } catch(e) { return null; } })();
+                    var companyName = (userData && userData.name) || 'شركتي';
+                    return companyProfile.value.projects.map(function(p) {
+                        return {
+                            title: p.title,
+                            company: companyName,
+                            companyLink: 'company.html?id=' + encodeURIComponent(companyName),
+                            governorate: '',
+                            style: '',
+                            areaNum: 0,
+                            area: 0,
+                            priceNum: 0,
+                            price: '---',
+                            images: p.images || [p.image || 'images/img1.jpg'],
+                            details: p.desc || '',
+                            materials: p.materials || [],
+                            _catName: p.category || 'مشاريع',
+                            _isCompanyProject: true
+                        };
+                    });
+                });
+
+                var searchQuery = ref('');
+                var activeCategory = ref(null);
+                watch(activeCategory, function(v) { nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); });
+                var selectedProject = ref(null);
+                var projectDetail = ref(null);
+                var detailSlide = ref(0);
+                var activeFilter = ref(null);
+                var sortLatest = ref(false);
+                var modalSlide = ref(0);
+                var viewerOpen = ref(false);
+                var viewerImages = ref([]);
+                var viewerIndex = ref(0);
+                var filters = ref({ gov: '', style: '', budget: '', area: '' });
+                var modalPullY = ref(0);
+                var modalClosing = ref(false);
+
+                var categories = ref([
+                    makeCat('عمارات سكنية', 'apartment', img(16), 0, { company: 'شركة الإنشاءات الوطنية', location: 'حي المنصور' }),
+                    makeCat('حدائق', 'park', img(28), 5, { company: 'حدائق الخضراء', location: 'حي الزهراء' }),
+                    makeCat('حمامات', 'bathtub', img(24), 10, { company: 'شركة السباكة المحترفة', location: 'الكرادة' }),
+                    makeCat('مطابخ', 'kitchen', img(20), 15, { company: 'شركة التشطيب الذهبي', location: 'المنصور' }),
+                    makeCat('تصميم داخلي', 'living', img(1), 20, { company: 'طرق العراق', location: 'اليرموك' }),
+                    makeCat('واجهات منزل', 'fence', img(11), 25, { company: 'واجهات الحديثة', location: 'الرصافة' })
+                ]);
+
+                var governorates = ['بغداد', 'البصرة', 'نينوى', 'أربيل', 'كركوك', 'النجف', 'كربلاء', 'السليمانية', 'ديالى', 'واسط', 'ميسان', 'ذي قار', 'المثنى', 'القادسية', 'بابل', 'صلاح الدين', 'الأنبار', 'دهوك'];
+                var styles = ['كلاسيكي', 'عصري', 'أندلسي', 'بسيط', 'فاخر', 'حديث', 'مودرن', 'عربي'];
+
+                var hasActiveFilters = computed(function() {
+                    var f = filters.value;
+                    return f.gov || f.style || f.budget || f.area;
+                });
+
+                var allProjects = computed(function() {
+                    var result = [];
+                    for (var i = 0; i < categories.value.length; i++) {
+                        for (var j = 0; j < categories.value[i].projects.length; j++) {
+                            var p = categories.value[i].projects[j];
+                            p._catName = categories.value[i].name;
+                            result.push(p);
+                        }
+                    }
+                    // Add company projects
+                    var cp = companyProjectList.value;
+                    for (var k = 0; k < cp.length; k++) {
+                        result.push(cp[k]);
+                    }
+                    return result;
+                });
+
+                var sourceProjects = computed(function() {
+                    if (activeCategory.value) return activeCategory.value.projects;
+                    return allProjects.value;
+                });
+
+                var filteredProjects = computed(function() {
+                    var list = sourceProjects.value.slice();
+                    var q = searchQuery.value.trim().toLowerCase();
+                    var f = filters.value;
+
+                    if (q) list = list.filter(function(p) { return p.title.toLowerCase().includes(q) || p.company.toLowerCase().includes(q) || p.governorate.includes(q); });
+                    if (f.gov) list = list.filter(function(p) { return p.governorate === f.gov; });
+                    if (f.style) list = list.filter(function(p) { return p.style === f.style; });
+                    if (f.budget) {
+                        var bv = parseNum(f.budget);
+                        if (bv) list = list.filter(function(p) { return p.priceNum <= bv; });
+                    }
+                    if (f.area) {
+                        var av = parseInt(f.area, 10) || 0;
+                        if (av) list = list.filter(function(p) { return p.areaNum >= av; });
+                    }
+
+                    if (sortLatest.value) {
+                        list = list.slice().reverse();
+                    }
+
+                    return list;
+                });
+
+                var modalTouch = (function() {
+                    var sx = 0, sy = 0;
+                    return {
+                        onTouchStart: function(e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; modalPullY.value = 0; },
+                        onTouchMove: function(e) { var dy = e.touches[0].clientY - sy; if (dy > 0) modalPullY.value = dy * 0.5; },
+                        onTouchEnd: function(e) {
+                            var dx = e.changedTouches[0].clientX - sx;
+                            var dy = e.changedTouches[0].clientY - sy;
+                            if (Math.abs(dy) > Math.abs(dx) && dy > 100) {
+                                closeModal();
+                            } else if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                                if (selectedProject.value) {
+                                    var next = modalSlide.value + (dx < 0 ? 1 : -1);
+                                    var len = selectedProject.value.images.length;
+                                    if (next >= 0 && next < len) modalSlide.value = next;
+                                }
+                            } else { modalPullY.value = 0; }
+                        }
+                    };
+                })();
+                var detailSwipe = (function() {
+                    var sx = 0, sy = 0;
+                    return {
+                        onTouchStart: function(e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; },
+                        onTouchMove: function(e) { },
+                        onTouchEnd: function(e) {
+                            var dx = e.changedTouches[0].clientX - sx;
+                            var dy = e.changedTouches[0].clientY - sy;
+                            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                                if (projectDetail.value) {
+                                    var next = detailSlide.value + (dx < 0 ? 1 : -1);
+                                    var len = projectDetail.value.images.length;
+                                    if (next >= 0 && next < len) detailSlide.value = next;
+                                }
+                            }
+                        }
+                    };
+                })();
+                var viewerScale = ref(1);
+                var viewerPanX = ref(0);
+                var viewerPanY = ref(0);
+                var viewerTouch = (function() {
+                    var sx = 0, sy = 0, dist0 = 0, isPinch = false, lastTap = 0;
+                    return {
+                        onTouchStart: function(e) {
+                            if (e.touches.length === 2) {
+                                isPinch = true;
+                                dist0 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                                return;
+                            }
+                            isPinch = false;
+                            sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+                            var now = Date.now();
+                            if (now - lastTap < 300) {
+                                if (viewerScale.value > 1.1) { viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                                else { viewerScale.value = 2.5; viewerPanX.value = 0; viewerPanY.value = 0; }
+                            }
+                            lastTap = now;
+                        },
+                        onTouchMove: function(e) {
+                            if (e.touches.length === 2 && isPinch) {
+                                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                                var s = d / (dist0 || 1);
+                                viewerScale.value = Math.max(1, Math.min(5, viewerScale.value * (1 + (s - 1) * 0.5)));
+                                dist0 = d; return;
+                            }
+                            if (viewerScale.value > 1.1) {
+                                viewerPanX.value += (e.touches[0].clientX - sx);
+                                viewerPanY.value += (e.touches[0].clientY - sy);
+                                sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+                            }
+                        },
+                        onTouchEnd: function(e, onClose) {
+                            if (isPinch) { isPinch = false; return; }
+                            if (viewerScale.value > 1.1) return;
+                            var dx = e.changedTouches[0].clientX - sx;
+                            var dy = e.changedTouches[0].clientY - sy;
+                            if (Math.abs(dy) > Math.abs(dx) && dy > 80) {
+                                if (onClose) onClose();
+                            } else if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                                var next = viewerIndex.value + (dx < 0 ? 1 : -1);
+                                var len = viewerImages.value.length;
+                                if (next >= 0 && next < len) { viewerIndex.value = next; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                            }
+                        }
+                    };
+                })();
+                var pullTransform = computed(function() {
+                    if (modalClosing.value) return 'translateY(100%)';
+                    if (modalPullY.value > 0) return 'translateY(' + modalPullY.value + 'px)';
+                    return '';
+                });
+
+                var projectsTitle = computed(function() {
+                    if (activeCategory.value) return 'مشاريع منجزة - ' + activeCategory.value.name;
+                    return 'مشاريع منجزة';
+                });
+
+                /* ---- Back Button (History API) ---- */
+                var exitPending = false;
+                var exitTimer = null;
+                function handlePopState() {
+                    if (viewerOpen.value) {
+                        viewerOpen.value = false;
+                        return;
+                    }
+                    if (selectedProject.value) {
+                        selectedProject.value = null;
+                        return;
+                    }
+                    if (!exitPending) {
+                        exitPending = true;
+                        showExitToast();
+                        history.pushState({ action: 'exit' }, '');
+                        setTimeout(function() { exitPending = false; }, 2000);
+                        return;
+                    }
+                    window.location.replace('about:blank');
+                }
+                function showExitToast() {
+                    var t = document.getElementById('exitToast');
+                    if (t) {
+                        t.classList.add('show');
+                        clearTimeout(exitTimer);
+                        exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+                        return;
+                    }
+                    var toast = document.createElement('div');
+                    toast.id = 'exitToast';
+                    toast.className = 'exit-toast';
+                    toast.textContent = 'اضغط مرة أخرى للخروج';
+                    document.body.appendChild(toast);
+                    requestAnimationFrame(function() { toast.classList.add('show'); });
+                    clearTimeout(exitTimer);
+                    exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+                }
+
+                function formatInput(v) {
+                    var num = v.replace(/[^0-9]/g, '');
+                    if (!num) return '';
+                    return fmt(parseInt(num, 10));
+                }
+
+                function clearFilters() {
+                    filters.value = { gov: '', style: '', budget: '', area: '' };
+                    history.replaceState({}, '', window.location.pathname);
+                }
+
+                function toggleFilter(name) {
+                    activeFilter.value = activeFilter.value === name ? null : name;
+                }
+                function toggleLatest() {
+                    sortLatest.value = !sortLatest.value;
+                }
+
+                function selectCategory(cat) {
+                    if (activeCategory.value === cat) {
+                        activeCategory.value = null;
+                    } else {
+                        activeCategory.value = cat;
+                    }
+                }
+
+                function openProject(proj) { modalSlide.value = 0; selectedProject.value = proj; history.pushState({ action: 'modal' }, ''); }
+                function closeModal() {
+                    if (modalClosing.value) return;
+                    modalClosing.value = true;
+                    setTimeout(function() {
+                        selectedProject.value = null;
+                        modalClosing.value = false;
+                        modalPullY.value = 0;
+                    }, 350);
+                }
+                function openViewer(index) { if (!selectedProject.value) return; viewerImages.value = selectedProject.value.images; viewerIndex.value = index; viewerOpen.value = true; history.pushState({ action: 'viewer' }, ''); }
+                function closeViewer() { viewerOpen.value = false; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                function nextViewer() { if (viewerIndex.value < viewerImages.value.length - 1) viewerIndex.value++; }
+                function prevViewer() { if (viewerIndex.value > 0) viewerIndex.value--; }
+                function showProjectDetail(proj) { detailSlide.value = 0; projectDetail.value = proj; selectedProject.value = null; modalClosing.value = false; modalPullY.value = 0; }
+                function closeProjectDetail() { projectDetail.value = null; }
+                function backToPreview() { var p = projectDetail.value; closeProjectDetail(); if (p) { modalSlide.value = 0; selectedProject.value = p; } }
+                function openDetailViewer(index) { if (!projectDetail.value) return; var imgs = projectDetail.value.images; if (!imgs || !imgs.length) return; if (index < 0 || index >= imgs.length) index = 0; viewerImages.value = imgs; viewerIndex.value = index; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; viewerOpen.value = true; }
+
+                onMounted(function() { window.addEventListener('popstate', handlePopState); });
+                onUnmounted(function() { window.removeEventListener('popstate', handlePopState); });
+
+                return {
+                    searchQuery, activeCategory, categories, selectedProject, modalSlide,
+                    projectDetail, detailSlide,
+                    selectCategory, openProject, closeModal,
+                    showProjectDetail, closeProjectDetail, backToPreview, openDetailViewer,
+                    viewerOpen, viewerImages, viewerIndex, openViewer, closeViewer, nextViewer, prevViewer,
+                    governorates, styles, filters, formatInput,
+                    hasActiveFilters, clearFilters,
+                    filteredProjects, projectsTitle,
+                    modalTouch, detailSwipe, viewerTouch, pullTransform, modalPullY, modalClosing, viewerScale, viewerPanX, viewerPanY,
+                    activeFilter, toggleFilter, sortLatest, toggleLatest,
+                    isCompany, companyProfile, showAddProject, newIdeaProject, ideaProjectInput,
+                    ideaProjectCategories, triggerIdeaUpload, handleIdeaImages, removeIdeaImage, submitIdeaProject
+                };
+            }
+        }).mount('#app');
+    </script>
+    <script>
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function() { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - طلب خدمة</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+                <a href="javascript:history.back()" style="display:flex;align-items:center;gap:4px;color:var(--text-light);text-decoration:none;font-size:13px;font-weight:500;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                </a>
+                <div style="flex:1;text-align:center;">
+                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">طلب خدمة</span>
+                </div>
+            </div>
+
+            <div class="page-content" style="padding-left:16px;padding-right:16px;">
+                <!-- Banner -->
+                <div style="background:linear-gradient(135deg,rgba(201,162,67,0.15),rgba(201,162,67,0.05));border:1px solid rgba(201,162,67,0.2);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;">
+                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--accent-gold);display:block;margin-bottom:8px;">handyman</span>
+                    <h3 style="color:var(--text-white);font-size:15px;font-weight:700;margin:0 0 4px;">
+                        <template v-if="company">طلب خدمة من {{ company }}</template>
+                        <template v-else>أخبرنا عن مشروعك</template>
+                    </h3>
+                    <p style="color:var(--text-muted);font-size:12px;margin:0;">وسنتصل بك خلال 24 ساعة</p>
+                </div>
+
+                <!-- Form -->
+                <div class="form-group">
+                    <label class="form-label"><span class="material-symbols-outlined">build</span> نوع الخدمة</label>
+                    <select class="form-select" v-model="form.serviceType">
+                        <option value="">اختر نوع الخدمة</option>
+                        <option v-for="s in serviceTypes" :key="s.value" :value="s.value">{{ s.label }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><span class="material-symbols-outlined">location_city</span> المحافظة</label>
+                    <select class="form-select" v-model="form.gov">
+                        <option value="">اختر المحافظة</option>
+                        <option v-for="g in governorates" :key="g" :value="g">{{ g }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><span class="material-symbols-outlined">map</span> العنوان</label>
+                    <input type="text" class="form-input" v-model="form.address" placeholder="أدخل العنوان">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><span class="material-symbols-outlined">square_foot</span> المساحة (م²)</label>
+                    <input type="text" inputmode="numeric" class="form-input" v-model="form.area" placeholder="أدخل المساحة">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><span class="material-symbols-outlined">payments</span> الميزانية التقديرية</label>
+                    <input type="text" inputmode="numeric" class="form-input" v-model="form.budget" placeholder="أدخل الميزانية التقديرية">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><span class="material-symbols-outlined">description</span> وصف المشروع</label>
+                    <textarea class="form-textarea" v-model="form.desc" placeholder="اكتب تفاصيل مشروعك..." rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><span class="material-symbols-outlined">photo_library</span> رفع صور <span style="color:var(--text-muted);font-size:11px;">(اختياري، كحد أقصى 5 صور)</span></label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <div v-for="(img, i) in form.images" :key="i" style="width:60px;height:60px;border-radius:8px;overflow:hidden;position:relative;background:var(--bg-input);border:1px solid var(--border-light);">
+                            <img :src="img" style="width:100%;height:100%;object-fit:cover;">
+                            <button @click="form.images.splice(i,1)" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(231,76,60,0.8);color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">×</button>
+                        </div>
+                        <div v-if="form.images.length < 5" @click="addImage" style="width:60px;height:60px;border-radius:8px;border:2px dashed var(--border-light);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);">
+                            <span class="material-symbols-outlined" style="font-size:24px;">add_photo_alternate</span>
+                        </div>
+                    </div>
+                    <p v-if="form.images.length > 0" style="color:var(--accent-gold);font-size:11px;margin:6px 0 0;">{{ form.images.length }} من 5 صور</p>
+                </div>
+
+                <button class="consult-submit" @click="submitRequest" :disabled="!isFormValid" style="margin-top:4px;">
+                    <span class="material-symbols-outlined" style="vertical-align:middle;font-size:20px;margin-left:6px;">send</span>
+                    {{ isSubmitting ? 'جاري الإرسال...' : 'تأكيد وإرسال الطلب' }}
+                </button>
+
+                <!-- Footer -->
+                <div style="text-align:center;padding:16px 0;margin-top:8px;">
+                    <span class="material-symbols-outlined" style="font-size:16px;color:#4caf50;vertical-align:middle;">lock</span>
+                    <span style="color:var(--text-muted);font-size:11px;">بياناتك محمية وآمنة</span>
+                </div>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        initTheme();
+        document.getElementById('header').innerHTML = renderHeader({});
+        document.getElementById('bottomNav').innerHTML = renderNav('execute');
+
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+                const isSubmitting = ref(false);
+                var params = new URLSearchParams(window.location.search);
+                var company = ref(params.get('company') ? decodeURIComponent(params.get('company')) : null);
+
+                const form = ref({
+                    serviceType: '',
+                    gov: '',
+                    address: '',
+                    area: '',
+                    budget: '',
+                    desc: '',
+                    images: []
+                });
+
+                const serviceTypes = ref([
+                    { value: 'بناء', label: 'بناء' },
+                    { value: 'ترميم', label: 'ترميم' },
+                    { value: 'تشطيب', label: 'تشطيب' },
+                    { value: 'ديكور', label: 'ديكور' },
+                    { value: 'كهرباء', label: 'كهرباء' },
+                    { value: 'سباكة', label: 'سباكة' },
+                    { value: 'دهانات', label: 'دهانات' },
+                    { value: 'حدائق', label: 'حدائق' },
+                    { value: 'أخرى', label: 'أخرى' }
+                ]);
+
+                const governorates = ref([
+                    'بغداد', 'البصرة', 'نينوى', 'أربيل', 'كركوك', 'النجف',
+                    'كربلاء', 'السليمانية', 'ذي قار', 'الأنبار', 'واسط',
+                    'صلاح الدين', 'ديالى', 'المثنى', 'القادسية', 'بابل', 'ميسان', 'دهوك'
+                ]);
+
+                const imgPool = [];
+                for (var n = 1; n <= 31; n++) imgPool.push('images/img' + n + '.jpg');
+
+                var imgIndex = 0;
+
+                const isFormValid = computed(() => {
+                    return form.value.serviceType && form.value.gov && form.value.address && form.value.desc;
+                });
+
+                const addImage = () => {
+                    if (form.value.images.length >= 5) return;
+                    form.value.images.push(imgPool[imgIndex % imgPool.length]);
+                    imgIndex++;
+                };
+
+                const submitRequest = () => {
+                    requireAccount(function() {
+                    if (!isFormValid.value) return;
+                    isSubmitting.value = true;
+                    setTimeout(() => {
+                        isSubmitting.value = false;
+                        var msg = company.value ? 'تم إرسال طلب الخدمة إلى ' + company.value + ' بنجاح!' : 'تم إرسال طلب الخدمة بنجاح!';
+                        showBrandAlert(msg);
+                        form.value = { serviceType: '', gov: '', address: '', area: '', budget: '', desc: '', images: [] };
+                    }, 1500);
+                    });
+                };
+
+                return { form, serviceTypes, governorates, isFormValid, isSubmitting, addImage, submitRequest, company };
+            }
+        }).mount('#app');
+
+        initFloatingCart();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function(err) { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>
