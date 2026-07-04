@@ -915,10 +915,11 @@ html.light-mode .search-panel input {
 .project-card .card-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-on-accent);
+  color: var(--text-white);
   margin-bottom: 3px;
   line-height: 1.4;
 }
+html.light-mode .project-card .card-title { color: #1a1a2e; }
 
 .project-card .card-author {
   font-size: 11px;
