@@ -420,9 +420,11 @@ input, textarea, select {
 .page-content {
   position: relative;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px 0 calc(120px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 0 200px;
+  padding: 16px 0 calc(200px + env(safe-area-inset-bottom, 0px));
   -ms-overflow-style: none;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -5933,7 +5935,7 @@ html.light-mode .mkt-modal-desc { color: #666; }
   .banner::before { width: 80px; height: 80px; }
   .banner { padding: 14px; }
   .banner-title { font-size: 15px; }
-  .page-content { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .page-content { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ===== منع hover على أجهزة اللمس ===== */
