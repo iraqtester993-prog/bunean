@@ -5649,15 +5649,19 @@ html.light-mode .mkt-grid-add-btn { background:#3b82f6; color:#fff; }
   width: calc(100% - 32px);
   margin: 0 16px 20px;
   padding: 14px;
-  background: #3a6a95;
+  background: var(--accent-gold);
   border: none;
   border-radius: 14px;
-  color: #fff;
+  color: var(--text-on-accent);
   font-size: 16px;
   font-weight: 700;
   font-family: 'Cairo', sans-serif;
   cursor: pointer;
+  transition: all 0.2s;
 }
+.mkt-checkout-btn:hover { opacity: 0.9; }
+html.light-mode .mkt-checkout-btn { background: #2c5f8a; color: #fff; }
+html.light-mode .mkt-checkout-btn:hover { background: #3a6f9e; }
 
 /* --- صفحة التأكيد --- */
 .mkt-checkout-form {
