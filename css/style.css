@@ -919,7 +919,6 @@ html.light-mode .search-panel input {
   margin-bottom: 3px;
   line-height: 1.4;
 }
-html.light-mode .project-card .card-title { color: #1a1a2e; }
 
 .project-card .card-author {
   font-size: 11px;
