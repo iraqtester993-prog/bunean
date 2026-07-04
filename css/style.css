@@ -5213,16 +5213,19 @@ html.light-mode .mkt-calc-item-pill.active span:last-child { color: #3a6a95; }
   display: block;
   padding: 8px;
   border-radius: 8px;
-  background: var(--accent-gold);
-  color: #000;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover));
+  color: var(--text-on-accent);
   border: none;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-align: center;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  font-family: 'Cairo', sans-serif;
 }
-.mkt-card-detail-btn:hover { opacity: 0.85; }
+.mkt-card-detail-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+html.light-mode .mkt-card-detail-btn { background: #2c5f8a; color: #fff; }
+html.light-mode .mkt-card-detail-btn:hover { background: #3a6f9e; }
 
 .mkt-card-actions {
   display: flex;
