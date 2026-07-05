@@ -46,6 +46,21 @@ var dashboard = {
     if (products) {
       try { this.data.products = JSON.parse(products); } catch(e) {}
     }
+    // Load notifications
+    var notifs = localStorage.getItem('bunean-notifications');
+    if (notifs) {
+      try { this.data.notifications = JSON.parse(notifs); } catch(e) {}
+    }
+    // Load social links
+    var social = localStorage.getItem('bunean-social-links');
+    if (social) {
+      try { this.data.socialLinks = JSON.parse(social); } catch(e) {}
+    }
+    // Load sliders
+    var sliders = localStorage.getItem('bunean-sliders');
+    if (sliders) {
+      try { this.data.sliders = JSON.parse(sliders); } catch(e) {}
+    }
     this.data.stats.users = this.data.users.length;
     this.data.stats.companies = this.data.companies.length;
     this.data.stats.products = this.data.products.length;
@@ -262,6 +277,30 @@ var dashboard = {
       else if (tab === 'add') el2.innerHTML = this.productForm();
       else if (tab === 'cats') el2.innerHTML = this.categoryManager();
       else if (tab === 'suppliers') el2.innerHTML = this.supplierManager();
+    }
+    if (group === 'project') {
+      var filtered = [];
+      for (var j = 0; j < this.data.projects.length; j++) {
+        var pr = this.data.projects[j];
+        if ((tab === 'pending' && (!pr.status || pr.status === 'pending')) ||
+            (tab === 'approved' && pr.status === 'approved') ||
+            (tab === 'rejected' && pr.status === 'rejected')) {
+          filtered.push(pr);
+        }
+      }
+      document.getElementById('projectTabContent').innerHTML = this.projectTable(filtered, tab);
+    }
+    if (group === 'ad') {
+      var filtered = [];
+      for (var j = 0; j < this.data.ads.length; j++) {
+        var ad = this.data.ads[j];
+        if ((tab === 'pending' && (!ad.status || ad.status === 'pending')) ||
+            (tab === 'approved' && ad.status === 'approved') ||
+            (tab === 'rejected' && ad.status === 'rejected')) {
+          filtered.push(ad);
+        }
+      }
+      document.getElementById('adTabContent').innerHTML = this.adTable(filtered, tab);
     }
   },
 
@@ -658,6 +697,201 @@ var dashboard = {
 
   syncSocial: function() {
     localStorage.setItem('bunean-social-links', JSON.stringify(this.data.socialLinks));
+  },
+
+  // ---- Projects ----
+  render_projects: function() {
+    var pending = [], approved = [], rejected = [];
+    for (var i = 0; i < this.data.projects.length; i++) {
+      var p = this.data.projects[i];
+      if (p.status === 'approved') approved.push(p);
+      else if (p.status === 'rejected') rejected.push(p);
+      else pending.push(p);
+    }
+    return '<div class="dash-tabs" id="projectTabs">'
+      + '<div class="dash-tab active" onclick="dashboard.switchTab(\'project\',\'pending\',this)">قيد المراجعة 🟡 ' + (pending.length ? '<span class="badge">' + pending.length + '</span>' : '') + '</div>'
+      + '<div class="dash-tab" onclick="dashboard.switchTab(\'project\',\'approved\',this)">منشور ✅</div>'
+      + '<div class="dash-tab" onclick="dashboard.switchTab(\'project\',\'rejected\',this)">مرفوض ❌</div>'
+      + '</div>'
+      + '<div class="card"><div class="card-body" id="projectTabContent">'
+      + this.projectTable(pending, 'pending')
+      + '</div></div>';
+  },
+
+  projectTable: function(list, status) {
+    if (!list.length) return '<div class="empty-state"><p>لا توجد مشاريع</p></div>';
+    var rows = '';
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i];
+      var img = p.images && p.images[0] ? '<img src="' + p.images[0] + '" style="width:50px;height:40px;object-fit:cover;border-radius:6px;" onerror="this.style.display=\'none\'">' : '-';
+      rows += '<tr><td>' + (i+1) + '</td><td>' + img + '</td><td>' + (p.title || p.name || '-') + '</td><td>' + (p.category || '-') + '</td><td>' + (p.owner || '-') + '</td>'
+        + '<td><span class="status ' + (p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : 'pending') + '">'
+        + (p.status === 'approved' ? 'منشور' : p.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة') + '</span></td>'
+        + '<td>' + (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="dashboard.approveProject(' + i + ')">قبول</button> <button class="btn btn-sm btn-danger" onclick="dashboard.rejectProject(' + i + ')">رفض</button>' : '') + '</td></tr>';
+    }
+    return '<div class="table-wrap"><table><thead><tr><th>#</th><th>الصورة</th><th>العنوان</th><th>القسم</th><th>صاحب المشروع</th><th>الحالة</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  },
+
+  approveProject: function(idx) {
+    if (idx >= 0 && idx < this.data.projects.length) {
+      this.data.projects[idx].status = 'approved';
+      this.saveData();
+      this.renderContent('projects');
+    }
+  },
+
+  rejectProject: function(idx) {
+    if (idx >= 0 && idx < this.data.projects.length) {
+      this.data.projects[idx].status = 'rejected';
+      this.saveData();
+      this.renderContent('projects');
+    }
+  },
+
+  // ---- Ads ----
+  render_ads: function() {
+    var pending = [], approved = [], rejected = [];
+    for (var i = 0; i < this.data.ads.length; i++) {
+      var a = this.data.ads[i];
+      if (a.status === 'approved') approved.push(a);
+      else if (a.status === 'rejected') rejected.push(a);
+      else pending.push(a);
+    }
+    return '<div class="dash-tabs" id="adTabs">'
+      + '<div class="dash-tab active" onclick="dashboard.switchTab(\'ad\',\'pending\',this)">قيد المراجعة 🟡 ' + (pending.length ? '<span class="badge">' + pending.length + '</span>' : '') + '</div>'
+      + '<div class="dash-tab" onclick="dashboard.switchTab(\'ad\',\'approved\',this)">منشور ✅</div>'
+      + '<div class="dash-tab" onclick="dashboard.switchTab(\'ad\',\'rejected\',this)">مرفوض ❌</div>'
+      + '</div>'
+      + '<div class="card"><div class="card-body" id="adTabContent">'
+      + this.adTable(pending, 'pending')
+      + '</div></div>';
+  },
+
+  adTable: function(list, status) {
+    if (!list.length) return '<div class="empty-state"><p>لا توجد إعلانات</p></div>';
+    var rows = '';
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i];
+      rows += '<tr><td>' + (i+1) + '</td><td>' + (a.title || '-') + '</td><td>' + (a.company || '-') + '</td><td>' + (a.date || '-') + '</td>'
+        + '<td><span class="status ' + (a.status === 'approved' ? 'approved' : a.status === 'rejected' ? 'rejected' : 'pending') + '">'
+        + (a.status === 'approved' ? 'منشور' : a.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة') + '</span></td>'
+        + '<td>' + (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="dashboard.approveAd(' + i + ')">قبول</button> <button class="btn btn-sm btn-danger" onclick="dashboard.rejectAd(' + i + ')">رفض</button>' : '') + '</td></tr>';
+    }
+    return '<div class="table-wrap"><table><thead><tr><th>#</th><th>العنوان</th><th>الشركة</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  },
+
+  approveAd: function(idx) {
+    if (idx >= 0 && idx < this.data.ads.length) {
+      this.data.ads[idx].status = 'approved';
+      this.saveData();
+      this.renderContent('ads');
+    }
+  },
+
+  rejectAd: function(idx) {
+    if (idx >= 0 && idx < this.data.ads.length) {
+      this.data.ads[idx].status = 'rejected';
+      this.saveData();
+      this.renderContent('ads');
+    }
+  },
+
+  // ---- Messages ----
+  render_messages: function() {
+    var msgs = this.data.messages;
+    var list = '';
+    for (var i = 0; i < msgs.length; i++) {
+      var m = msgs[i];
+      list += '<tr><td>' + (i+1) + '</td><td>' + (m.from || '-') + '</td><td>' + (m.to || '-') + '</td><td>' + (m.subject || m.message ? (m.message || '').substring(0, 40) : '-') + '</td>'
+        + '<td>' + (m.date || '-') + '</td>'
+        + '<td><span class="status ' + (m.read ? 'approved' : 'pending') + '">' + (m.read ? 'مقروء' : 'جديد') + '</span></td>'
+        + '<td><button class="btn btn-sm btn-outline" onclick="dashboard.viewMessage(' + i + ')">عرض</button></td></tr>';
+    }
+    return '<div class="card"><div class="card-header"><h3>💬 الرسائل والاستشارات</h3></div><div class="card-body">'
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>من</th><th>إلى</th><th>الرسالة</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>'
+      + (list || '<tr><td colspan="7"><div class="empty-state"><p>لا توجد رسائل</p></div></td></tr>')
+      + '</tbody></table></div></div></div>';
+  },
+
+  viewMessage: function(idx) {
+    var m = this.data.messages[idx];
+    if (!m) return;
+    m.read = true;
+    this.saveData();
+    var content = '<div style="padding:10px 0;"><strong>من: </strong>' + (m.from || '-') + '<br><strong>إلى: </strong>' + (m.to || '-') + '<br><strong>التاريخ: </strong>' + (m.date || '-') + '<br><hr style="margin:12px 0;border-color:var(--border);"><p style="line-height:1.8;">' + (m.message || '') + '</p></div>';
+    document.getElementById('messageViewContent').innerHTML = content;
+    document.getElementById('messageModal').classList.add('show');
+  },
+
+  messageModal: function() {
+    return '<div class="modal-overlay" id="messageModal"><div class="modal-box">'
+      + '<h3>الرسالة</h3>'
+      + '<div id="messageViewContent"></div>'
+      + '<div class="modal-actions"><button type="button" class="btn btn-outline" onclick="dashboard.closeModal(\'messageModal\')">إغلاق</button></div>'
+      + '</div></div>';
+  },
+
+  afterRender_messages: function() {
+    // inject modal
+    if (!document.getElementById('messageModal')) {
+      var div = document.createElement('div');
+      div.innerHTML = this.messageModal();
+      document.body.appendChild(div.firstElementChild);
+    }
+  },
+
+  // ---- Notifications ----
+  render_notifications: function() {
+    var notifs = this.data.notifications || [];
+    var list = '';
+    for (var i = notifs.length - 1; i >= 0; i--) {
+      var n = notifs[i];
+      list += '<tr><td>' + (notifs.length - i) + '</td><td>' + (n.title || '-') + '</td><td>' + (n.message || '').substring(0, 50) + '</td><td>' + (n.target || 'الكل') + '</td><td>' + (n.date || '-') + '</td>'
+        + '<td><button class="btn btn-sm btn-danger" onclick="dashboard.deleteNotification(' + i + ')">حذف</button></td></tr>';
+    }
+    return '<div class="card"><div class="card-header"><h3>🔔 إرسال إشعار</h3></div><div class="card-body">'
+      + '<form onsubmit="dashboard.sendNotification(event)">'
+      + '<div class="form-row">'
+      + '<div class="form-group"><label>عنوان الإشعار</label><input class="form-control" id="notifTitle" required></div>'
+      + '<div class="form-group"><label>المستهدف</label><select class="form-control" id="notifTarget"><option value="all">جميع المستخدمين</option><option value="users">المستخدمون</option><option value="companies">الشركات</option></select></div>'
+      + '</div>'
+      + '<div class="form-group"><label>نص الإشعار</label><textarea class="form-control" id="notifMessage" required></textarea></div>'
+      + '<button type="submit" class="btn btn-gold">📨 إرسال الإشعار</button>'
+      + '</form></div></div>'
+      + '<div class="card"><div class="card-header"><h3>📋 الإشعارات المرسلة</h3></div><div class="card-body">'
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>العنوان</th><th>الرسالة</th><th>المستهدف</th><th>التاريخ</th><th></th></tr></thead><tbody>'
+      + (list || '<tr><td colspan="6"><div class="empty-state"><p>لا توجد إشعارات مرسلة</p></div></td></tr>')
+      + '</tbody></table></div></div></div>';
+  },
+
+  sendNotification: function(e) {
+    e.preventDefault();
+    var notif = {
+      id: Date.now(),
+      title: document.getElementById('notifTitle').value,
+      message: document.getElementById('notifMessage').value,
+      target: document.getElementById('notifTarget').value,
+      date: new Date().toLocaleDateString('ar-IQ')
+    };
+    if (!this.data.notifications) this.data.notifications = [];
+    this.data.notifications.push(notif);
+    this.saveData();
+    this.syncNotifications();
+    document.getElementById('notifTitle').value = '';
+    document.getElementById('notifMessage').value = '';
+    this.renderContent('notifications');
+  },
+
+  deleteNotification: function(idx) {
+    if (!confirm('حذف الإشعار؟')) return;
+    this.data.notifications.splice(idx, 1);
+    this.saveData();
+    this.syncNotifications();
+    this.renderContent('notifications');
+  },
+
+  syncNotifications: function() {
+    localStorage.setItem('bunean-notifications', JSON.stringify(this.data.notifications || []));
   },
 
   // ---- Settings ----
