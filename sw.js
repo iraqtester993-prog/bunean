@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bunean-v8';
+const CACHE_NAME = 'bunean-v9';
 const urlsToCache = [
     '/bunean/',
     '/bunean/index.html',
@@ -12,6 +12,7 @@ const urlsToCache = [
     '/bunean/product.html',
     '/bunean/market.html',
     '/bunean/account.html',
+    '/bunean/privacy.html',
     '/bunean/css/style.css',
     '/bunean/icon-192.png',
     '/bunean/icon-512.png',

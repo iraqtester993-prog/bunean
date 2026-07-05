@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - الشروط والخصوصية</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { display: none; }
+        .privacy-tabs { display:flex; gap:8px; padding:8px 16px; flex-shrink:0; }
+        .privacy-tab { flex:1; padding:10px; border-radius:12px; text-align:center; font-size:13px; font-weight:700; cursor:pointer; background:var(--bg-card-light); color:var(--text-muted); border:1px solid var(--border-light); font-family:Cairo,sans-serif; transition:all 0.3s; }
+        .privacy-tab.active { background:var(--accent-gold); color:var(--primary-dark); border-color:var(--accent-gold); }
+        .privacy-content { padding:16px; }
+        .privacy-text { color:var(--text-white); font-size:14px; line-height:2; }
+        .privacy-text h2 { color:var(--accent-gold); font-size:16px; font-weight:700; margin:20px 0 10px; }
+        .privacy-text h3 { color:var(--text-white); font-size:14px; font-weight:700; margin:16px 0 8px; }
+        .privacy-text p { margin:0 0 10px; color:var(--text-light); font-size:13px; line-height:1.9; }
+        .privacy-text ul { margin:0 0 10px; padding-right:20px; }
+        .privacy-text li { color:var(--text-light); font-size:13px; line-height:1.9; margin-bottom:4px; }
+        .privacy-date { text-align:center; color:var(--text-muted); font-size:11px; margin-top:20px; padding:12px; border-top:1px solid var(--border-light); }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <div class="page-content">
+                <!-- التبويبات -->
+                <div class="privacy-tabs">
+                    <div class="privacy-tab" :class="{ active: tab === 'privacy' }" @click="tab = 'privacy'">سياسة الخصوصية</div>
+                    <div class="privacy-tab" :class="{ active: tab === 'terms' }" @click="tab = 'terms'">الشروط والأحكام</div>
+                </div>
+
+                <!-- سياسة الخصوصية -->
+                <div class="privacy-content" v-if="tab === 'privacy'">
+                    <div class="privacy-text">
+                        <h2>مقدمة</h2>
+                        <p>مرحباً بك في تطبيق بنيان. نحن نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح هذه السياسة كيف نجمع ونستخدم ونحمي معلوماتك عند استخدامك لتطبيقنا.</p>
+
+                        <h2>جمع المعلومات</h2>
+                        <h3>المعلومات التي نجمعها trựcمامنك:</h3>
+                        <ul>
+                            <li>الاسم الكامل عند إنشاء الحساب</li>
+                            <li>رقم الهاتف</li>
+                            <li>المحافظة والمدينة</li>
+                            <li>العنوان التفصيلي</li>
+                            <li>كلمة المرور (مشفرة)</li>
+                            <li>معلومات الملف الشخصي (اسم الشركة، نوع الحساب)</li>
+                        </ul>
+
+                        <h3>المعلومات التي نجمعها تلقائياً:</h3>
+                        <ul>
+                            <li>نوع الجهاز ونظام التشغيل</li>
+                            <li>إصدار المتصفح</li>
+                            <li>عنوان IP (بشكل مجهول)</li>
+                            <li>سجل النشاط داخل التطبيق</li>
+                        </ul>
+
+                        <h2>استخدام المعلومات</h2>
+                        <p>نستخدم معلوماتك للأغراض التالية:</p>
+                        <ul>
+                            <li>إدارة حسابك وتقديم الخدمات لك</li>
+                            <li>التواصل معك بخصوص الطلبات والعروض</li>
+                            <li>تحسين تجربة المستخدم وتطوير التطبيق</li>
+                            <li>إرسال إشعارات متعلقة بالخدمات</li>
+                            <li>منع الاحتيال وحماية أمن التطبيق</li>
+                            <li>الامتثال للقوانين واللوائح المعمول بها</li>
+                        </ul>
+
+                        <h2>مشاركة المعلومات</h2>
+                        <p>لا نبيع بياناتك الشخصية لأي طرف ثالث. قد نشارك معلوماتك في الحالات التالية:</p>
+                        <ul>
+                            <li>مع الشركات المسجلة في التطبيق عند تقديم عرض سعر</li>
+                            <li>عند الطلب من الجهات الرسمية بموجب قانون ساري</li>
+                            <li>لحماية حقوقنا القانونية وأمن تطبيقنا</li>
+                        </ul>
+
+                        <h2>حماية البيانات</h2>
+                        <p>نتخذ إجراءات أمنية صارمة لحماية بياناتك الشخصية من الوصول غير المصرح به أو التعديل أو الكشف أو الإتلاف. تشمل هذه الإجراءات:</p>
+                        <ul>
+                            <li>تشفير بيانات الاتصال (SSL/TLS)</li>
+                            <li>تشفير كلمات المرور</li>
+                            <li>الوصول المحدود للمعلومات</li>
+                            <li>المراقبة المستمرة للأنظمة</li>
+                        </ul>
+
+                        <h2>حقوقك</h2>
+                        <p>لك الحق في:</p>
+                        <ul>
+                            <li>الوصول إلى بياناتك الشخصية</li>
+                            <li>تعديل أو تحديث معلوماتك</li>
+                            <li>حذف حسابك وبياناتك نهائياً</li>
+                            <li>الاعتراض على معالجة بياناتك</li>
+                            <li>طلب نسخة من بياناتك</li>
+                        </ul>
+
+                        <h2>الاحتفاظ بالبيانات</h2>
+                        <p>نحتفظ ببياناتك الشخصية فقط طوال الفترة اللازمة لتحقيق الأغراض التي جمعناها من أجلها، أو بقدر ما يتطلب ذلك الامتثال للقوانين واللوائح المعمول بها.</p>
+
+                        <h2>تحديثات السياسة</h2>
+                        <p>قد نقوم بتحديث هذه السياسة من وقت لآخر. سنعلمك بأي تغييرات جوهرية من خلال إشعار داخل التطبيق أو عبر البريد الإلكتروني.</p>
+
+                        <h2>التواصل معنا</h2>
+                        <p>إذا كانت لديك أي أسئلة أو استفسارات حول سياسة الخصوصية هذه، يرجى التواصل معنا عبر:</p>
+                        <ul>
+                            <li>البريد الإلكتروني: support@bunean.app</li>
+                            <li>رقم الهاتف: متاح داخل التطبيق</li>
+                        </ul>
+
+                        <div class="privacy-date">آخر تحديث: يوليو 2026</div>
+                    </div>
+                </div>
+
+                <!-- الشروط والأحكام -->
+                <div class="privacy-content" v-if="tab === 'terms'">
+                    <div class="privacy-text">
+                        <h2>مقدمة</h2>
+                        <p>مرحباً بك في تطبيق بنيان. باستخدامك لهذا التطبيق، فإنك توافق على الشروط والأحكام التالية. يرجى قراءتها بعناية قبل استخدام التطبيق.</p>
+
+                        <h2>تعريف التطبيق</h2>
+                        <p>بنيان هو تطبيق ويب تقدمي (PWA) مخصص لقطاع البناء والمقاولات في العراق. يوفر التطبيق منصة تربط بين أصحاب المشاريع والمقاولين وشركات البناء، بالإضافة إلى متجر لمواد البناء.</p>
+
+                        <h2>شروط الاستخدام</h2>
+                        <h3>1. الأهلية القانونية</h3>
+                        <p>يجب أن يكون عمرك 18 عاماً فأكثر لاستخدام التطبيق. باستخدامك للتطبيق، تقر بأنك تمتلك الأهلية القانونية لربط نفسك بهذه الشروط.</p>
+
+                        <h3>2. إنشاء الحساب</h3>
+                        <ul>
+                            <li>أنت مسؤول عن الحفاظ على سرية بيانات حسابك</li>
+                            <li>أنت مسؤول عن جميع الأنشطة التي تحدث تحت حسابك</li>
+                            <li>يجب إبلاغنا فوراً عن أي استخدام غير مصرح به لحسابك</li>
+                            <li>يجب تقديم معلومات صحيحة ودقيقة عند التسجيل</li>
+                        </ul>
+
+                        <h3>3. استخدام التطبيق</h3>
+                        <p>يُسمح لك باستخدام التطبيق للأغراض المشروعة فقط. يُحظر:</p>
+                        <ul>
+                            <li>استخدام التطبيق لأي غرض غير قانوني</li>
+                            <li>نشر معلومات كاذبة أو مضللة</li>
+                            <li>انتهاك حقوق المستخدمين الآخرين</li>
+                            <li>محاولة الوصول غير المصرح به لأنظمة التطبيق</li>
+                            <li>استخدام بوتات أو برامج آلية للوصول للتطبيق</li>
+                        </ul>
+
+                        <h2>الخدمات والعروض</h2>
+                        <h3>1. طلبات عروض الأسعار</h3>
+                        <ul>
+                            <li>عروض الأسعار المقدمة من الشركات غير ملزمة حتى يتم قبولها رسمياً</li>
+                            <li>نيان غير مسؤولة عن جودة الأعمال المنفذة</li>
+                            <li>العقد الحقيقي يربط بين العميل والشركة</li>
+                        </ul>
+
+                        <h3>2. متجر مواد البناء</h3>
+                        <ul>
+                            <li>الأسعار المعروضة قابلة للتغيير دون إشعار مسبق</li>
+                            <li>توفر المنتجات يعتمد على الموردين</li>
+                            <li>سياسة الإرجاع والاستبدال وفقاً لسياسة كل مورد</li>
+                        </ul>
+
+                        <h3>3. الدفع والتوصيل</h3>
+                        <ul>
+                            <li>طرق الدفع المتاحة محددة داخل التطبيق</li>
+                            <li>مواعيد التوصيل تقريبية وقابلة للتغيير</li>
+                            <li>المبالغ المدفوعة لا تُسترجع إلا وفقاً لسياسة الإرجاع</li>
+                        </ul>
+
+                        <h2>المسؤولية</h2>
+                        <ul>
+                            <li>نيان منصة وسطاء وليست طرفاً في الصفقات</li>
+                            <li>لا نضمن جودة الخدمات أو المنتجات المقدمة</li>
+                            <li>لا نتحمل المسؤولية عن أي أضرار مباشرة أو غير مباشرة</li>
+                            <li>أنت مسؤول وحيد عن قراراتك وtransactionsك داخل التطبيق</li>
+                        </ul>
+
+                        <h2>الملكي الفكرية</h2>
+                        <p>جميع محتويات التطبيق (نصوص، صور، شعارات، تصاميم، كود) هي ملك لنيان أو مورديها محمية بموجب قوانين الملكية الفكرية. يُحظر نسخ أو تعديل أو توزيع أي محتوى دون إذن مسبق.</p>
+
+                        <h2>تعديل الشروط</h2>
+                        <p>نحتفظ بحق تعديل هذه الشروط في أي وقت.ستمرار استخدامك للتطبيق بعد التعديلات يعتبر قبولاً للشروط الجديدة.</p>
+
+                        <h2>القانون الحاكم</h2>
+                        <p>تخضع هذه الشروط لقوانين جمهورية العراق. أي نزاع ينشأ عن استخدام التطبيق يخضع لاختصاص المحاكم العراقية المختصة.</p>
+
+                        <h2>التواصل</h2>
+                        <p>لأي استفسارات حول الشروط والأحكام، يرجى التواصل عبر:</p>
+                        <ul>
+                            <li>البريد الإلكتروني: legal@bunean.app</li>
+                            <li>رقم الهاتف: متاح داخل التطبيق</li>
+                        </ul>
+
+                        <div class="privacy-date">آخر تحديث: يوليو 2026</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({ showBack: true, backLink: 'account.html', title: 'الشروط والخصوصية' });
+
+        const { createApp, ref } = Vue;
+        createApp({
+            setup() {
+                const tab = ref('privacy');
+                return { tab };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
