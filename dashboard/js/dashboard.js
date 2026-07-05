@@ -21,10 +21,40 @@ var dashboard = {
   },
 
   init: function() {
+    this.initTheme();
     this.loadData();
     this.renderSidebar();
     this.navigate('overview');
     this.bindEvents();
+    // Set correct theme icon
+    var isLight = document.documentElement.classList.contains('light-mode');
+    var themeBtn = document.querySelector('.toggle-theme');
+    if (themeBtn) themeBtn.textContent = isLight ? '🌙' : '☀️';
+  },
+
+  initTheme: function() {
+    var saved = localStorage.getItem('bunean-dash-theme');
+    var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+    if (saved === 'light' || (!saved && prefers)) {
+      document.documentElement.classList.add('light-mode');
+    }
+  },
+
+  toggleTheme: function() {
+    var html = document.documentElement;
+    html.classList.toggle('light-mode');
+    localStorage.setItem('bunean-dash-theme', html.classList.contains('light-mode') ? 'light' : 'dark');
+  },
+
+  toggleSidebar: function() {
+    var sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('collapsed');
+    var btn = document.querySelector('.toggle-sidebar');
+    if (btn) btn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+  },
+
+  toggleMobileSidebar: function() {
+    document.querySelector('.sidebar').classList.toggle('mobile-open');
   },
 
   loadData: function() {
@@ -173,9 +203,21 @@ var dashboard = {
 
   bindEvents: function() {
     var self = this;
-    document.querySelector('.toggle-sidebar').onclick = function() {
-      document.querySelector('.sidebar').classList.toggle('open');
+    document.querySelector('.toggle-sidebar').onclick = function() { self.toggleSidebar(); };
+    document.querySelector('.toggle-mobile').onclick = function() { self.toggleMobileSidebar(); };
+    document.querySelector('.toggle-theme').onclick = function() {
+      self.toggleTheme();
+      // update button icon
+      var isLight = document.documentElement.classList.contains('light-mode');
+      this.textContent = isLight ? '🌙' : '☀️';
     };
+    // Close mobile sidebar on nav click
+    document.addEventListener('click', function(e) {
+      var sidebar = document.querySelector('.sidebar');
+      if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && !e.target.closest('.toggle-mobile')) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
   },
 
   // ===== Sections =====
