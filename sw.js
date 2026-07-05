@@ -1,26 +1,26 @@
-const CACHE_NAME = 'bunean-v7';
+const CACHE_NAME = 'bunean-v8';
 const urlsToCache = [
-    './',
-    './index.html',
-    './home.html',
-    './ideas.html',
-    './quotes.html',
-    './service-request.html',
-    './company.html',
-    './order-tracking.html',
-    './execute.html',
-    './product.html',
-    './market.html',
-    './account.html',
-    './css/style.css',
-    './icon-192.png',
-    './icon-512.png',
-    './js/nav.js',
-    './js/router.js',
-    './js/header.js',
-    './js/bottom-nav.js',
-    './js/project-modal.js',
-    './manifest.json'
+    '/bunean/',
+    '/bunean/index.html',
+    '/bunean/home.html',
+    '/bunean/ideas.html',
+    '/bunean/quotes.html',
+    '/bunean/service-request.html',
+    '/bunean/company.html',
+    '/bunean/order-tracking.html',
+    '/bunean/execute.html',
+    '/bunean/product.html',
+    '/bunean/market.html',
+    '/bunean/account.html',
+    '/bunean/css/style.css',
+    '/bunean/icon-192.png',
+    '/bunean/icon-512.png',
+    '/bunean/js/nav.js',
+    '/bunean/js/router.js',
+    '/bunean/js/header.js',
+    '/bunean/js/bottom-nav.js',
+    '/bunean/js/project-modal.js',
+    '/bunean/manifest.json'
 ];
 
 self.addEventListener('install', event => {
