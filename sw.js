@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bunean-v9';
+const CACHE_NAME = 'bunean-v10';
 const urlsToCache = [
     '/bunean/',
     '/bunean/index.html',
@@ -21,7 +21,11 @@ const urlsToCache = [
     '/bunean/js/header.js',
     '/bunean/js/bottom-nav.js',
     '/bunean/js/project-modal.js',
-    '/bunean/manifest.json'
+    '/bunean/manifest.json',
+    '/bunean/dashboard/',
+    '/bunean/dashboard/index.html',
+    '/bunean/dashboard/css/dashboard.css',
+    '/bunean/dashboard/js/dashboard.js'
 ];
 
 self.addEventListener('install', event => {
