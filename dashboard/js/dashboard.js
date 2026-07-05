@@ -287,6 +287,12 @@ var dashboard = {
     }
   },
 
+  fileToBase64: function(file, callback) {
+    var reader = new FileReader();
+    reader.onload = function(e) { callback(e.target.result); };
+    reader.readAsDataURL(file);
+  },
+
   // ---- Products ----
   render_products: function() {
     return '<div class="dash-tabs" id="productTabs">'
@@ -305,7 +311,14 @@ var dashboard = {
     if (!p.length) return '<div class="empty-state"><p>لا توجد منتجات</p></div>';
     var rows = '';
     for (var i = 0; i < p.length; i++) {
-      rows += '<tr><td>' + (i+1) + '</td><td>' + (p[i].name || '-') + '</td><td>' + (p[i].category || '-') + '</td><td>' + (p[i].price || '-') + '</td>'
+      var img = p[i].image ? '<img src="' + p[i].image + '" style="width:50px;height:40px;object-fit:cover;border-radius:6px;" onerror="this.style.display=\'none\'">' : '-';
+      var badge = p[i].mostRequested ? '<span class="status approved" style="background:rgba(201,162,67,0.12);color:var(--accent);font-size:10px;">الأكثر طلباً</span> ' : '';
+      var priceHtml = p[i].price;
+      if (p[i].discountPrice) {
+        priceHtml = '<span style="text-decoration:line-through;color:var(--text-muted);font-size:11px;">' + p[i].price + '</span> <span style="color:var(--danger);font-weight:700;">' + p[i].discountPrice + '</span>';
+      }
+      rows += '<tr><td>' + (i+1) + '</td><td>' + img + '</td><td>' + (p[i].name || '-') + '</td><td>' + (p[i].category || '-') + '</td><td>' + priceHtml + '</td>'
+        + '<td>' + badge + '</td>'
         + '<td><span class="toggle ' + (p[i].hidden ? '' : 'on') + '" onclick="dashboard.toggleProduct(' + i + ')"></span></td>'
         + '<td><button class="btn btn-sm btn-outline" onclick="dashboard.editProduct(' + i + ')">تعديل</button> <button class="btn btn-sm btn-danger" onclick="dashboard.deleteProduct(' + i + ')">حذف</button></td></tr>';
     }
@@ -321,48 +334,79 @@ var dashboard = {
     for (var k = 0; k < supps.length; k++) {
       supRows += '<tr><td>' + (k+1) + '</td><td>' + supps[k].name + '</td><td>' + (supps[k].phone || '-') + '</td><td><button class="btn btn-sm btn-danger" onclick="dashboard.deleteSupplier(' + k + ')">حذف</button></td></tr>';
     }
-    return '<div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>القسم</th><th>السعر</th><th>إظهار</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+    return '<div class="table-wrap"><table><thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>القسم</th><th>السعر</th><th>وسم</th><th>إظهار</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
       + '<h4 style="margin-top:20px;font-size:14px;">الأقسام</h4>'
-      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>القسم</th><th>إظهار</th><th></th></tr></thead><tbody>' + catRows + '</tbody></table></div>'
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>القسم</th><th>إظهار</th><th></th></tr></thead><tbody>' + (catRows || '<tr><td colspan="4"><div class="empty-state"><p>لا توجد أقسام</p></div></td></tr>') + '</tbody></table></div>'
       + '<h4 style="margin-top:20px;font-size:14px;">الموردين</h4>'
-      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th></th></tr></thead><tbody>' + supRows + '</tbody></table></div>';
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th></th></tr></thead><tbody>' + (supRows || '<tr><td colspan="4"><div class="empty-state"><p>لا يوجد موردين</p></div></td></tr>') + '</tbody></table></div>';
   },
 
-  productForm: function() {
+  productForm: function(product) {
+    product = product || {};
     var cats = this.data.categories;
     var catOpts = '';
     for (var i = 0; i < cats.length; i++) {
-      catOpts += '<option value="' + cats[i].name + '">' + cats[i].name + '</option>';
+      catOpts += '<option value="' + cats[i].name + '"' + (product.category === cats[i].name ? ' selected' : '') + '>' + cats[i].name + '</option>';
     }
-    return '<form onsubmit="dashboard.addProduct(event)">'
+    var imgPreview = product.image ? '<div style="margin-bottom:8px;"><img src="' + product.image + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"></div>' : '';
+    return '<form onsubmit="dashboard.addProduct(event)" id="productForm">'
       + '<div class="form-row">'
-      + '<div class="form-group"><label>اسم المنتج</label><input class="form-control" id="prodName" required></div>'
-      + '<div class="form-group"><label>السعر</label><input class="form-control" id="prodPrice" type="number" required></div>'
+      + '<div class="form-group"><label>اسم المنتج</label><input class="form-control" id="prodName" value="' + (product.name || '') + '" required></div>'
+      + '<div class="form-group"><label>السعر</label><input class="form-control" id="prodPrice" type="number" value="' + (product.price || '') + '" required></div>'
       + '</div>'
       + '<div class="form-row">'
       + '<div class="form-group"><label>القسم</label><select class="form-control" id="prodCategory">' + catOpts + '</select></div>'
-      + '<div class="form-group"><label>صورة (رابط)</label><input class="form-control" id="prodImage" placeholder="https://..."></div>'
+      + '<div class="form-group"><label>الصورة</label><input class="form-control" id="prodImage" type="file" accept="image/*"></div>'
       + '</div>'
-      + '<div class="form-group"><label>الوصف</label><textarea class="form-control" id="prodDesc"></textarea></div>'
-      + '<button type="submit" class="btn btn-gold">➕ إضافة المنتج</button>'
+      + imgPreview
+      + '<div class="form-row">'
+      + '<div class="form-group"><label>سعر الخصم (اختياري)</label><input class="form-control" id="prodDiscount" type="number" value="' + (product.discountPrice || '') + '" placeholder="سعر بعد الخصم"></div>'
+      + '<div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:9px;">'
+      + '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;">'
+      + '<input type="checkbox" id="prodMostRequested" ' + (product.mostRequested ? 'checked' : '') + ' style="width:16px;height:16px;accent-color:var(--accent);"> الأكثر طلباً'
+      + '</label></div>'
+      + '</div>'
+      + '<div class="form-group"><label>الوصف</label><textarea class="form-control" id="prodDesc">' + (product.desc || '') + '</textarea></div>'
+      + '<input type="hidden" id="prodEditIdx" value="' + (product._idx !== undefined ? product._idx : '-1') + '">'
+      + '<input type="hidden" id="prodExistingImage" value="' + (product.image || '') + '">'
+      + '<button type="submit" class="btn btn-gold">' + (product._idx !== undefined ? '💾 حفظ التعديلات' : '➕ إضافة المنتج') + '</button>'
       + '</form>';
   },
 
   addProduct: function(e) {
     e.preventDefault();
-    var prod = {
-      id: Date.now(),
-      name: document.getElementById('prodName').value,
-      price: document.getElementById('prodPrice').value,
-      category: document.getElementById('prodCategory').value,
-      image: document.getElementById('prodImage').value || 'images/img1.jpg',
-      desc: document.getElementById('prodDesc').value,
-      hidden: false
-    };
-    this.data.products.push(prod);
-    this.saveData();
-    this.syncProducts();
-    this.switchTab('product', 'all', document.querySelector('#productTabs .dash-tab:first-child'));
+    var self = this;
+    var idx = parseInt(document.getElementById('prodEditIdx').value);
+    var fileInput = document.getElementById('prodImage');
+    var existingImage = document.getElementById('prodExistingImage').value;
+
+    function saveProd(base64Image) {
+      var prod = {
+        id: idx >= 0 ? self.data.products[idx].id : Date.now(),
+        name: document.getElementById('prodName').value,
+        price: document.getElementById('prodPrice').value,
+        category: document.getElementById('prodCategory').value,
+        image: base64Image || existingImage || 'images/img1.jpg',
+        desc: document.getElementById('prodDesc').value,
+        discountPrice: document.getElementById('prodDiscount').value || '',
+        mostRequested: document.getElementById('prodMostRequested').checked,
+        hidden: false
+      };
+      if (idx >= 0) {
+        self.data.products[idx] = prod;
+      } else {
+        self.data.products.push(prod);
+      }
+      self.saveData();
+      self.syncProducts();
+      self.switchTab('product', 'all', document.querySelector('#productTabs .dash-tab:first-child'));
+    }
+
+    if (fileInput.files && fileInput.files[0]) {
+      this.fileToBase64(fileInput.files[0], function(b64) { saveProd(b64); });
+    } else {
+      saveProd(null);
+    }
   },
 
   toggleProduct: function(idx) {
@@ -382,12 +426,18 @@ var dashboard = {
 
   editProduct: function(idx) {
     var p = this.data.products[idx];
-    document.getElementById('prodName').value = p.name;
-    document.getElementById('prodPrice').value = p.price;
-    document.getElementById('prodCategory').value = p.category;
-    document.getElementById('prodImage').value = p.image || '';
-    document.getElementById('prodDesc').value = p.desc || '';
-    this.switchTab('product', 'add', document.querySelector('#productTabs .dash-tab:nth-child(2)'));
+    p._idx = idx;
+    var el = document.getElementById('productTabContent');
+    if (el) {
+      el.innerHTML = this.productForm(p);
+    } else {
+      this.switchTab('product', 'add', document.querySelector('#productTabs .dash-tab:nth-child(2)'));
+      var self = this;
+      setTimeout(function() {
+        var el2 = document.getElementById('productTabContent');
+        if (el2) el2.innerHTML = self.productForm(p);
+      }, 100);
+    }
   },
 
   categoryManager: function() {
@@ -485,11 +535,13 @@ var dashboard = {
     return '<div class="modal-overlay" id="sliderModal"><div class="modal-box">'
       + '<h3 id="sliderModalTitle">إضافة سلايدر</h3>'
       + '<form onsubmit="dashboard.saveSlider(event)">'
-      + '<div class="form-group"><label>رابط الصورة</label><input class="form-control" id="sliderImage" required></div>'
+      + '<div class="form-group"><label>الصورة</label><input class="form-control" id="sliderImage" type="file" accept="image/*"></div>'
+      + '<div id="sliderPreview" style="margin-bottom:8px;"></div>'
       + '<div class="form-group"><label>العنوان</label><input class="form-control" id="sliderTitle"></div>'
       + '<div class="form-group"><label>الرابط</label><input class="form-control" id="sliderLink"></div>'
       + '<div class="form-group"><label>الترتيب</label><input class="form-control" id="sliderOrder" type="number"></div>'
       + '<input type="hidden" id="sliderEditIdx" value="-1">'
+      + '<input type="hidden" id="sliderExistingImage" value="">'
       + '<div class="modal-actions">'
       + '<button type="button" class="btn btn-outline" onclick="dashboard.closeModal(\'sliderModal\')">إلغاء</button>'
       + '<button type="submit" class="btn btn-gold">💾 حفظ</button>'
@@ -501,17 +553,21 @@ var dashboard = {
     idx = idx !== undefined ? idx : -1;
     document.getElementById('sliderEditIdx').value = idx;
     document.getElementById('sliderModalTitle').textContent = idx >= 0 ? 'تعديل سلايدر' : 'إضافة سلايدر';
+    document.getElementById('sliderImage').value = '';
+    var preview = document.getElementById('sliderPreview');
     if (idx >= 0) {
       var s = this.data.sliders[idx];
-      document.getElementById('sliderImage').value = s.image || '';
       document.getElementById('sliderTitle').value = s.title || '';
       document.getElementById('sliderLink').value = s.link || '';
       document.getElementById('sliderOrder').value = s.order || (idx+1);
+      document.getElementById('sliderExistingImage').value = s.image || '';
+      preview.innerHTML = s.image ? '<img src="' + s.image + '" style="width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">' : '';
     } else {
-      document.getElementById('sliderImage').value = '';
       document.getElementById('sliderTitle').value = '';
       document.getElementById('sliderLink').value = '';
       document.getElementById('sliderOrder').value = this.data.sliders.length + 1;
+      document.getElementById('sliderExistingImage').value = '';
+      preview.innerHTML = '';
     }
     document.getElementById('sliderModal').classList.add('show');
   },
@@ -520,23 +576,35 @@ var dashboard = {
 
   saveSlider: function(e) {
     e.preventDefault();
+    var self = this;
     var idx = parseInt(document.getElementById('sliderEditIdx').value);
-    var slide = {
-      image: document.getElementById('sliderImage').value,
-      title: document.getElementById('sliderTitle').value,
-      link: document.getElementById('sliderLink').value,
-      order: parseInt(document.getElementById('sliderOrder').value) || 0,
-      hidden: false
-    };
-    if (idx >= 0) {
-      this.data.sliders[idx] = slide;
-    } else {
-      this.data.sliders.push(slide);
+    var fileInput = document.getElementById('sliderImage');
+    var existingImage = document.getElementById('sliderExistingImage').value;
+
+    function save(base64Image) {
+      var slide = {
+        image: base64Image || existingImage || '',
+        title: document.getElementById('sliderTitle').value,
+        link: document.getElementById('sliderLink').value,
+        order: parseInt(document.getElementById('sliderOrder').value) || 0,
+        hidden: false
+      };
+      if (idx >= 0) {
+        self.data.sliders[idx] = slide;
+      } else {
+        self.data.sliders.push(slide);
+      }
+      self.saveData();
+      self.syncSliders();
+      self.closeModal('sliderModal');
+      self.renderContent('sliders');
     }
-    this.saveData();
-    this.syncSliders();
-    this.closeModal('sliderModal');
-    this.renderContent('sliders');
+
+    if (fileInput.files && fileInput.files[0]) {
+      this.fileToBase64(fileInput.files[0], function(b64) { save(b64); });
+    } else {
+      save(null);
+    }
   },
 
   toggleSlider: function(idx) {
