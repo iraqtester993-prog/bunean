@@ -20,7 +20,7 @@ function renderHeader(options) {
         + '</div>';
 
     var notifHtml = '<a href="notifications.html" class="nav-icon material-symbols-outlined" id="headerNotifBtn">notifications</a>';
-    var installHtml = '<button class="nav-icon material-symbols-outlined install-btn" onclick="window.__installApp()" style="display:none;" title="تثبيت التطبيق">download</button>';
+    var installHtml = '<button class="nav-icon material-symbols-outlined install-btn" onclick="window.__installApp()" title="تثبيت التطبيق">download</button>';
 
     return '<header class="top-nav">'
         + backBtn
@@ -61,10 +61,14 @@ function renderHeader(options) {
     });
 
     window.__installApp = function() {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function() {
-            deferredPrompt = null;
-        });
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function() {
+                deferredPrompt = null;
+            });
+        } else {
+            var btn = document.querySelector('.install-btn');
+            if (btn) btn.style.display = 'none';
+        }
     };
 })();
