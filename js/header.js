@@ -20,6 +20,7 @@ function renderHeader(options) {
         + '</div>';
 
     var notifHtml = '<a href="notifications.html" class="nav-icon material-symbols-outlined" id="headerNotifBtn">notifications</a>';
+    var installHtml = '<button class="nav-icon material-symbols-outlined install-btn" onclick="window.__installApp()" style="display:none;" title="تثبيت التطبيق">download</button>';
 
     return '<header class="top-nav">'
         + backBtn
@@ -28,7 +29,42 @@ function renderHeader(options) {
         + '<span style="font-size:18px;font-weight:700;color:var(--accent-gold);">بنيان</span></div>'
         + searchHtml
         + '<div class="nav-actions">'
+        + installHtml
         + notifHtml
         + '</div>'
         + '</header>';
 }
+
+// ===== تثبيت التطبيق (PWA Install) =====
+(function() {
+    var deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        showBtn();
+    });
+
+    function showBtn() {
+        var btn = document.querySelector('.install-btn');
+        if (btn) {
+            btn.style.display = 'flex';
+        } else {
+            setTimeout(showBtn, 200);
+        }
+    }
+
+    window.addEventListener('appinstalled', function() {
+        deferredPrompt = null;
+        var btn = document.querySelector('.install-btn');
+        if (btn) btn.style.display = 'none';
+    });
+
+    window.__installApp = function() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function() {
+            deferredPrompt = null;
+        });
+    };
+})();

@@ -2059,6 +2059,9 @@ html.light-mode .brand-alert-btn {
   .top-nav {
     padding-top: calc(12px + env(safe-area-inset-top));
   }
+  .install-btn {
+    display: none !important;
+  }
 }
 /* ===== Hero Slider ===== */
 .hero-slider {
