@@ -1172,9 +1172,33 @@ var dashboard = {
 
   // ---- Settings ----
   render_settings: function() {
+    var app = this.data.appSettings || {};
     return '<div class="card"><div class="card-header"><h3>⚙️ إعدادات التطبيق</h3></div><div class="card-body">'
-      + '<div class="empty-state"><p>الإعدادات قيد التطوير</p></div>'
-      + '</div></div>';
+      + '<form onsubmit="dashboard.saveSettings(event)">'
+      + '<div class="form-row">'
+      + '<div class="form-group"><label>اسم التطبيق</label><input class="form-control" id="setAppName" value="' + (app.name || 'بنيان') + '"></div>'
+      + '<div class="form-group"><label>البريد الإلكتروني</label><input class="form-control" id="setEmail" value="' + (app.email || '') + '" placeholder="info@bunean.app"></div>'
+      + '</div>'
+      + '<div class="form-row">'
+      + '<div class="form-group"><label>رقم الهاتف</label><input class="form-control" id="setPhone" value="' + (app.phone || '') + '" placeholder="+964..."></div>'
+      + '<div class="form-group"><label>العنوان</label><input class="form-control" id="setAddress" value="' + (app.address || '') + '" placeholder="العراق"></div>'
+      + '</div>'
+      + '<div class="form-group"><label>وصف التطبيق</label><textarea class="form-control" id="setDesc">' + (app.desc || '') + '</textarea></div>'
+      + '<button type="submit" class="btn btn-gold">💾 حفظ الإعدادات</button>'
+      + '</form></div></div>';
+  },
+
+  saveSettings: function(e) {
+    e.preventDefault();
+    this.data.appSettings = {
+      name: document.getElementById('setAppName').value,
+      email: document.getElementById('setEmail').value,
+      phone: document.getElementById('setPhone').value,
+      address: document.getElementById('setAddress').value,
+      desc: document.getElementById('setDesc').value
+    };
+    this.saveData();
+    alert('✅ تم حفظ الإعدادات');
   }
 };
 
