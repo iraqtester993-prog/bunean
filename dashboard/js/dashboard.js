@@ -91,9 +91,20 @@ var dashboard = {
     if (sliders) {
       try { this.data.sliders = JSON.parse(sliders); } catch(e) {}
     }
+    // Load quote requests
+    var quotes = localStorage.getItem('bunean-quote-requests');
+    if (quotes) {
+      try { this.data.quotes = JSON.parse(quotes); } catch(e) {}
+    }
+    // Load service requests
+    var services = localStorage.getItem('bunean-service-requests');
+    if (services) {
+      try { this.data.serviceReqs = JSON.parse(services); } catch(e) {}
+    }
     this.data.stats.users = this.data.users.length;
     this.data.stats.companies = this.data.companies.length;
     this.data.stats.products = this.data.products.length;
+    this.data.stats.orders = this.data.orders.length;
     this.saveData();
   },
 
@@ -934,6 +945,186 @@ var dashboard = {
 
   syncNotifications: function() {
     localStorage.setItem('bunean-notifications', JSON.stringify(this.data.notifications || []));
+  },
+
+  // ---- Orders ----
+  render_orders: function() {
+    var orders = this.data.orders;
+    var list = '';
+    for (var i = orders.length - 1; i >= 0; i--) {
+      var o = orders[i];
+      var items = o.items || [];
+      var itemStr = items.map(function(it) { return it.name || it.productName || ''; }).filter(Boolean).join(', ') || '-';
+      list += '<tr><td>' + (orders.length - i) + '</td><td>' + (o.orderId || o.id || '-') + '</td>'
+        + '<td>' + (o.customer || o.name || '-') + '</td><td>' + itemStr.substring(0, 30) + '</td>'
+        + '<td>' + (o.total || o.price || '-') + '</td><td>' + (o.date || '-') + '</td>'
+        + '<td><span class="status ' + (o.status === 'completed' || o.status === 'delivered' ? 'approved' : o.status === 'cancelled' ? 'rejected' : 'pending') + '">' + (o.status || 'جديد') + '</span></td>'
+        + '<td><button class="btn btn-sm btn-outline" onclick="dashboard.editOrder(' + i + ')">عرض</button></td></tr>';
+    }
+    return '<div class="card"><div class="card-header"><h3>🛒 الطلبات</h3></div><div class="card-body">'
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>رقم الطلب</th><th>العميل</th><th>المنتجات</th><th>المجموع</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>'
+      + (list || '<tr><td colspan="8"><div class="empty-state"><p>لا توجد طلبات</p></div></td></tr>')
+      + '</tbody></table></div></div></div>';
+  },
+
+  editOrder: function(idx) {
+    var o = this.data.orders[idx];
+    if (!o) return;
+    var itemsHtml = '';
+    if (o.items) {
+      for (var i = 0; i < o.items.length; i++) {
+        itemsHtml += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-light);font-size:13px;">'
+          + '<span>' + (o.items[i].name || o.items[i].productName || '') + '</span>'
+          + '<span style="color:var(--text-muted);">' + (o.items[i].qty || o.items[i].quantity || 1) + ' × ' + (o.items[i].price || '') + '</span></div>';
+      }
+    }
+    document.getElementById('orderViewContent').innerHTML = '<div style="line-height:2;">'
+      + '<strong>رقم الطلب:</strong> ' + (o.orderId || o.id || '-') + '<br>'
+      + '<strong>العميل:</strong> ' + (o.customer || o.name || '-') + '<br>'
+      + '<strong>الهاتف:</strong> ' + (o.phone || '-') + '<br>'
+      + '<strong>العنوان:</strong> ' + (o.address || o.shippingAddress || '-') + '<br>'
+      + '<strong>التاريخ:</strong> ' + (o.date || '-') + '<br>'
+      + '<strong>الحالة:</strong> <span class="status ' + (o.status === 'completed' || o.status === 'delivered' ? 'approved' : o.status === 'cancelled' ? 'rejected' : 'pending') + '">' + (o.status || 'جديد') + '</span><br>'
+      + '<hr style="border-color:var(--border-light);margin:10px 0;">'
+      + '<strong>المنتجات:</strong><br>' + itemsHtml
+      + '<hr style="border-color:var(--border-light);margin:10px 0;">'
+      + '<strong style="font-size:15px;">المجموع: ' + (o.total || o.price || '-') + '</strong>'
+      + '</div>';
+    document.getElementById('orderModal').classList.add('show');
+  },
+
+  afterRender_orders: function() {
+    if (!document.getElementById('orderModal')) {
+      var div = document.createElement('div');
+      div.innerHTML = '<div class="modal-overlay" id="orderModal"><div class="modal-box">'
+        + '<h3>تفاصيل الطلب</h3><div id="orderViewContent"></div>'
+        + '<div class="modal-actions"><button type="button" class="btn btn-outline" onclick="dashboard.closeModal(\'orderModal\')">إغلاق</button></div></div></div>';
+      document.body.appendChild(div.firstElementChild);
+    }
+  },
+
+  // ---- Quotes ----
+  render_quotes: function() {
+    var qs = this.data.quotes;
+    var list = '';
+    for (var i = qs.length - 1; i >= 0; i--) {
+      var q = qs[i];
+      list += '<tr><td>' + (qs.length - i) + '</td><td>' + (q.name || q.from || '-') + '</td>'
+        + '<td>' + (q.phone || '-') + '</td><td>' + (q.service || q.serviceType || '-') + '</td>'
+        + '<td>' + (q.details || '').substring(0, 30) + '</td><td>' + (q.date || '-') + '</td>'
+        + '<td><span class="status ' + (q.status === 'approved' ? 'approved' : q.status === 'rejected' ? 'rejected' : 'pending') + '">' + (q.status === 'approved' ? 'تم الموافقة' : q.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة') + '</span></td>'
+        + '<td><button class="btn btn-sm btn-outline" onclick="dashboard.viewQuote(' + i + ')">عرض</button>'
+        + (q.status !== 'approved' ? ' <button class="btn btn-sm btn-success" onclick="dashboard.approveQuote(' + i + ')">قبول</button>' : '')
+        + (q.status !== 'rejected' ? ' <button class="btn btn-sm btn-danger" onclick="dashboard.rejectQuote(' + i + ')">رفض</button>' : '')
+        + '</td></tr>';
+    }
+    return '<div class="card"><div class="card-header"><h3>💰 عروض الأسعار</h3></div><div class="card-body">'
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الخدمة</th><th>التفاصيل</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>'
+      + (list || '<tr><td colspan="8"><div class="empty-state"><p>لا توجد عروض أسعار</p></div></td></tr>')
+      + '</tbody></table></div></div></div>';
+  },
+
+  viewQuote: function(idx) {
+    var q = this.data.quotes[idx];
+    if (!q) return;
+    document.getElementById('quoteViewContent').innerHTML = '<div style="line-height:2;">'
+      + '<strong>الاسم:</strong> ' + (q.name || q.from || '-') + '<br>'
+      + '<strong>الهاتف:</strong> ' + (q.phone || '-') + '<br>'
+      + '<strong>الخدمة:</strong> ' + (q.service || q.serviceType || '-') + '<br>'
+      + '<strong>المدينة:</strong> ' + (q.city || '-') + '<br>'
+      + '<strong>تفاصيل:</strong><br><p style="padding:10px;background:var(--bg-input);border-radius:8px;margin-top:4px;">' + (q.details || q.message || '') + '</p>'
+      + '<strong>التاريخ:</strong> ' + (q.date || '-') + '<br>'
+      + '<strong>الحالة:</strong> <span class="status ' + (q.status === 'approved' ? 'approved' : q.status === 'rejected' ? 'rejected' : 'pending') + '">' + (q.status === 'approved' ? 'تم الموافقة' : q.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة') + '</span>'
+      + '</div>';
+    document.getElementById('quoteModal').classList.add('show');
+  },
+
+  approveQuote: function(idx) {
+    if (idx >= 0 && idx < this.data.quotes.length) {
+      this.data.quotes[idx].status = 'approved';
+      this.saveData();
+      this.syncQuotes();
+      this.renderContent('quotes');
+    }
+  },
+
+  rejectQuote: function(idx) {
+    if (idx >= 0 && idx < this.data.quotes.length) {
+      this.data.quotes[idx].status = 'rejected';
+      this.saveData();
+      this.syncQuotes();
+      this.renderContent('quotes');
+    }
+  },
+
+  syncQuotes: function() {
+    localStorage.setItem('bunean-quote-requests', JSON.stringify(this.data.quotes));
+  },
+
+  afterRender_quotes: function() {
+    if (!document.getElementById('quoteModal')) {
+      var div = document.createElement('div');
+      div.innerHTML = '<div class="modal-overlay" id="quoteModal"><div class="modal-box">'
+        + '<h3>تفاصيل عرض السعر</h3><div id="quoteViewContent"></div>'
+        + '<div class="modal-actions"><button type="button" class="btn btn-outline" onclick="dashboard.closeModal(\'quoteModal\')">إغلاق</button></div></div></div>';
+      document.body.appendChild(div.firstElementChild);
+    }
+  },
+
+  // ---- Services ----
+  render_services: function() {
+    var reqs = this.data.serviceReqs;
+    var list = '';
+    for (var i = reqs.length - 1; i >= 0; i--) {
+      var r = reqs[i];
+      list += '<tr><td>' + (reqs.length - i) + '</td><td>' + (r.name || r.customerName || r.from || '-') + '</td>'
+        + '<td>' + (r.phone || '-') + '</td><td>' + (r.service || r.serviceType || '-') + '</td>'
+        + '<td>' + (r.details || r.message || '').substring(0, 30) + '</td><td>' + (r.date || '-') + '</td>'
+        + '<td><span class="status ' + (r.status === 'completed' ? 'approved' : r.status === 'cancelled' ? 'rejected' : 'pending') + '">' + (r.status || 'جديد') + '</span></td>'
+        + '<td><button class="btn btn-sm btn-outline" onclick="dashboard.viewService(' + i + ')">عرض</button>'
+        + '<button class="btn btn-sm btn-success" onclick="dashboard.completeService(' + i + ')">إكمال</button></td></tr>';
+    }
+    return '<div class="card"><div class="card-header"><h3>📞 طلبات الخدمة</h3></div><div class="card-body">'
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الخدمة</th><th>التفاصيل</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>'
+      + (list || '<tr><td colspan="8"><div class="empty-state"><p>لا توجد طلبات خدمة</p></div></td></tr>')
+      + '</tbody></table></div></div></div>';
+  },
+
+  viewService: function(idx) {
+    var r = this.data.serviceReqs[idx];
+    if (!r) return;
+    document.getElementById('serviceViewContent').innerHTML = '<div style="line-height:2;">'
+      + '<strong>الاسم:</strong> ' + (r.name || r.customerName || r.from || '-') + '<br>'
+      + '<strong>الهاتف:</strong> ' + (r.phone || '-') + '<br>'
+      + '<strong>الخدمة:</strong> ' + (r.service || r.serviceType || '-') + '<br>'
+      + '<strong>المدينة:</strong> ' + (r.city || '-') + '<br>'
+      + '<strong>التفاصيل:</strong><br><p style="padding:10px;background:var(--bg-input);border-radius:8px;margin-top:4px;">' + (r.details || r.message || '') + '</p>'
+      + '<strong>الحالة:</strong> <span class="status ' + (r.status === 'completed' ? 'approved' : r.status === 'cancelled' ? 'rejected' : 'pending') + '">' + (r.status || 'جديد') + '</span>'
+      + '</div>';
+    document.getElementById('serviceModal').classList.add('show');
+  },
+
+  completeService: function(idx) {
+    if (idx >= 0 && idx < this.data.serviceReqs.length) {
+      this.data.serviceReqs[idx].status = 'completed';
+      this.saveData();
+      this.syncServiceReqs();
+      this.renderContent('services');
+    }
+  },
+
+  syncServiceReqs: function() {
+    localStorage.setItem('bunean-service-requests', JSON.stringify(this.data.serviceReqs));
+  },
+
+  afterRender_services: function() {
+    if (!document.getElementById('serviceModal')) {
+      var div = document.createElement('div');
+      div.innerHTML = '<div class="modal-overlay" id="serviceModal"><div class="modal-box">'
+        + '<h3>تفاصيل طلب الخدمة</h3><div id="serviceViewContent"></div>'
+        + '<div class="modal-actions"><button type="button" class="btn btn-outline" onclick="dashboard.closeModal(\'serviceModal\')">إغلاق</button></div></div></div>';
+      document.body.appendChild(div.firstElementChild);
+    }
   },
 
   // ---- Settings ----
