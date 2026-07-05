@@ -607,6 +607,7 @@ var dashboard = {
   // ---- Sliders ----
   sliderSections: [
     { id: 'home', name: 'الرئيسية' },
+    { id: 'execute', name: 'تنفيذ' },
     { id: 'ideas', name: 'أفكار' },
     { id: 'ads', name: 'إعلانات' },
     { id: 'projects', name: 'المشاريع' }
