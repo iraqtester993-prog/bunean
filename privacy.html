@@ -45,6 +45,16 @@
         <div class="app-container">
             <div id="header"></div>
 
+            <!-- شريط العنوان -->
+            <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+                <a href="account.html" style="display:flex;align-items:center;gap:4px;color:var(--text-light);background:none;border:none;padding:0;cursor:pointer;font-size:13px;font-weight:500;font-family:Cairo,sans-serif;text-decoration:none;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                </a>
+                <div style="flex:1;text-align:center;">
+                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">الشروط والخصوصية</span>
+                </div>
+            </div>
+
             <div class="page-content">
                 <!-- التبويبات -->
                 <div class="privacy-tabs">
@@ -217,7 +227,7 @@
     </div>
 
     <script>
-        document.getElementById('header').innerHTML = renderHeader({ showBack: true, backLink: 'account.html', title: 'الشروط والخصوصية' });
+        document.getElementById('header').innerHTML = renderHeader({});
 
         const { createApp, ref } = Vue;
         createApp({
