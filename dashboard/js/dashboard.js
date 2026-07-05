@@ -608,7 +608,7 @@ var dashboard = {
   sliderSections: [
     { id: 'home', name: 'الرئيسية' },
     { id: 'execute', name: 'تنفيذ' },
-    { id: 'ideas', name: 'أفكار' },
+    { id: 'market', name: 'سوق البناء' },
     { id: 'ads', name: 'إعلانات' },
     { id: 'projects', name: 'المشاريع' }
   ],
