@@ -605,33 +605,52 @@ var dashboard = {
   },
 
   // ---- Sliders ----
+  sliderSections: [
+    { id: 'home', name: 'الرئيسية' },
+    { id: 'ideas', name: 'أفكار' },
+    { id: 'ads', name: 'إعلانات' },
+    { id: 'projects', name: 'المشاريع' }
+  ],
+
   render_sliders: function() {
     var slides = this.data.sliders;
     var list = '';
     for (var i = 0; i < slides.length; i++) {
       var s = slides[i];
+      var sectionName = s.section || 'home';
+      for (var si = 0; si < this.sliderSections.length; si++) {
+        if (this.sliderSections[si].id === sectionName) { sectionName = this.sliderSections[si].name; break; }
+      }
       list += '<tr><td>' + (i+1) + '</td><td><img src="' + (s.image || '') + '" style="width:60px;height:40px;object-fit:cover;border-radius:6px;" onerror="this.style.display=\'none\'"></td>'
-        + '<td>' + (s.title || '-') + '</td><td>' + (s.link || '-') + '</td>'
+        + '<td>' + (s.title || '-') + '</td><td>' + sectionName + '</td>'
+        + '<td>' + (s.link || '-') + '</td>'
         + '<td>' + (s.order || i+1) + '</td>'
         + '<td><span class="toggle ' + (s.hidden ? '' : 'on') + '" onclick="dashboard.toggleSlider(' + i + ')"></span></td>'
         + '<td><button class="btn btn-sm btn-outline" onclick="dashboard.editSlider(' + i + ')">تعديل</button> <button class="btn btn-sm btn-danger" onclick="dashboard.deleteSlider(' + i + ')">حذف</button></td></tr>';
     }
     return '<div class="card"><div class="card-header"><h3>السلايدر</h3><button class="btn btn-gold btn-sm" onclick="dashboard.showSliderForm()">➕ إضافة سلايدر</button></div><div class="card-body">'
-      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>الصورة</th><th>العنوان</th><th>الرابط</th><th>الترتيب</th><th>إظهار</th><th></th></tr></thead><tbody>'
-      + (list || '<tr><td colspan="7"><div class="empty-state"><p>لا توجد سلايدرات</p></div></td></tr>')
+      + '<div class="table-wrap"><table><thead><tr><th>#</th><th>الصورة</th><th>العنوان</th><th>القسم</th><th>الرابط</th><th>الترتيب</th><th>إظهار</th><th></th></tr></thead><tbody>'
+      + (list || '<tr><td colspan="8"><div class="empty-state"><p>لا توجد سلايدرات</p></div></td></tr>')
       + '</tbody></table></div></div></div>'
       + this.sliderModal();
   },
 
   sliderModal: function() {
+    var secOpts = '';
+    for (var i = 0; i < this.sliderSections.length; i++) {
+      secOpts += '<option value="' + this.sliderSections[i].id + '">' + this.sliderSections[i].name + '</option>';
+    }
     return '<div class="modal-overlay" id="sliderModal"><div class="modal-box">'
       + '<h3 id="sliderModalTitle">إضافة سلايدر</h3>'
       + '<form onsubmit="dashboard.saveSlider(event)">'
       + '<div class="form-group"><label>الصورة</label><input class="form-control" id="sliderImage" type="file" accept="image/*"></div>'
       + '<div id="sliderPreview" style="margin-bottom:8px;"></div>'
+      + '<div class="form-row">'
+      + '<div class="form-group"><label>القسم</label><select class="form-control" id="sliderSection">' + secOpts + '</select></div>'
+      + '<div class="form-group"><label>الترتيب</label><input class="form-control" id="sliderOrder" type="number"></div>'
+      + '</div>'
       + '<div class="form-group"><label>العنوان</label><input class="form-control" id="sliderTitle"></div>'
       + '<div class="form-group"><label>الرابط</label><input class="form-control" id="sliderLink"></div>'
-      + '<div class="form-group"><label>الترتيب</label><input class="form-control" id="sliderOrder" type="number"></div>'
       + '<input type="hidden" id="sliderEditIdx" value="-1">'
       + '<input type="hidden" id="sliderExistingImage" value="">'
       + '<div class="modal-actions">'
@@ -649,12 +668,14 @@ var dashboard = {
     var preview = document.getElementById('sliderPreview');
     if (idx >= 0) {
       var s = this.data.sliders[idx];
+      document.getElementById('sliderSection').value = s.section || 'home';
       document.getElementById('sliderTitle').value = s.title || '';
       document.getElementById('sliderLink').value = s.link || '';
       document.getElementById('sliderOrder').value = s.order || (idx+1);
       document.getElementById('sliderExistingImage').value = s.image || '';
       preview.innerHTML = s.image ? '<img src="' + s.image + '" style="width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">' : '';
     } else {
+      document.getElementById('sliderSection').value = 'home';
       document.getElementById('sliderTitle').value = '';
       document.getElementById('sliderLink').value = '';
       document.getElementById('sliderOrder').value = this.data.sliders.length + 1;
@@ -676,6 +697,7 @@ var dashboard = {
     function save(base64Image) {
       var slide = {
         image: base64Image || existingImage || '',
+        section: document.getElementById('sliderSection').value,
         title: document.getElementById('sliderTitle').value,
         link: document.getElementById('sliderLink').value,
         order: parseInt(document.getElementById('sliderOrder').value) || 0,
