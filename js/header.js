@@ -20,7 +20,6 @@ function renderHeader(options) {
         + '</div>';
 
     var notifHtml = '<a href="notifications.html" class="nav-icon material-symbols-outlined" id="headerNotifBtn">notifications</a>';
-    var installHtml = '<button class="nav-icon material-symbols-outlined install-btn" onclick="window.__installApp()" title="تثبيت التطبيق">download</button>';
 
     return '<header class="top-nav">'
         + backBtn
@@ -29,46 +28,65 @@ function renderHeader(options) {
         + '<span style="font-size:18px;font-weight:700;color:var(--accent-gold);">بنيان</span></div>'
         + searchHtml
         + '<div class="nav-actions">'
-        + installHtml
         + notifHtml
         + '</div>'
         + '</header>';
 }
 
-// ===== تثبيت التطبيق (PWA Install) =====
+// ===== تثبيت التطبيق (PWA Install Banner) =====
 (function() {
     var deferredPrompt = null;
 
     window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault();
         deferredPrompt = e;
-        showBtn();
+        showInstallBanner();
     });
-
-    function showBtn() {
-        var btn = document.querySelector('.install-btn');
-        if (btn) {
-            btn.style.display = 'flex';
-        } else {
-            setTimeout(showBtn, 200);
-        }
-    }
 
     window.addEventListener('appinstalled', function() {
         deferredPrompt = null;
-        var btn = document.querySelector('.install-btn');
-        if (btn) btn.style.display = 'none';
+        var banner = document.querySelector('.install-banner');
+        if (banner) banner.remove();
     });
 
+    function showInstallBanner() {
+        if (localStorage.getItem('bunean-install-dismissed')) return;
+        if (document.querySelector('.install-banner')) return;
+
+        var banner = document.createElement('div');
+        banner.className = 'install-banner';
+        banner.innerHTML = '<div class="install-banner-content">'
+            + '<div class="install-banner-text">'
+            + '<span class="material-symbols-outlined" style="font-size:28px;color:var(--accent-gold);">download</span>'
+            + '<div>'
+            + '<div style="font-size:14px;font-weight:700;color:var(--text-white);">تثبيت بنيان على جهازك</div>'
+            + '<div style="font-size:12px;color:var(--text-muted);">ثبّت التطبيق للوصول السريع من شاشة هاتفك</div>'
+            + '</div>'
+            + '</div>'
+            + '<div class="install-banner-actions">'
+            + '<button class="install-banner-btn" onclick="window.__installApp()">تثبيت</button>'
+            + '<button class="install-banner-close" onclick="window.__dismissInstall()">×</button>'
+            + '</div>'
+            + '</div>';
+
+        document.body.appendChild(banner);
+        setTimeout(function() { banner.classList.add('show'); }, 100);
+    }
+
     window.__installApp = function() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(function() {
-                deferredPrompt = null;
-            });
-        } else {
-            var btn = document.querySelector('.install-btn');
-            if (btn) btn.style.display = 'none';
-        }
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function() {
+            deferredPrompt = null;
+            var banner = document.querySelector('.install-banner');
+            if (banner) banner.remove();
+        });
+    };
+
+    window.__dismissInstall = function() {
+        localStorage.setItem('bunean-install-dismissed', 'true');
+        var banner = document.querySelector('.install-banner');
+        if (banner) banner.classList.remove('show');
+        setTimeout(function() { if (banner) banner.remove(); }, 300);
     };
 })();
