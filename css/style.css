@@ -2077,7 +2077,7 @@ html.light-mode .brand-alert-btn {
   justify-content: space-between;
   gap: 10px;
   background: var(--bg-card);
-  border: 1px solid rgba(201, 162, 67, 0.3);
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 30%, transparent);
   border-radius: 14px;
   padding: 12px 14px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
@@ -2097,15 +2097,19 @@ html.light-mode .brand-alert-btn {
 }
 .install-banner-btn {
   padding: 8px 18px;
-  background: linear-gradient(135deg, #d4aa4a 0%, #c9993a 100%);
+  background: var(--accent-gold);
   border: none;
   border-radius: 10px;
-  color: #0a1628;
+  color: var(--text-on-accent);
   font-size: 13px;
   font-weight: 700;
   font-family: 'Cairo', sans-serif;
   cursor: pointer;
   white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.install-banner-btn:hover {
+  opacity: 0.85;
 }
 .install-banner-close {
   width: 32px;
