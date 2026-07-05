@@ -24,6 +24,7 @@
     <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { display: none; }
@@ -83,8 +84,11 @@
         </div>
     </div>
 
+    <div id="bottomNav"></div>
+
     <script>
         document.getElementById('header').innerHTML = renderHeader({});
+        document.getElementById('bottomNav').innerHTML = renderNav('account');
 
         const { createApp, ref } = Vue;
         createApp({
