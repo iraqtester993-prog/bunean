@@ -30,9 +30,9 @@
     <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content::-webkit-scrollbar{display:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}</style>
 </head>
 <body>
+    <div id="header"></div>
     <div id="app" v-cloak>
         <div class="app-container">
-            <div id="header"></div>
 
             <!-- كارت الرجوع تحت الهدر -->
             <div v-if="!showAllProjects && !selectedProject" style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;">
@@ -172,30 +172,13 @@
                                 <h3 class="cta-card-title">هل ترغب بتنفيذ مشروعك؟</h3>
                                 <p class="cta-card-subtitle">احصل على عرض سعر من {{ company.name }}</p>
                             </div>
-                            <button @click="showConfirmModal = true" class="cta-card-btn">
+                            <a :href="'quote-request.html?company=' + encodeURIComponent(company.name)" class="cta-card-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">
                                 <span class="material-symbols-outlined" style="font-size:18px;">request_quote</span>
                                 طلب عرض سعر
-                            </button>
+                            </a>
                         </div>
-                    </div>
                 </div>
-
-                <!-- مودال تأكيد إرسال الطلب -->
-                <div v-if="showConfirmModal" class="project-modal" @click.self="showConfirmModal = false" style="z-index:600;">
-                    <div class="modal-content" style="margin:auto;width:90%;max-width:340px;border-radius:16px;overflow:hidden;">
-                        <div style="padding:28px 20px 20px;text-align:center;">
-                            <div style="width:56px;height:56px;border-radius:50%;background:rgba(201,162,67,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-                                <span class="material-symbols-outlined" style="font-size:28px;color:var(--accent-gold);">send</span>
-                            </div>
-                            <h3 style="font-size:16px;font-weight:700;color:var(--text-white);margin:0 0 6px;">تأكيد إرسال الطلب</h3>
-                            <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">سيتم إرسال طلب عرض سعر إلى <strong style="color:var(--accent-gold);">{{ company.name }}</strong> وسنتصل بك خلال 24 ساعة</p>
-                            <div style="display:flex;gap:10px;">
-                                <button @click="showConfirmModal = false" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border-light);background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;font-family:Cairo,sans-serif;">إلغاء</button>
-                                <a :href="'service-request.html?company=' + encodeURIComponent(company.name) + '&type=quote'" style="flex:1;padding:12px;border-radius:10px;background:var(--accent-gold);color:var(--primary-dark);font-size:13px;font-weight:700;text-decoration:none;text-align:center;font-family:Cairo,sans-serif;">تأكيد وإرسال</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            </div>
             </div>
 
             <!-- صفحة عرض كل المشاريع -->
@@ -234,123 +217,24 @@
             </div>
 
             <!-- صفحة تفاصيل المشروع (شاشة كاملة مع الهدر والنايف) -->
-            <div v-if="selectedProject" class="page-content" style="padding-bottom:80px;">
-                <div style="position:sticky;top:0;z-index:20;margin:8px 12px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;backdrop-filter:blur(8px);">
-                    <button @click="selectedProject = null" style="background:none;border:none;color:var(--text-light);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;">
-                        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
-                        العودة
-                    </button>
-                    <div style="flex:1;text-align:center;">
-                        <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">تفاصيل المشروع</span>
-                    </div>
-                </div>
-                <!-- سلايدر الصور -->
-                <div style="position:relative;background:#000;margin-bottom:12px;" @click="openViewerFromMaterial(detailSlide)">
-                    <div style="display:flex;transition:transform 0.3s;" :style="{ transform: 'translateX(' + (detailSlide * 100) + '%)' }">
-                        <div v-for="(img, i) in (selectedProject.images || [selectedProject.image])" :key="i" style="min-width:100%;aspect-ratio:4/3;">
-                            <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
-                        </div>
-                    </div>
-                    <div v-if="(selectedProject.images || []).length > 1" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;">
-                        <span v-for="(img, i) in selectedProject.images" :key="i"
-                              style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.5);transition:all 0.3s;"
-                              :style="{ background: i === detailSlide ? '#c9a243' : 'rgba(255,255,255,0.5)', transform: i === detailSlide ? 'scale(1.3)' : '' }"
-                              @click.stop="detailSlide = i"></span>
-                    </div>
-                    <div v-if="(selectedProject.images || []).length > 1" style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;direction:ltr;" dir="ltr">
-                        {{ detailSlide + 1 }} / {{ (selectedProject.images || []).length }}
-                    </div>
-                </div>
+            <project-detail v-if="selectedProject"
+                :project="selectedProject"
+                :company-name="company.name"
+                :company-verified="company.verified"
+                :company-link="'company.html?id=' + encodeURIComponent(company.name)"
+                :slide-index="detailSlide"
+                :show-company-btn="false"
+                @close="selectedProject = null"
+                @open-viewer="openViewerFromMaterial"
+                @slide-change="onSlideChange"
+            />
 
-                <!-- صور مصغرة -->
-                <div v-if="(selectedProject.images || []).length > 1" style="display:flex;gap:6px;overflow-x:auto;padding:0 12px 12px;" class="hide-scroll">
-                    <div v-for="(img, i) in selectedProject.images" :key="i"
-                         style="flex-shrink:0;width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border-color 0.2s;"
-                         :style="{ borderColor: i === detailSlide ? 'var(--accent-gold)' : 'transparent' }"
-                         @click="detailSlide = i">
-                        <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
-                    </div>
-                </div>
-
-                <!-- التفاصيل -->
-                <div style="padding:0 12px;">
-                    <!-- العنوان -->
-                    <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 6px;">{{ selectedProject.title || selectedProject.name }}</h2>
-
-                    <!-- الشركة -->
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">business</span>
-                        <a :href="'company.html?id=' + encodeURIComponent(company.name)" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">{{ company.name }}</a>
-                        <svg v-if="company.verified" style="width:16px;height:16px;color:#4caf50;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                    </div>
-
-                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-                        <div v-if="selectedProject.location" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
-                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">location_on</span>
-                            <span>{{ selectedProject.location }}</span>
-                        </div>
-                        <div v-if="selectedProject.rating" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
-                            <span class="material-symbols-outlined" style="font-size:16px;color:#f1c40f;">star</span>
-                            <span>{{ selectedProject.rating }}</span>
-                        </div>
-                    </div>
-
-                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
-                        <div v-if="selectedProject.type" style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
-                            {{ selectedProject.type }}
-                        </div>
-                        <div v-if="selectedProject.cost" style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
-                            {{ selectedProject.cost }}
-                        </div>
-                        <div v-if="selectedProject.area" style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
-                            {{ selectedProject.area }}
-                        </div>
-                    </div>
-
-                    <!-- الوصف -->
-                    <div v-if="selectedProject.desc" style="margin-bottom:16px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 6px;">وصف المشروع</h3>
-                        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin:0;">{{ selectedProject.desc }}</p>
-                    </div>
-
-                    <!-- الميتا -->
-                    <div v-if="selectedProject.meta && selectedProject.meta.length" style="margin-bottom:16px;">
-                        <div v-for="(item, i) in selectedProject.meta" :key="i"
-                             style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-light);">
-                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">{{ item.icon }}</span>
-                            <span style="font-size:13px;color:var(--text-muted);">{{ item.label }}: <strong style="color:var(--text-white);">{{ item.value }}</strong></span>
-                        </div>
-                    </div>
-
-                    <!-- المواد المستخدمة -->
-                    <div v-if="selectedProject.materials && selectedProject.materials.length" style="margin-bottom:20px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">
-                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
-                            المواد المستخدمة
-                        </h3>
-                        <div style="display:flex;gap:8px;overflow-x:auto;" class="hide-scroll">
-                            <div v-for="(mat, i) in selectedProject.materials" :key="i"
-                                 style="flex-shrink:0;width:110px;background:var(--card-bg);border-radius:10px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;"
-                                 @click.stop="openViewerFromMaterial((selectedProject.images || []).indexOf(mat.image))">
-                                <div style="width:110px;height:80px;overflow:hidden;">
-                                    <img :src="mat.image" style="width:100%;height:100%;object-fit:cover;display:block;">
-                                </div>
-                                <div style="padding:6px;text-align:center;">
-                                    <span style="color:var(--text-white);font-size:11px;font-weight:600;">{{ mat.name }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- زر صفحة الشركة ثابت في الأسفل -->
-                <div style="padding:12px;padding-bottom:80px;">
-                    <a :href="'company.html?id=' + encodeURIComponent(company.name)"
-                       style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">
-                        <span class="material-symbols-outlined" style="font-size:20px;">storefront</span>
-                        صفحة الشركة
-                    </a>
-                </div>
+            <!-- زر طلب عرض سعر لهذا التصميم -->
+            <div v-if="selectedProject" style="padding:12px;">
+                <a :href="'quote-request.html?company=' + encodeURIComponent(company.name) + '&project=' + encodeURIComponent(selectedProject.title) + '&type=' + encodeURIComponent(selectedProject.type || '')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;font-family:Cairo,sans-serif;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">request_quote</span>
+                    طلب عرض سعر لهذا التصميم
+                </a>
             </div>
 
             <!-- معرض الصور كامل الشاشة -->
@@ -374,10 +258,13 @@
                 <div v-if="viewerImages.length > 1" class="viewer-counter">{{ viewerIndex + 1 }} / {{ viewerImages.length }}</div>
             </div>
 
-            <div id="bottomNav"></div>
         </div>
     </div>
 
+    <div id="bottomNav"></div>
+
+    <script src="js/project-data.js"></script>
+    <script src="js/project-detail.js"></script>
     <script src="js/nav.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({});
@@ -478,7 +365,7 @@
             profileData = { name: urlCompanyId || 'الشركة', about: '', specs: [], location: '', phone: '', email: '', logo: 'images/img1.jpg', cover: 'images/img2.jpg', years: 0, workers: 0, engineers: 0, done: 0, rating: 0, verified: false, workImages: [], projects: [], reviews: [] };
         }
 
-        createApp({
+        var _vueApp = createApp({
             setup() {
                 initTheme();
                 var company = ref(profileData);
@@ -488,10 +375,10 @@
                 var detailSlide = ref(0);
                 var projectDetail = ref(null);
                 var detailSlide2 = ref(0);
+                function onSlideChange(v) { detailSlide.value = v; }
                 var workSlide = ref(0);
                 var workTimer = null;
                 var showAllProjects = ref(false);
-                var showConfirmModal = ref(false);
                 var pullY = ref(0);
                 var modalClosing = ref(false);
 
@@ -669,13 +556,15 @@
                 onMounted(function() { resetWorkTimer(); });
                 onUnmounted(function() { if (workTimer) clearInterval(workTimer); });
 
-                return { isCompany, company, aboutPreview, selectedProject, detailSlide, projectDetail, detailSlide2, workSlide, workSwipe, resetWorkTimer, showAllProjects, showConfirmModal, visibleProjects,
+                return { isCompany, company, aboutPreview, selectedProject, detailSlide, projectDetail, detailSlide2, workSlide, workSwipe, resetWorkTimer, showAllProjects, onSlideChange, visibleProjects,
                          pullTransform, pullY, modalTouch, detailSwipe, viewerTouch,
                          viewerOpen, viewerIndex, viewerScale, viewerPanX, viewerPanY, viewerImages, isPinch,
                          openViewer, closeViewer, nextViewer, prevViewer, openViewerFromMaterial,
                          closeProjectModal, showProjectDetail, closeProjectDetail, backToPreview, openDetailViewer };
             }
-        }).mount('#app');
+        });
+        _vueApp.component('project-detail', ProjectDetailComp);
+        _vueApp.mount('#app');
     </script>
     <script>
         initFloatingCart();

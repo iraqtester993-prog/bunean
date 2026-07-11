@@ -378,8 +378,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
 body {
   height: var(--app-height, 100%);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
+  overscroll-behavior: none;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -452,6 +452,7 @@ input, textarea, select {
   position: sticky;
   top: 0;
   z-index: 300;
+  flex-shrink: 0;
   flex-shrink: 0;
 }
 
@@ -4011,7 +4012,7 @@ html.light-mode .ideas-projects-header h2 {
   background: #0b2545;
   display: flex;
   align-items: center;
-  min-height: 120px;
+  min-height: 80px;
 }
 
 .cta-card-bg {
@@ -4040,23 +4041,23 @@ html.light-mode .ideas-projects-header h2 {
   position: relative;
   z-index: 1;
   margin-left: 40%;
-  padding: 20px;
+  padding: 12px 16px;
   width: 60%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .cta-card-title {
   color: #fff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 .cta-card-subtitle {
   color: rgba(255,255,255,0.7);
-  font-size: 11px;
+  font-size: 10px;
   margin: 0;
 }
 
@@ -4066,11 +4067,11 @@ html.light-mode .ideas-projects-header h2 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 24px;
+  padding: 8px 18px;
   border-radius: 10px;
   background: #c9a243;
   color: #0b1a2e;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;

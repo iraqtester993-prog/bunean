@@ -31,9 +31,9 @@
 .partners-track-wrapper{overflow:hidden;padding:0 14px 12px;position:relative;}.partners-track{display:flex;gap:12px;width:fit-content;}.partner-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;width:90px;cursor:pointer;transition:transform 0.2s;}.partner-item:active{transform:scale(0.92);}.partner-icon{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--bg-card-light);border:2px solid var(--border-input);display:flex;align-items:center;justify-content:center;transition:all 0.3s;}.partner-icon img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;filter:grayscale(40%);transition:filter 0.3s;}.partner-item:active .partner-icon img{filter:grayscale(0%);}.partner-item:active .partner-icon{border-color:var(--accent-gold);}.partner-name{font-size:10px;font-weight:600;color:var(--text-light);text-align:center;line-height:1.2;white-space:nowrap;}</style>
 </head>
 <body>
+    <div id="header"></div>
     <div id="app" v-cloak>
         <div class="app-container">
-            <div id="header"></div>
 
             <div class="page-content" v-if="!selectedProject">
                 <!-- Hero Slider -->
@@ -136,112 +136,16 @@
             </div>
 
             <!-- صفحة تفاصيل المشروع (شاشة كاملة مع الهدر والنايف) -->
-            <div v-if="selectedProject && !projectDetail" style="overflow-y:auto;flex:1;padding-bottom:80px;">
-                <!-- كارت الرجوع -->
-                <div style="position:sticky;top:0;z-index:20;margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;backdrop-filter:blur(8px);">
-                    <button @click="selectedProject = null" style="background:none;border:none;color:var(--text-light);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;">
-                        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
-                        العودة
-                    </button>
-                    <div style="flex:1;text-align:center;">
-                        <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">تفاصيل المشروع</span>
-                    </div>
-                </div>
-
-                <!-- سلايدر الصور -->
-                <div style="position:relative;background:#000;margin-bottom:12px;" @click="openViewer(modalSlide)">
-                    <div style="display:flex;transition:transform 0.3s;" :style="{ transform: 'translateX(' + (modalSlide * 100) + '%)' }">
-                        <div v-for="(img, i) in selectedProject.images" :key="i" style="min-width:100%;aspect-ratio:4/3;">
-                            <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
-                        </div>
-                    </div>
-                    <div v-if="selectedProject.images.length > 1" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;">
-                        <span v-for="(img, i) in selectedProject.images" :key="i"
-                              style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.5);transition:all 0.3s;"
-                              :style="{ background: i === modalSlide ? '#c9a243' : 'rgba(255,255,255,0.5)', transform: i === modalSlide ? 'scale(1.3)' : '' }"
-                              @click.stop="modalSlide = i"></span>
-                    </div>
-                    <div v-if="selectedProject.images.length > 1" style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;">
-                        {{ selectedProject.images.length - modalSlide }} / {{ selectedProject.images.length }}
-                    </div>
-                </div>
-
-                <!-- صور مصغرة -->
-                <div v-if="selectedProject.images.length > 1" style="display:flex;gap:6px;overflow-x:auto;padding:0 12px 12px;" class="hide-scroll">
-                    <div v-for="(img, i) in selectedProject.images" :key="i"
-                         style="flex-shrink:0;width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border-color 0.2s;"
-                         :style="{ borderColor: i === modalSlide ? 'var(--accent-gold)' : 'transparent' }"
-                         @click="modalSlide = i">
-                        <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
-                    </div>
-                </div>
-
-                <!-- التفاصيل -->
-                <div style="padding:0 12px;">
-                    <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 10px;">{{ selectedProject.title }}</h2>
-
-                    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">business</span>
-                            <span style="color:var(--accent-gold);font-size:14px;font-weight:600;">{{ selectedProject.company }}</span>
-                        </div>
-                        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
-                            <div v-if="selectedProject.location" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
-                                <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">location_on</span>
-                                <span>{{ selectedProject.location }}</span>
-                            </div>
-                            <div v-if="selectedProject.rating" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
-                                <span class="material-symbols-outlined" style="font-size:16px;color:#f1c40f;">star</span>
-                                <span>{{ selectedProject.rating }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
-                        <div v-if="selectedProject.type" style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
-                            {{ selectedProject.type }}
-                        </div>
-                        <div v-if="selectedProject.cost" style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
-                            {{ selectedProject.cost }}
-                        </div>
-                        <div v-if="selectedProject.area" style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
-                            {{ selectedProject.area }}
-                        </div>
-                    </div>
-
-                    <div v-if="selectedProject.details" style="margin-bottom:18px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">وصف المشروع</h3>
-                        <p style="font-size:13px;color:var(--text-muted);line-height:1.75;margin:0;">{{ selectedProject.details }}</p>
-                    </div>
-
-                    <div v-if="selectedProject.materials && selectedProject.materials.length" style="margin-bottom:20px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 10px;">
-                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
-                            المواد المستخدمة
-                        </h3>
-                        <div style="display:flex;gap:8px;overflow-x:auto;" class="hide-scroll">
-                            <div v-for="(mat, i) in selectedProject.materials" :key="i"
-                                 style="flex-shrink:0;width:110px;background:var(--card-bg);border-radius:10px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;"
-                                 @click.stop="openViewer(selectedProject.images ? selectedProject.images.indexOf(mat.image) : 0)">
-                                <div style="width:110px;height:80px;overflow:hidden;">
-                                    <img :src="mat.image" style="width:100%;height:100%;object-fit:cover;display:block;">
-                                </div>
-                                <div style="padding:6px;text-align:center;">
-                                    <span style="color:var(--text-white);font-size:11px;font-weight:600;">{{ mat.name }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="padding:12px 12px 80px;">
-                    <a :href="selectedProject.companyLink || ('company.html?name=' + encodeURIComponent(selectedProject.company))"
-                       style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">
-                        <span class="material-symbols-outlined" style="font-size:20px;">storefront</span>
-                        صفحة الشركة
-                    </a>
-                </div>
-            </div>
+            <project-detail v-if="selectedProject && !projectDetail"
+                :project="selectedProject"
+                :company-name="selectedProject.company"
+                :company-link="selectedProject.companyLink"
+                :company-verified="selectedProject.companyVerified"
+                :slide-index="modalSlide"
+                @close="selectedProject = null"
+                @open-viewer="openViewer"
+                @slide-change="(v) => modalSlide = v"
+            />
 
             <!-- Full-Screen Image Viewer -->
             <div v-if="viewerOpen" class="image-viewer"
@@ -264,10 +168,13 @@
                 <div v-if="viewerImages.length > 1" class="viewer-counter">{{ viewerIndex + 1 }} / {{ viewerImages.length }}</div>
             </div>
 
-            <div id="bottomNav"></div>
         </div>
     </div>
 
+    <div id="bottomNav"></div>
+
+    <script src="js/project-data.js"></script>
+    <script src="js/project-detail.js"></script>
     <script src="js/nav.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({ searchVModel: 'searchQuery', searchPlaceholder: 'ابحث عن مشاريع، مقاولين، منتجات...' });
@@ -275,7 +182,7 @@
 
         const { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } = Vue;
 
-        createApp({
+        var _vueApp = createApp({
             setup() {
                 initTheme();
 
@@ -558,9 +465,11 @@
                 })();
                 const ads = ref(loadedAds);
 
-                const latestWorks = ref([
+                var latestWorksBase = ref([
                     {
                         title: 'قصر المنصور السكني',
+                        type: 'سكني',
+                        companyVerified: false,
                         company: 'شركة البناء الحديث',
                         companyLink: 'company.html?id=' + encodeURIComponent('شركة البناء الحديث'),
                         bg: 'images/img16.jpg',
@@ -585,6 +494,8 @@
                     },
                     {
                         title: 'مستشفى السلام',
+                        type: 'طبي',
+                        companyVerified: false,
                         company: 'مقاولون العرب',
                         companyLink: 'company.html?id=' + encodeURIComponent('مقاولون العرب'),
                         bg: 'images/img20.jpg',
@@ -609,6 +520,8 @@
                     },
                     {
                         title: 'برج الأعمال',
+                        type: 'تجاري',
+                        companyVerified: true,
                         company: 'شركة الإنشاءات الوطنية',
                         companyLink: 'company.html?id=' + encodeURIComponent('شركة الإنشاءات الوطنية'),
                         bg: 'images/img24.jpg',
@@ -633,6 +546,8 @@
                     },
                     {
                         title: 'فلل الربيع',
+                        type: 'سكني',
+                        companyVerified: false,
                         company: 'شركة البناء الحديث',
                         companyLink: 'company.html?id=' + encodeURIComponent('شركة البناء الحديث'),
                         bg: 'images/img28.jpg',
@@ -657,6 +572,8 @@
                     },
                     {
                         title: 'مجمع النخيل التجاري',
+                        type: 'تجاري',
+                        companyVerified: true,
                         company: 'شركة الإنشاءات الوطنية',
                         companyLink: 'company.html?id=' + encodeURIComponent('شركة الإنشاءات الوطنية'),
                         bg: 'images/img1.jpg',
@@ -681,6 +598,8 @@
                     },
                     {
                         title: 'عمارة سكنية فاخرة',
+                        type: 'سكني',
+                        companyVerified: false,
                         company: 'مقاولون العرب',
                         companyLink: 'company.html?id=' + encodeURIComponent('مقاولون العرب'),
                         bg: 'images/img5.jpg',
@@ -705,6 +624,8 @@
                     },
                     {
                         title: 'فيلا دوبلكس',
+                        type: 'سكني',
+                        companyVerified: false,
                         company: 'شركة البناء الحديث',
                         companyLink: 'company.html?id=' + encodeURIComponent('شركة البناء الحديث'),
                         bg: 'images/img9.jpg',
@@ -729,6 +650,8 @@
                     },
                     {
                         title: 'مكتب حديث',
+                        type: 'مكتبي',
+                        companyVerified: true,
                         company: 'شركة الإنشاءات الوطنية',
                         companyLink: 'company.html?id=' + encodeURIComponent('شركة الإنشاءات الوطنية'),
                         bg: 'images/img13.jpg',
@@ -752,6 +675,29 @@
                         ]
                     }
                 ]);
+
+                function normalizeWork(item) {
+                    var gov = '', area = '';
+                    if (item.meta) {
+                        item.meta.forEach(function(m) {
+                            if (m.icon === 'location_on') gov = m.value;
+                            if (m.icon === 'straighten') area = m.value;
+                        });
+                    }
+                    return {
+                        ...item,
+                        governorate: item.governorate || gov,
+                        area: item.area || area,
+                        type: item.type || '',
+                        companyVerified: item.companyVerified === true
+                    };
+                }
+
+                var latestWorks = computed(function() {
+                    var base = latestWorksBase.value.map(normalizeWork);
+                    var featured = ProjectData.getFeaturedProjects().map(normalizeWork);
+                    return base.concat(featured);
+                });
 
                 const partners = ref([
                     { name: 'شركة البناء الحديث', logo: 'images/img1.jpg' },
@@ -930,7 +876,9 @@
                     partners, partnersTrack, togglePartnersPause
                 };
             }
-        }).mount('#app');
+        });
+        _vueApp.component('project-detail', ProjectDetailComp);
+        _vueApp.mount('#app');
     </script>
     <script>
         initFloatingCart();
