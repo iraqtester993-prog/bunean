@@ -8,6 +8,8 @@ var img = (function() {
 
 function makeProjects(count, base, prefix, areas, prices) {
   var list = [];
+  var locs = ['بغداد', 'البصرة', 'أربيل', 'النجف', 'كركوك', 'بابل', 'واسط', 'دهوك'];
+  var types = ['سكني', 'تجاري'];
   for (var i = 0; i < count; i++) {
     var imgs = [];
     for (var j = 0; j < 4; j++) imgs.push(img(((base + i * 3 + j * 7) % 31) + 1));
@@ -21,6 +23,8 @@ function makeProjects(count, base, prefix, areas, prices) {
       cost: costStr,
       area: a + ' م²',
       year: (2023 + i % 3) + '',
+      type: types[i % 2],
+      governorate: locs[i % locs.length],
       materials: [
         { name: 'خرسانة مسلحة', image: imgs[0] },
         { name: 'حديد تسليح', image: imgs[1] },
@@ -28,7 +32,7 @@ function makeProjects(count, base, prefix, areas, prices) {
         { name: 'أسمنت', image: imgs[3] }
       ],
       meta: [
-        { icon: 'location_on', label: 'الموقع', value: 'بغداد' },
+        { icon: 'location_on', label: 'الموقع', value: locs[i % locs.length] },
         { icon: 'straighten', label: 'المساحة', value: a + ' م²' },
         { icon: 'payments', label: 'التكلفة', value: costStr }
       ]
@@ -60,9 +64,9 @@ var companiesData = {
     years: 18, workers: 200, engineers: 35, done: 120,
     rating: 5, verified: true,
     projects: [
-      { title: 'قصر المنصور السكني', desc: 'قصر فاخر بمساحة 1000 م² مع تصاميم داخلية مستوحاة من الطراز الأندلسي الحديث.', images: [img(16), img(17), img(18), img(19)], cost: '750,000,000 د.ع', area: '1000 م²', year: '2025', materials: [{name:'رخام كارارا',image:img(16)},{name:'خشب زان',image:img(17)},{name:'زجاج سيكوريت',image:img(18)},{name:'سيراميك بورسلين',image:img(19)}], meta: [{icon:'location_on',label:'الموقع',value:'المنصور'},{icon:'straighten',label:'المساحة',value:'1000 م²'},{icon:'payments',label:'التكلفة',value:'750,000,000 د.ع'}] },
-      { title: 'فلل الربيع', desc: 'مشروع سكني يضم 30 فيلا مستقلة بتصاميم عصرية وحدائق خاصة.', images: [img(28), img(29), img(30), img(31)], cost: '3,500,000,000 د.ع', area: '3000 م²', year: '2025', materials: [{name:'طوب عازل',image:img(28)},{name:'أسمنت',image:img(29)},{name:'بلاط إنترلوك',image:img(30)},{name:'دهان خارجي',image:img(31)}], meta: [{icon:'location_on',label:'الموقع',value:'اليرموك'},{icon:'straighten',label:'المساحة',value:'3000 م²'},{icon:'payments',label:'التكلفة',value:'3,500,000,000 د.ع'}] },
-      { title: 'فيلا دوبلكس', desc: 'فيلا دوبلكس بتصميم عصري مع حديقة خاصة وحوض سباحة.', images: [img(9), img(10), img(11), img(12)], cost: '600,000,000 د.ع', area: '600 م²', year: '2024', materials: [{name:'بلاط حمامات',image:img(9)},{name:'أدوات صحية',image:img(10)},{name:'دهان مائي',image:img(11)},{name:'زجاج شفاف',image:img(12)}], meta: [{icon:'location_on',label:'الموقع',value:'المنصور'},{icon:'straighten',label:'المساحة',value:'600 م²'},{icon:'payments',label:'التكلفة',value:'600,000,000 د.ع'}] }
+      { title: 'قصر المنصور السكني', desc: 'قصر فاخر بمساحة 1000 م² مع تصاميم داخلية مستوحاة من الطراز الأندلسي الحديث.', images: [img(16), img(17), img(18), img(19)], cost: '750,000,000 د.ع', area: '1000 م²', year: '2025', type: 'سكني', governorate: 'بغداد', materials: [{name:'رخام كارارا',image:img(16)},{name:'خشب زان',image:img(17)},{name:'زجاج سيكوريت',image:img(18)},{name:'سيراميك بورسلين',image:img(19)}], meta: [{icon:'location_on',label:'الموقع',value:'المنصور'},{icon:'straighten',label:'المساحة',value:'1000 م²'},{icon:'payments',label:'التكلفة',value:'750,000,000 د.ع'}] },
+      { title: 'فلل الربيع', desc: 'مشروع سكني يضم 30 فيلا مستقلة بتصاميم عصرية وحدائق خاصة.', images: [img(28), img(29), img(30), img(31)], cost: '3,500,000,000 د.ع', area: '3000 م²', year: '2025', type: 'سكني', governorate: 'بغداد', materials: [{name:'طوب عازل',image:img(28)},{name:'أسمنت',image:img(29)},{name:'بلاط إنترلوك',image:img(30)},{name:'دهان خارجي',image:img(31)}], meta: [{icon:'location_on',label:'الموقع',value:'اليرموك'},{icon:'straighten',label:'المساحة',value:'3000 م²'},{icon:'payments',label:'التكلفة',value:'3,500,000,000 د.ع'}] },
+      { title: 'فيلا دوبلكس', desc: 'فيلا دوبلكس بتصميم عصري مع حديقة خاصة وحوض سباحة.', images: [img(9), img(10), img(11), img(12)], cost: '600,000,000 د.ع', area: '600 م²', year: '2024', type: 'سكني', governorate: 'بغداد', materials: [{name:'بلاط حمامات',image:img(9)},{name:'أدوات صحية',image:img(10)},{name:'دهان مائي',image:img(11)},{name:'زجاج شفاف',image:img(12)}], meta: [{icon:'location_on',label:'الموقع',value:'المنصور'},{icon:'straighten',label:'المساحة',value:'600 م²'},{icon:'payments',label:'التكلفة',value:'600,000,000 د.ع'}] }
     ],
     reviews: [
       { name: 'أحمد محمد', rating: 5, text: 'شركة ممتازة، أنجزوا مشروعي بجودة عالية.', time: 'قبل شهر' },
@@ -84,10 +88,10 @@ var companiesData = {
     years: 25, workers: 350, engineers: 50, done: 200,
     rating: 4, verified: true,
     projects: [
-      { title: 'مستشفى السلام', desc: 'مستشفى بسعة 200 سرير مع أحدث التجهيزات الطبية والمعامل.', images: [img(20), img(21), img(22), img(23)], cost: '2,500,000,000 د.ع', area: '8000 م²', year: '2025', materials: [{name:'خرسانة مسلحة',image:img(20)},{name:'دهان مضاد للبكتيريا',image:img(21)},{name:'أرضيات إيبوكسي',image:img(22)},{name:'نوافذ ألمنيوم',image:img(23)}], meta: [{icon:'location_on',label:'الموقع',value:'الرصافة'},{icon:'straighten',label:'المساحة',value:'8000 م²'},{icon:'payments',label:'التكلفة',value:'2,500,000,000 د.ع'}] },
-      { title: 'عمارة سكنية فاخرة', desc: 'عمارة سكنية بمساحة 500 م² تحتوي على 12 شقة فاخرة.', images: [img(5), img(6), img(7), img(8)], cost: '850,000,000 د.ع', area: '500 م²', year: '2024', materials: [{name:'رخام أرضيات',image:img(5)},{name:'خشب أبواب',image:img(6)},{name:'دهان جدران',image:img(7)},{name:'نوافذ UPVC',image:img(8)}], meta: [{icon:'location_on',label:'الموقع',value:'الزهراء'},{icon:'straighten',label:'المساحة',value:'500 م²'},{icon:'payments',label:'التكلفة',value:'850,000,000 د.ع'}] },
-      { title: 'فيلا النخيل الفاخرة', desc: 'فيلا سكنية فاخرة بمساحة 500 متر مربع مع حديقة ومسبح.', images: [img(1), img(2), img(3)], cost: '450,000,000 د.ع', area: '500 م²', year: '2024', materials: [{name:'رخام',image:img(1)},{name:'زجاج',image:img(2)},{name:'خشب',image:img(3)}], meta: [{icon:'location_on',label:'الموقع',value:'بغداد'},{icon:'straighten',label:'المساحة',value:'500 م²'},{icon:'payments',label:'التكلفة',value:'450,000,000 د.ع'}] },
-      { title: 'مبنى الكرادة التجاري', desc: 'مبنى تجاري متكامل من 7 طوابق في قلب بغداد.', images: [img(4), img(5), img(6)], cost: '1,200,000,000 د.ع', area: '2000 م²', year: '2023', materials: [{name:'زجاج واجهات',image:img(4)},{name:'سيراميك',image:img(5)},{name:'دهان',image:img(6)}], meta: [{icon:'location_on',label:'الموقع',value:'الكرادة'},{icon:'straighten',label:'المساحة',value:'2000 م²'},{icon:'payments',label:'التكلفة',value:'1,200,000,000 د.ع'}] }
+      { title: 'مستشفى السلام', desc: 'مستشفى بسعة 200 سرير مع أحدث التجهيزات الطبية والمعامل.', images: [img(20), img(21), img(22), img(23)], cost: '2,500,000,000 د.ع', area: '8000 م²', year: '2025', type: 'تجاري', governorate: 'بغداد', materials: [{name:'خرسانة مسلحة',image:img(20)},{name:'دهان مضاد للبكتيريا',image:img(21)},{name:'أرضيات إيبوكسي',image:img(22)},{name:'نوافذ ألمنيوم',image:img(23)}], meta: [{icon:'location_on',label:'الموقع',value:'الرصافة'},{icon:'straighten',label:'المساحة',value:'8000 م²'},{icon:'payments',label:'التكلفة',value:'2,500,000,000 د.ع'}] },
+      { title: 'عمارة سكنية فاخرة', desc: 'عمارة سكنية بمساحة 500 م² تحتوي على 12 شقة فاخرة.', images: [img(5), img(6), img(7), img(8)], cost: '850,000,000 د.ع', area: '500 م²', year: '2024', type: 'سكني', governorate: 'بغداد', materials: [{name:'رخام أرضيات',image:img(5)},{name:'خشب أبواب',image:img(6)},{name:'دهان جدران',image:img(7)},{name:'نوافذ UPVC',image:img(8)}], meta: [{icon:'location_on',label:'الموقع',value:'الزهراء'},{icon:'straighten',label:'المساحة',value:'500 م²'},{icon:'payments',label:'التكلفة',value:'850,000,000 د.ع'}] },
+      { title: 'فيلا النخيل الفاخرة', desc: 'فيلا سكنية فاخرة بمساحة 500 متر مربع مع حديقة ومسبح.', images: [img(1), img(2), img(3)], cost: '450,000,000 د.ع', area: '500 م²', year: '2024', type: 'سكني', governorate: 'بغداد', materials: [{name:'رخام',image:img(1)},{name:'زجاج',image:img(2)},{name:'خشب',image:img(3)}], meta: [{icon:'location_on',label:'الموقع',value:'بغداد'},{icon:'straighten',label:'المساحة',value:'500 م²'},{icon:'payments',label:'التكلفة',value:'450,000,000 د.ع'}] },
+      { title: 'مبنى الكرادة التجاري', desc: 'مبنى تجاري متكامل من 7 طوابق في قلب بغداد.', images: [img(4), img(5), img(6)], cost: '1,200,000,000 د.ع', area: '2000 م²', year: '2023', type: 'تجاري', governorate: 'بغداد', materials: [{name:'زجاج واجهات',image:img(4)},{name:'سيراميك',image:img(5)},{name:'دهان',image:img(6)}], meta: [{icon:'location_on',label:'الموقع',value:'الكرادة'},{icon:'straighten',label:'المساحة',value:'2000 م²'},{icon:'payments',label:'التكلفة',value:'1,200,000,000 د.ع'}] }
     ],
     reviews: [
       { name: 'أحمد محمد', rating: 5, text: 'شركة ممتازة ومحترفة. أنجزوا مشروعي في الوقت المحدد وبجودة عالية جداً.', time: 'قبل أسبوع' },

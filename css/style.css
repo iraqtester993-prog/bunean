@@ -3936,6 +3936,13 @@ html.light-mode .ideas-projects-header h2 {
   gap: 4px;
 }
 
+.idea-project-meta-col {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  margin-top: 4px;
+}
+
 .idea-project-meta span {
   font-size: 10px;
   color: var(--text-light);
@@ -3947,6 +3954,27 @@ html.light-mode .ideas-projects-header h2 {
 }
 
 .idea-project-meta .material-symbols-outlined {
+  font-size: 12px;
+  color: var(--accent-gold);
+}
+
+.company-project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.company-project-meta span {
+  font-size: 10px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 500;
+}
+
+.company-project-meta .material-symbols-outlined {
   font-size: 12px;
   color: var(--accent-gold);
 }

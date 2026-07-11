@@ -313,15 +313,12 @@
                             </div>
                             <div class="idea-project-info">
                                 <h3>{{ proj.title }}</h3>
-                                <div class="idea-project-company">
-                                    <span class="material-symbols-outlined">business</span>
-                                    {{ proj.company }}
+                                <div class="idea-project-meta idea-project-meta-col">
+                                    <span><span class="material-symbols-outlined">location_on</span> {{ proj.governorate || '---' }}</span>
+                                    <span><span class="material-symbols-outlined">domain</span> {{ proj.type || '---' }}</span>
+                                    <span><span class="material-symbols-outlined">calendar_today</span> {{ proj.year || '---' }}</span>
+                                    <span><span class="material-symbols-outlined">payments</span> {{ proj.price }}</span>
                                 </div>
-                                <div class="idea-project-meta">
-                                     <span><span class="material-symbols-outlined">payments</span> {{ proj.price }}</span>
-                                     <span class="idea-meta-divider">|</span>
-                                     <span><span class="material-symbols-outlined">straighten</span> {{ proj.area }} م²</span>
-                                 </div>
                             </div>
                         </div>
                     </div>
@@ -538,6 +535,8 @@
                     company: opts.company || 'شركة البناء الحديث',
                     companyLink: 'company.html?id=' + encodeURIComponent(opts.company || 'شركة البناء الحديث'),
                     governorate: govs[i % 8],
+                    type: (i % 2 === 0) ? 'سكني' : 'تجاري',
+                    year: String(2024 + (i % 3)),
                     style: sty[i % 8],
                     areaNum: areas[i % 8],
                     area: areas[i % 8],
@@ -626,11 +625,20 @@
                     var userData = (function() { try { return JSON.parse(localStorage.getItem('bunean-user-data')); } catch(e) { return null; } })();
                     var companyName = (userData && userData.name) || 'شركتي';
                     return companyProfile.value.projects.map(function(p) {
+                        var pType = '';
+                        if (p.category) {
+                            if (p.category.includes('تجاري')) pType = 'تجاري';
+                            else if (p.category.includes('سكني')) pType = 'سكني';
+                        }
+                        var pYear = '';
+                        if (p.date) pYear = p.date.split('-')[0];
                         return {
                             title: p.title,
                             company: companyName,
                             companyLink: 'company.html?id=' + encodeURIComponent(companyName),
                             governorate: '',
+                            type: pType,
+                            year: pYear,
                             style: '',
                             areaNum: 0,
                             area: 0,
