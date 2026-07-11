@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - كل الأعمال</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/project-modal.js"></script>
+    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content::-webkit-scrollbar{display:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}</style>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <div id="header"></div>
+
+            <!-- كارت الرجوع تحت الهدر -->
+            <div v-if="!selectedProject" style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+                <a href="javascript:history.back()" style="display:flex;align-items:center;gap:4px;color:var(--text-light);text-decoration:none;font-size:13px;font-weight:500;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                </a>
+                <div style="flex:1;text-align:center;">
+                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">جميع الأعمال</span>
+                </div>
+            </div>
+
+            <div class="page-content" v-if="!selectedProject">
+                <div class="works-grid">
+                    <div v-for="(work, i) in latestWorks" :key="i" class="work-card" @click="openProject(work)">
+                        <img :src="work.bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
+                        <div class="work-overlay">
+                            <span class="work-title">{{ work.title }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة تفاصيل المشروع -->
+            <div v-if="selectedProject" style="overflow-y:auto;flex:1;padding-bottom:80px;" class="hide-scroll">
+                <!-- كارت الرجوع -->
+                <div style="position:sticky;top:0;z-index:20;margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;backdrop-filter:blur(8px);">
+                    <button @click="selectedProject = null" style="background:none;border:none;color:var(--text-light);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;">
+                        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                        العودة
+                    </button>
+                    <div style="flex:1;text-align:center;">
+                        <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">تفاصيل المشروع</span>
+                    </div>
+                </div>
+
+                    <!-- سلايدر الصور -->
+                    <div style="position:relative;background:#000;margin-bottom:12px;" @click="openViewer(modalSlide)">
+                        <div style="display:flex;transition:transform 0.3s;" :style="{ transform: 'translateX(' + (modalSlide * 100) + '%)' }">
+                            <div v-for="(img, i) in selectedProject.images" :key="i" style="min-width:100%;aspect-ratio:4/3;">
+                                <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
+                            </div>
+                        </div>
+                        <div v-if="selectedProject.images.length > 1" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;">
+                            <span v-for="(img, i) in selectedProject.images" :key="i"
+                                  style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.5);transition:all 0.3s;"
+                                  :style="{ background: i === modalSlide ? '#c9a243' : 'rgba(255,255,255,0.5)', transform: i === modalSlide ? 'scale(1.3)' : '' }"
+                                  @click.stop="modalSlide = i"></span>
+                        </div>
+                        <div v-if="selectedProject.images.length > 1" style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;direction:ltr;">
+                            {{ modalSlide + 1 }} / {{ selectedProject.images.length }}
+                        </div>
+                    </div>
+
+                    <!-- صور مصغرة -->
+                    <div v-if="selectedProject.images.length > 1" style="display:flex;gap:6px;overflow-x:auto;padding:0 12px 12px;" class="hide-scroll">
+                        <div v-for="(img, i) in selectedProject.images" :key="i"
+                             style="flex-shrink:0;width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border-color 0.2s;"
+                             :style="{ borderColor: i === modalSlide ? 'var(--accent-gold)' : 'transparent' }"
+                             @click="modalSlide = i">
+                            <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
+                        </div>
+                    </div>
+
+                    <!-- التفاصيل -->
+                    <div style="padding:0 12px;">
+                        <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 10px;">{{ selectedProject.title }}</h2>
+
+                        <div v-if="selectedProject.cost" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
+                            <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ selectedProject.cost }}</span>
+                        </div>
+
+                        <div v-if="selectedProject.location || selectedProject.type" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                            <span v-if="selectedProject.location" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
+                                <span class="material-symbols-outlined" style="font-size:16px;">location_on</span>
+                                {{ selectedProject.location }}
+                            </span>
+                            <span v-if="selectedProject.type" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
+                                <span class="material-symbols-outlined" style="font-size:16px;">domain</span>
+                                {{ selectedProject.type }}
+                            </span>
+                        </div>
+
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">business</span>
+                            <span style="color:var(--accent-gold);font-size:14px;font-weight:600;">{{ selectedProject.company }}</span>
+                        </div>
+
+                        <div v-if="selectedProject.details" style="margin-bottom:16px;">
+                            <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 6px;">وصف المشروع</h3>
+                            <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin:0;">{{ selectedProject.details }}</p>
+                        </div>
+
+                        <div v-if="selectedProject.meta && selectedProject.meta.length" style="margin-bottom:16px;">
+                            <div v-for="(item, i) in selectedProject.meta" :key="i"
+                                 style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-light);">
+                                <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">{{ item.icon }}</span>
+                                <span style="font-size:13px;color:var(--text-muted);">{{ item.label }}: <strong style="color:var(--text-white);">{{ item.value }}</strong></span>
+                            </div>
+                        </div>
+
+                        <div v-if="selectedProject.materials && selectedProject.materials.length" style="margin-bottom:20px;">
+                            <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">
+                                <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
+                                المواد المستخدمة
+                            </h3>
+                            <div style="display:flex;gap:8px;overflow-x:auto;" class="hide-scroll">
+                                <div v-for="(mat, i) in selectedProject.materials" :key="i"
+                                     style="flex-shrink:0;width:110px;background:var(--card-bg);border-radius:10px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;"
+                                     @click.stop="openViewer(selectedProject.images ? selectedProject.images.indexOf(mat.image) : 0)">
+                                    <div style="width:110px;height:80px;overflow:hidden;">
+                                        <img :src="mat.image" style="width:100%;height:100%;object-fit:cover;display:block;">
+                                    </div>
+                                    <div style="padding:6px;text-align:center;">
+                                        <span style="color:var(--text-white);font-size:11px;font-weight:600;">{{ mat.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding:12px 12px 80px;">
+                        <a :href="selectedProject.companyLink || ('company.html?name=' + encodeURIComponent(selectedProject.company))"
+                           style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">
+                            <span class="material-symbols-outlined" style="font-size:20px;">storefront</span>
+                            صفحة الشركة
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- معرض الصور كامل الشاشة -->
+            <div v-if="viewerOpen" class="image-viewer"
+                 @touchstart.passive="viewerTouch.onTouchStart"
+                 @touchmove.passive="viewerTouch.onTouchMove"
+                 @touchend="viewerTouch.onTouchEnd($event, closeViewer)">
+                <button class="viewer-close" @click="closeViewer">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <button v-if="viewerImages.length > 1" class="viewer-nav viewer-prev" @click="prevViewer">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+                <div class="viewer-image-wrap" @click="closeViewer">
+                    <img :src="viewerImages[viewerIndex]" class="viewer-image" alt=""
+                         :style="{ transform: 'scale(' + viewerScale + ') translate(' + viewerPanX/viewerScale + 'px, ' + viewerPanY/viewerScale + 'px)', transition: isPinch ? 'none' : 'transform 0.2s' }">
+                </div>
+                <button v-if="viewerImages.length > 1" class="viewer-nav viewer-next" @click="nextViewer">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <div v-if="viewerImages.length > 1" class="viewer-counter">{{ viewerIndex + 1 }} / {{ viewerImages.length }}</div>
+            </div>
+
+            <div id="bottomNav"></div>
+        </div>
+    </div>
+
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({});
+        document.getElementById('bottomNav').innerHTML = renderNav('home');
+
+        const { createApp, ref, watch, nextTick, onMounted, onUnmounted } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+
+                var myData = (function() { try { return JSON.parse(localStorage.getItem('bunean-user-data')); } catch(e) { return null; } })();
+                const isCompany = myData && myData.role === 'company';
+
+                const latestWorks = ref([]);
+                const selectedProject = ref(null);
+                const modalSlide = ref(0);
+                const viewerOpen = ref(false);
+                const viewerIndex = ref(0);
+                const viewerImages = ref([]);
+                const viewerScale = ref(1);
+                const viewerPanX = ref(0);
+                const viewerPanY = ref(0);
+                const isPinch = ref(false);
+
+                function normalizeAd(ad) {
+                    var mat = ad.materials || [];
+                    return {
+                        title: ad.title || 'مشروع جديد',
+                        company: ad.company || '',
+                        companyLink: ad.company ? 'company.html?id=' + encodeURIComponent(ad.company) : '',
+                        bg: ad.bg || 'images/img16.jpg',
+                        images: ad.images || [ad.bg || 'images/img16.jpg'],
+                        details: ad.details || '',
+                        cost: ad.cost || '',
+                        type: ad.type || '',
+                        location: ad.location || '',
+                        area: ad.area || '',
+                        meta: ad.meta || [],
+                        materials: mat
+                    };
+                }
+
+                function loadLatestWorks() {
+                    var data = [
+                        {
+                            title: 'قصر المنصور السكني',
+                            company: 'شركة البناء الحديث',
+                            companyLink: 'company.html?id=' + encodeURIComponent('شركة البناء الحديث'),
+                            bg: 'images/img16.jpg',
+                            images: ['images/img16.jpg','images/img17.jpg','images/img18.jpg','images/img19.jpg'],
+                            details: 'قصر فاخر بمساحة 1000 م² مع تصاميم داخلية مستوحاة من الطراز الأندلسي الحديث.',
+                            cost: '750,000,000 د.ع',
+                            meta: [
+                                { icon: 'location_on', label: 'الموقع', value: 'المنصور' },
+                                { icon: 'straighten', label: 'المساحة', value: '1000 م²' }
+                            ],
+                            materials: [
+                                { name: 'رخام كارارا', image: 'images/img16.jpg' },
+                                { name: 'خشب زان', image: 'images/img17.jpg' },
+                                { name: 'زجاج سيكوريت', image: 'images/img18.jpg' },
+                                { name: 'سيراميك بورسلين', image: 'images/img19.jpg' }
+                            ]
+                        },
+                        {
+                            title: 'مستشفى السلام',
+                            company: 'مقاولون العرب',
+                            companyLink: 'company.html?id=' + encodeURIComponent('مقاولون العرب'),
+                            bg: 'images/img20.jpg',
+                            images: ['images/img20.jpg','images/img21.jpg','images/img22.jpg','images/img23.jpg'],
+                            details: 'مستشفى بسعة 200 سرير مع أحدث التجهيزات الطبية والمعامل.',
+                            cost: '2,500,000,000 د.ع',
+                            meta: [
+                                { icon: 'location_on', label: 'الموقع', value: 'الرصافة' },
+                                { icon: 'straighten', label: 'المساحة', value: '8000 م²' }
+                            ],
+                            materials: [
+                                { name: 'خرسانة مسلحة', image: 'images/img20.jpg' },
+                                { name: 'دهان مضاد للبكتيريا', image: 'images/img21.jpg' },
+                                { name: 'أرضيات إيبوكسي', image: 'images/img22.jpg' },
+                                { name: 'نوافذ ألمنيوم', image: 'images/img23.jpg' }
+                            ]
+                        },
+                        {
+                            title: 'برج الأعمال',
+                            company: 'شركة الإنشاءات الوطنية',
+                            companyLink: 'company.html?id=' + encodeURIComponent('شركة الإنشاءات الوطنية'),
+                            bg: 'images/img24.jpg',
+                            images: ['images/img24.jpg','images/img25.jpg','images/img26.jpg','images/img27.jpg'],
+                            details: 'برج إداري بارتفاع 20 طابقاً مع واجهة زجاجية عصرية.',
+                            cost: '5,000,000,000 د.ع',
+                            meta: [
+                                { icon: 'location_on', label: 'الموقع', value: 'شارع فلسطين' },
+                                { icon: 'straighten', label: 'المساحة', value: '12000 م²' }
+                            ],
+                            materials: [
+                                { name: 'واجهة زجاجية', image: 'images/img24.jpg' },
+                                { name: 'صلب إنشائي', image: 'images/img25.jpg' },
+                                { name: 'جرانيت', image: 'images/img26.jpg' },
+                                { name: 'مصاعد أوتيس', image: 'images/img27.jpg' }
+                            ]
+                        },
+                        {
+                            title: 'فلل الربيع',
+                            company: 'شركة البناء الحديث',
+                            companyLink: 'company.html?id=' + encodeURIComponent('شركة البناء الحديث'),
+                            bg: 'images/img28.jpg',
+                            images: ['images/img28.jpg','images/img29.jpg','images/img30.jpg','images/img31.jpg'],
+                            details: 'مشروع سكني يضم 30 فيلا مستقلة بتصاميم عصرية وحدائق خاصة.',
+                            cost: '3,500,000,000 د.ع',
+                            meta: [
+                                { icon: 'location_on', label: 'الموقع', value: 'اليرموك' },
+                                { icon: 'straighten', label: 'المساحة', value: '3000 م²' }
+                            ],
+                            materials: [
+                                { name: 'طوب عازل', image: 'images/img28.jpg' },
+                                { name: 'أسمنت', image: 'images/img29.jpg' },
+                                { name: 'بلاط إنترلوك', image: 'images/img30.jpg' },
+                                { name: 'دهان خارجي', image: 'images/img31.jpg' }
+                            ]
+                        }
+                    ];
+                    latestWorks.value = data.map(normalizeAd);
+                }
+
+                loadLatestWorks();
+
+                function openProject(project) {
+                    selectedProject.value = project;
+                    modalSlide.value = 0;
+                }
+
+                function openViewer(index) {
+                    if (!selectedProject.value) return;
+                    viewerImages.value = selectedProject.value.images;
+                    viewerIndex.value = index || 0;
+                    viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0;
+                    viewerOpen.value = true;
+                }
+                function closeViewer() { viewerOpen.value = false; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                function nextViewer() {
+                    if (viewerIndex.value < viewerImages.value.length - 1) { viewerIndex.value++; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                }
+                function prevViewer() {
+                    if (viewerIndex.value > 0) { viewerIndex.value--; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; }
+                }
+
+                var viewerTouch = (function() {
+                    var sx = 0, startDist = 0, lastDist = 0;
+                    return {
+                        onTouchStart: function(e) {
+                            sx = e.touches[0].clientX;
+                            if (e.touches.length > 1) { isPinch.value = true; startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); lastDist = startDist; }
+                        },
+                        onTouchMove: function(e) {
+                            if (e.touches.length > 1) {
+                                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                                viewerScale.value = Math.max(1, Math.min(5, viewerScale.value * (d / lastDist)));
+                                lastDist = d;
+                            }
+                        },
+                        onTouchEnd: function(e, closeFn) {
+                            if (isPinch.value) { isPinch.value = false; return; }
+                            if (Math.abs(e.changedTouches[0].clientX - sx) < 30 && viewerScale.value <= 1) { closeFn(); }
+                        }
+                    };
+                })();
+
+                return {
+                    latestWorks, selectedProject, modalSlide,
+                    viewerOpen, viewerIndex, viewerScale, viewerPanX, viewerPanY, viewerImages, isPinch,
+                    openProject, openViewer, closeViewer, nextViewer, prevViewer, viewerTouch
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

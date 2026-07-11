@@ -314,22 +314,22 @@
                 <!-- ===== عرض منتجات القسم ===== -->
                 <div v-if="!productDetailView && activeCatView && !cartView && !calculatorView && !checkoutView" class="mkt-cat-view">
 
-                    <!-- أفقية -->
-                    <div class="mkt-cat-products-scroll">
-                        <div v-for="(p, i) in catProducts" :key="i" class="mkt-prod-card" @click="openProduct(p)">
-                            <div class="mkt-prod-img">
+                    <!-- سلايدر صور المنتجات -->
+                    <div class="mkt-cat-slider"
+                         @touchstart.passive="catSliderTouch.onTouchStart"
+                         @touchend="catSliderTouch.onTouchEnd">
+                        <div class="mkt-cat-slider-track" dir="ltr" :style="{ transform: 'translateX(-' + (catSlide * 100) + '%)' }">
+                            <div v-for="(p, i) in catProducts" :key="i" class="mkt-cat-slider-slide">
                                 <img :src="p.img" alt="">
-                            </div>
-                            <div class="mkt-prod-info">
-                                <div class="mkt-prod-name">{{ p.name }}</div>
-                                <div class="mkt-prod-price">{{ fmt(p.price) }} د.ع</div>
-                                <div class="mkt-prod-rating">
-                                    <span v-for="s in 5" :key="s" class="star" :class="{ filled: s <= p.rating }">star</span>
+                                <div class="mkt-cat-slider-overlay"></div>
+                                <div class="mkt-cat-slider-info" dir="rtl">
+                                    <h3>{{ p.name }}</h3>
+                                    <p>{{ fmt(p.price) }} د.ع</p>
                                 </div>
                             </div>
-                            <button class="mkt-card-detail-btn" @click.stop="openProduct(p)" style="margin:6px 10px;width:calc(100% - 20px);">
-                                عرض التفاصيل
-                            </button>
+                        </div>
+                        <div v-if="catProducts.length > 1" class="mkt-cat-slider-dots">
+                            <span v-for="(p, i) in catProducts" :key="i" class="dot" :class="{ active: i === catSlide }" @click="catSlide = i"></span>
                         </div>
                     </div>
 
@@ -820,6 +820,7 @@
                 var projTypeOpen = ref(false);
                 var selectedProjType = ref('');
                 var mktSlide = ref(0);
+                var catSlide = ref(0);
                 var mktTimer = null;
                 var showAllView = ref(false);
                 watch(showAllView, function(v) { if (v) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); });
@@ -1089,6 +1090,7 @@
 
                 function selectCat(i) {
                     activeCatView.value = i;
+                    catSlide.value = 0;
                 }
 
                 function openProduct(p) {
@@ -1390,6 +1392,20 @@
                     };
                 })();
 
+                var catSliderTouch = (function() {
+                    var sx = 0;
+                    return {
+                        onTouchStart: function(e) { sx = e.touches[0].clientX; },
+                        onTouchEnd: function(e) {
+                            var dx = e.changedTouches[0].clientX - sx;
+                            if (Math.abs(dx) > 40) {
+                                var len = catProducts.value.length;
+                                catSlide.value = (catSlide.value + (dx < 0 ? 1 : -1) + len) % len;
+                            }
+                        }
+                    };
+                })();
+
                 onMounted(function() {
                     resetMktTimer();
                     window.addEventListener('mkt-toggle-cart', function() {
@@ -1416,7 +1432,7 @@
 
                 return {
                     categories, searchQuery, activeCatView, cartView, calculatorView, checkoutView,
-                    sliderImages, mktSlide, sliderTouch, resetMktTimer,
+                    sliderImages, mktSlide, sliderTouch, resetMktTimer, catSlide, catSliderTouch,
                     allProducts, topProducts, allTopProducts, suppliers, offers, showAllView, showAllOffers, showAllSuppliers,
                     catProducts, filteredCatProducts, selectCat, openProduct, addToCart,
                     cart, cartCount, cartSubtotal, cartTotal, saveCart,

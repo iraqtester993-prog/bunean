@@ -34,7 +34,7 @@
             <div id="header"></div>
 
             <!-- Exec-header outside page-content, flush with header -->
-            <div v-if="activeCategory" style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
+            <div v-if="activeCategory" style="position:sticky;top:0;z-index:20;margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;flex-shrink:0;backdrop-filter:blur(8px);">
                 <button @click="activeCategory = null" style="display:flex;align-items:center;gap:4px;color:var(--text-light);background:none;border:none;padding:0;cursor:pointer;font-size:13px;font-weight:500;font-family:Cairo,sans-serif;">
                     <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
                 </button>

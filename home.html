@@ -27,24 +27,15 @@
     <script src="js/bottom-nav.js"></script>
     <script src="js/router.js"></script>
     <script src="js/project-modal.js"></script>
-    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll,.page-content::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}</style>
+    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content::-webkit-scrollbar{display:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}
+.partners-track-wrapper{overflow:hidden;padding:0 14px 12px;position:relative;}.partners-track{display:flex;gap:12px;width:fit-content;}.partner-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;width:90px;cursor:pointer;transition:transform 0.2s;}.partner-item:active{transform:scale(0.92);}.partner-icon{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--bg-card-light);border:2px solid var(--border-input);display:flex;align-items:center;justify-content:center;transition:all 0.3s;}.partner-icon img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;filter:grayscale(40%);transition:filter 0.3s;}.partner-item:active .partner-icon img{filter:grayscale(0%);}.partner-item:active .partner-icon{border-color:var(--accent-gold);}.partner-name{font-size:10px;font-weight:600;color:var(--text-light);text-align:center;line-height:1.2;white-space:nowrap;}</style>
 </head>
 <body>
     <div id="app" v-cloak>
         <div class="app-container">
             <div id="header"></div>
 
-            <div v-if="showAllWorks && !selectedProject" style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;flex-shrink:0;">
-                <button @click="showAllWorks = false" style="display:flex;align-items:center;gap:4px;color:var(--text-light);background:none;border:none;padding:0;cursor:pointer;font-size:13px;font-weight:500;font-family:Cairo,sans-serif;">
-                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
-                </button>
-                <div style="flex:1;text-align:center;">
-                    <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">جميع الأعمال</span>
-                </div>
-            </div>
-
             <div class="page-content" v-if="!selectedProject">
-                <div v-if="!showAllWorks">
                 <!-- Hero Slider -->
                 <div class="hero-slider"
                      @touchstart.passive="heroSwipe.onTouchStart"
@@ -82,10 +73,6 @@
                 <!-- Ads -->
                 <div class="section-header">
                     <span class="section-title">إعلانات ممولة</span>
-                    <a v-if="isCompany" href="account.html?section=company-ads" class="ad-book-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:50px;background:var(--accent-gold);color:var(--primary-dark);font-size:12px;font-weight:700;font-family:Cairo,sans-serif;border:none;cursor:pointer;">
-                        <span class="material-symbols-outlined" style="font-size:18px;">campaign</span>
-                        احجز اعلانك
-                    </a>
                 </div>
                 <div class="ad-slider"
                      @touchstart.passive="adSwipe.onTouchStart"
@@ -108,11 +95,11 @@
                 </div>
 
                 <!-- Latest Works -->
-                <div v-if="!showAllWorks" class="section-header">
+                <div class="section-header">
                     <span class="section-title">آخر الأعمال</span>
-                    <span class="section-link" @click="showAllWorks = true">عرض الكل</span>
+                    <a class="section-link" href="all-works.html">عرض الكل</a>
                 </div>
-                <div v-if="!showAllWorks" class="works-grid">
+                <div class="works-carousel hide-scroll">
                     <div v-for="(work, i) in latestWorks.slice(0, 4)" :key="i"
                          class="work-card" @click="openProject(work)">
                         <img :src="work.bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
@@ -122,28 +109,36 @@
                     </div>
                 </div>
 
-                <!-- padding -->
-                <div style="height: 20px;"></div>
+                <!-- شركائنا -->
+                <div class="section-header">
+                    <span class="section-title">شركائنا</span>
                 </div>
-
-                <div v-if="showAllWorks" class="all-works-view">
-                    <div class="works-grid">
-                        <div v-for="(work, i) in latestWorks" :key="i"
-                             class="work-card" @click="openProject(work)">
-                            <img :src="work.bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
-                            <div class="work-overlay">
-                                <span class="work-title">{{ work.title }}</span>
+                <div class="partners-track-wrapper" @mouseenter="togglePartnersPause(true)" @mouseleave="togglePartnersPause(false)" @touchstart="togglePartnersPause(true)" @touchend="togglePartnersPause(false)">
+                    <div ref="partnersTrack" class="partners-track">
+                        <div v-for="(partner, i) in partners" :key="i" class="partner-item">
+                            <div class="partner-icon">
+                                <img :src="partner.logo" :alt="partner.name">
                             </div>
+                            <span class="partner-name">{{ partner.name }}</span>
+                        </div>
+                        <div v-for="(partner, i) in partners" :key="'dup-'+i" class="partner-item">
+                            <div class="partner-icon">
+                                <img :src="partner.logo" :alt="partner.name">
+                            </div>
+                            <span class="partner-name">{{ partner.name }}</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- padding -->
+                <div style="height: 20px;"></div>
 
             </div>
 
             <!-- صفحة تفاصيل المشروع (شاشة كاملة مع الهدر والنايف) -->
             <div v-if="selectedProject && !projectDetail" style="overflow-y:auto;flex:1;padding-bottom:80px;">
                 <!-- كارت الرجوع -->
-                <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;">
+                <div style="position:sticky;top:0;z-index:20;margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;backdrop-filter:blur(8px);">
                     <button @click="selectedProject = null" style="background:none;border:none;color:var(--text-light);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;">
                         <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
                         العودة
@@ -185,30 +180,42 @@
                 <div style="padding:0 12px;">
                     <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 10px;">{{ selectedProject.title }}</h2>
 
-                    <!-- الشركة -->
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">business</span>
-                        <span style="color:var(--accent-gold);font-size:14px;font-weight:600;">{{ selectedProject.company }}</span>
-                    </div>
-
-                    <!-- الوصف -->
-                    <div v-if="selectedProject.details" style="margin-bottom:16px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 6px;">وصف المشروع</h3>
-                        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin:0;">{{ selectedProject.details }}</p>
-                    </div>
-
-                    <!-- الميتا -->
-                    <div v-if="selectedProject.meta && selectedProject.meta.length" style="margin-bottom:16px;">
-                        <div v-for="(item, i) in selectedProject.meta" :key="i"
-                             style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-light);">
-                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">{{ item.icon }}</span>
-                            <span style="font-size:13px;color:var(--text-muted);">{{ item.label }}: <strong style="color:var(--text-white);">{{ item.value }}</strong></span>
+                    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">business</span>
+                            <span style="color:var(--accent-gold);font-size:14px;font-weight:600;">{{ selectedProject.company }}</span>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+                            <div v-if="selectedProject.location" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
+                                <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">location_on</span>
+                                <span>{{ selectedProject.location }}</span>
+                            </div>
+                            <div v-if="selectedProject.rating" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
+                                <span class="material-symbols-outlined" style="font-size:16px;color:#f1c40f;">star</span>
+                                <span>{{ selectedProject.rating }}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- المواد المستخدمة -->
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+                        <div v-if="selectedProject.type" style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.type }}
+                        </div>
+                        <div v-if="selectedProject.cost" style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.cost }}
+                        </div>
+                        <div v-if="selectedProject.area" style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.area }}
+                        </div>
+                    </div>
+
+                    <div v-if="selectedProject.details" style="margin-bottom:18px;">
+                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">وصف المشروع</h3>
+                        <p style="font-size:13px;color:var(--text-muted);line-height:1.75;margin:0;">{{ selectedProject.details }}</p>
+                    </div>
+
                     <div v-if="selectedProject.materials && selectedProject.materials.length" style="margin-bottom:20px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">
+                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 10px;">
                             <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
                             المواد المستخدمة
                         </h3>
@@ -227,9 +234,8 @@
                     </div>
                 </div>
 
-                <!-- زر صفحة الشركة ثابت في الأسفل -->
-                <div style="padding:12px;padding-bottom:80px;">
-                    <a :href="selectedProject.companyLink || ('execute.html?company=' + encodeURIComponent(selectedProject.company))"
+                <div style="padding:12px 12px 80px;">
+                    <a :href="selectedProject.companyLink || ('company.html?name=' + encodeURIComponent(selectedProject.company))"
                        style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">
                         <span class="material-symbols-outlined" style="font-size:20px;">storefront</span>
                         صفحة الشركة
@@ -287,18 +293,6 @@
                 const viewerIndex = ref(0);
                 const modalPullY = ref(0);
                 const modalClosing = ref(false);
-                const showAllWorks = ref(localStorage.getItem('bunean_showAllWorks') === 'true');
-                watch(showAllWorks, function(v) {
-                    localStorage.setItem('bunean_showAllWorks', v);
-                    if (v) {
-                        nextTick(function() {
-                            var el = document.querySelector('.all-works-view');
-                            if (el) el.scrollIntoView({ block: 'start' });
-                            var pc = document.querySelector('.page-content');
-                            if (pc) pc.scrollTop = 0;
-                        });
-                    }
-                });
                 const adSlide = ref(0);
                 let slideTimer = null;
                 let adTimer = null;
@@ -512,13 +506,15 @@
                     }
                 ]);
 
-                const sections = ref([
-                    { name: 'بناء منزل', icon: 'home', link: 'execute.html?cat=بناء%20وإنشاء' },
-                    { name: 'تصميم داخلي', icon: 'chair', link: 'execute.html?cat=تصميم%20داخلي' },
-                    { name: 'تشطيب', icon: 'format_paint', link: 'execute.html?cat=تشطيبات%20داخلية' },
-                    { name: 'شراء مواد', icon: 'storefront', link: 'market.html' },
-                    { name: 'استشارات', icon: 'engineering', link: 'quotes.html' }
-                ]);
+                const sections = computed(function() {
+                    return [
+                        { name: 'بناء منزل', icon: 'home', link: 'execute.html?cat=بناء%20وإنشاء' },
+                        { name: 'تصميم داخلي', icon: 'chair', link: 'execute.html?cat=تصميم%20داخلي' },
+                        { name: 'تشطيب', icon: 'format_paint', link: 'execute.html?cat=تشطيبات%20داخلية' },
+                        { name: 'شراء مواد', icon: 'storefront', link: 'market.html' },
+                        isCompany ? { name: 'احجز إعلانك', icon: 'campaign', link: 'account.html?section=company-ads' } : { name: 'استشارات', icon: 'engineering', link: 'quotes.html' }
+                    ];
+                });
 
                 function normalizeAd(ad) {
                     var imgs = ad.images && ad.images.length ? ad.images : (ad.image ? [ad.image] : ['images/img1.jpg']);
@@ -757,6 +753,42 @@
                     }
                 ]);
 
+                const partners = ref([
+                    { name: 'شركة البناء الحديث', logo: 'images/img1.jpg' },
+                    { name: 'مقاولون العرب', logo: 'images/img5.jpg' },
+                    { name: 'الإنشاءات الوطنية', logo: 'images/img9.jpg' },
+                    { name: 'مكتب السلام', logo: 'images/img13.jpg' },
+                    { name: 'مؤسسة الإتقان', logo: 'images/img17.jpg' },
+                    { name: 'شركة التطوير', logo: 'images/img21.jpg' },
+                    { name: 'مقاولو الخليج', logo: 'images/img25.jpg' },
+                    { name: 'بيت العمر', logo: 'images/img29.jpg' }
+                ]);
+                const partnersTrack = ref(null);
+                var partnersPos = 0;
+                var partnersPaused = false;
+                var partnersAnimId = null;
+
+                function partnersStep() {
+                    var el = partnersTrack.value;
+                    if (!el) { partnersAnimId = requestAnimationFrame(partnersStep); return; }
+                    if (!partnersPaused) {
+                        partnersPos -= 0.5;
+                        var half = el.scrollWidth / 2;
+                        if (Math.abs(partnersPos) >= half) partnersPos = 0;
+                        el.style.transform = 'translateX(' + partnersPos + 'px)';
+                    }
+                    partnersAnimId = requestAnimationFrame(partnersStep);
+                }
+                function startPartnersScroll() {
+                    partnersPaused = false;
+                    if (partnersAnimId) cancelAnimationFrame(partnersAnimId);
+                    partnersAnimId = requestAnimationFrame(partnersStep);
+                }
+                function stopPartnersScroll() {
+                    if (partnersAnimId) { cancelAnimationFrame(partnersAnimId); partnersAnimId = null; }
+                }
+                function togglePartnersPause(pause) { partnersPaused = pause; }
+
                 function startSlideTimer() {
                     slideTimer = setInterval(() => {
                         currentSlide.value = (currentSlide.value + 1) % slides.value.length;
@@ -865,20 +897,27 @@
                     }
                 }
 
+                watch(selectedProject, function(v) {
+                    if (v) stopPartnersScroll();
+                    else nextTick(function() { startPartnersScroll(); });
+                });
+
                 onMounted(() => {
                     startSlideTimer();
                     startAdTimer();
+                    startPartnersScroll();
                     window.addEventListener('popstate', handlePopState);
                 });
 
                 onUnmounted(() => {
                     stopSlideTimer();
                     stopAdTimer();
+                    stopPartnersScroll();
                     window.removeEventListener('popstate', handlePopState);
                 });
 
                 return {
-                    isCompany, searchQuery, currentSlide, slides, sections, ads, latestWorks,
+                    isCompany, searchQuery, currentSlide, slides, sections, ads, latestWorks, partners,
                     selectedProject, modalSlide,
                     openProject, closeModal,
                     projectDetail, detailSlide,
@@ -887,7 +926,8 @@
                     openViewer, openDetailViewer, closeViewer, nextViewer, prevViewer, backToPreview,
                     heroSwipe, adSwipe, modalTouch, viewerTouch, detailSwipe,
                     modalPullY, pullTransform, modalClosing,
-                    adSlide, resetAdTimer, showAllWorks
+                    adSlide, resetAdTimer,
+                    partners, partnersTrack, togglePartnersPause
                 };
             }
         }).mount('#app');

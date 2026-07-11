@@ -349,7 +349,7 @@
             <!-- صفحة تفاصيل المشروع (شاشة كاملة مع الهدر والنايف) -->
             <div v-if="selectedProject" style="flex:1;padding-bottom:80px;" class="hide-scroll ideas-project-detail">
                 <!-- كارت الرجوع -->
-                <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;">
+                <div style="position:sticky;top:0;z-index:20;margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;backdrop-filter:blur(8px);">
                     <button @click="selectedProject = null" style="background:none;border:none;color:var(--text-light);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;">
                         <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
                         العودة
@@ -389,52 +389,44 @@
 
                 <!-- التفاصيل -->
                 <div style="padding:0 12px;">
-                    <!-- العنوان -->
-                    <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 10px;">{{ selectedProject.title }}</h2>
+                    <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 6px;">{{ selectedProject.title }}</h2>
 
-                    <!-- السعر -->
-                    <div v-if="selectedProject.price" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
-                        <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
-                        <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ selectedProject.price }}</span>
-                    </div>
-
-                    <!-- معلومات الموقع والنوع -->
-                    <div v-if="selectedProject.governorate || selectedProject.type" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-                        <span v-if="selectedProject.governorate" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
-                            <span class="material-symbols-outlined" style="font-size:16px;">location_on</span>
-                            {{ selectedProject.governorate }}
-                        </span>
-                        <span v-if="selectedProject.type" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
-                            <span class="material-symbols-outlined" style="font-size:16px;">domain</span>
-                            {{ selectedProject.type }}
-                        </span>
-                    </div>
-
-                    <!-- الشركة -->
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">business</span>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">business</span>
                         <a v-if="selectedProject.companyLink" :href="selectedProject.companyLink" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">{{ selectedProject.company }}</a>
                         <span v-else style="color:var(--accent-gold);font-size:14px;font-weight:600;">{{ selectedProject.company }}</span>
                     </div>
 
-                    <!-- الوصف -->
-                    <div v-if="selectedProject.details" style="margin-bottom:16px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 6px;">وصف المشروع</h3>
-                        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin:0;">{{ selectedProject.details }}</p>
-                    </div>
-
-                    <!-- الميتا -->
-                    <div v-if="selectedProject.meta && selectedProject.meta.length" style="margin-bottom:16px;">
-                        <div v-for="(item, i) in selectedProject.meta" :key="i"
-                             style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-light);">
-                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">{{ item.icon }}</span>
-                            <span style="font-size:13px;color:var(--text-muted);">{{ item.label }}: <strong style="color:var(--text-white);">{{ item.value }}</strong></span>
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                        <div v-if="selectedProject.governorate" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">location_on</span>
+                            <span>{{ selectedProject.governorate }}</span>
+                        </div>
+                        <div v-if="selectedProject.rating" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:#f1c40f;">star</span>
+                            <span>{{ selectedProject.rating }}</span>
                         </div>
                     </div>
 
-                    <!-- المواد المستخدمة -->
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+                        <div style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.type || 'نوع المشروع' }}
+                        </div>
+                        <div style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.price || 'التكلفة' }}
+                        </div>
+                        <div style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.area || 'المساحة' }}
+                        </div>
+                    </div>
+
+                    <div v-if="selectedProject.details" style="margin-bottom:18px;">
+                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">وصف المشروع</h3>
+                        <p style="font-size:13px;color:var(--text-muted);line-height:1.75;margin:0;">{{ selectedProject.details }}</p>
+                    </div>
+
                     <div v-if="selectedProject.materials && selectedProject.materials.length" style="margin-bottom:20px;">
-                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">
+                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 10px;">
                             <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
                             المواد المستخدمة
                         </h3>
@@ -453,9 +445,8 @@
                     </div>
                 </div>
 
-                <!-- زر صفحة الشركة ثابت في الأسفل -->
                 <div style="padding:12px;padding-bottom:80px;">
-                    <a v-if="selectedProject.companyLink" :href="selectedProject.companyLink"
+                    <a :href="selectedProject.companyLink || ('company.html?name=' + encodeURIComponent(selectedProject.company))"
                        style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">
                         <span class="material-symbols-outlined" style="font-size:20px;">storefront</span>
                         صفحة الشركة

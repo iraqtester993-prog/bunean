@@ -2368,12 +2368,34 @@ html.light-mode .brand-alert-btn {
   color: var(--text-light);
 }
 
-/* ===== Latest Works Grid ===== */
+/* ===== Latest Works List ===== */
 .works-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   padding: 0 16px 16px;
+}
+
+.works-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 16px 16px;
+  scroll-snap-type: x mandatory;
+}
+
+.works-carousel .work-card {
+  flex: 0 0 75%;
+  max-width: 75%;
+  min-width: 220px;
+  scroll-snap-align: start;
+  aspect-ratio: 1.2;
+}
+
+.works-grid .work-card {
+  width: 100%;
+  aspect-ratio: auto;
+  min-height: 220px;
 }
 
 .work-card {
@@ -5074,6 +5096,82 @@ html:not(.light-mode) .exec-cat-divider {
   transition: all 0.3s ease;
 }
 .mkt-slider-dots .dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--accent-gold);
+}
+
+/* --- سلايدر منتجات القسم --- */
+.mkt-cat-slider {
+  position: relative;
+  margin: 0 16px 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 200px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.mkt-cat-slider-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.mkt-cat-slider-slide {
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+}
+.mkt-cat-slider-slide img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mkt-cat-slider-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.75) 100%);
+}
+.mkt-cat-slider-info {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  left: 16px;
+  z-index: 2;
+  color: #fff;
+}
+.mkt-cat-slider-info h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.mkt-cat-slider-info p {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--accent-gold);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.mkt-cat-slider-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+}
+.mkt-cat-slider-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.mkt-cat-slider-dots .dot.active {
   width: 24px;
   border-radius: 4px;
   background: var(--accent-gold);

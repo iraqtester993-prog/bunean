@@ -27,7 +27,7 @@
     <script src="js/bottom-nav.js"></script>
     <script src="js/router.js"></script>
     <script src="js/companies.js"></script>
-    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll,.page-content::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}</style>
+    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content::-webkit-scrollbar{display:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}</style>
 </head>
 <body>
     <div id="app" v-cloak>
@@ -235,6 +235,15 @@
 
             <!-- صفحة تفاصيل المشروع (شاشة كاملة مع الهدر والنايف) -->
             <div v-if="selectedProject" class="page-content" style="padding-bottom:80px;">
+                <div style="position:sticky;top:0;z-index:20;margin:8px 12px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;backdrop-filter:blur(8px);">
+                    <button @click="selectedProject = null" style="background:none;border:none;color:var(--text-light);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;">
+                        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                        العودة
+                    </button>
+                    <div style="flex:1;text-align:center;">
+                        <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">تفاصيل المشروع</span>
+                    </div>
+                </div>
                 <!-- سلايدر الصور -->
                 <div style="position:relative;background:#000;margin-bottom:12px;" @click="openViewerFromMaterial(detailSlide)">
                     <div style="display:flex;transition:transform 0.3s;" :style="{ transform: 'translateX(' + (detailSlide * 100) + '%)' }">
@@ -266,31 +275,36 @@
                 <!-- التفاصيل -->
                 <div style="padding:0 12px;">
                     <!-- العنوان -->
-                    <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 10px;">{{ selectedProject.title || selectedProject.name }}</h2>
-
-                    <!-- التكلفة -->
-                    <div v-if="selectedProject.cost" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
-                        <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
-                        <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ selectedProject.cost }}</span>
-                    </div>
-
-                    <!-- معلومات الموقع والنوع -->
-                    <div v-if="selectedProject.location || selectedProject.type" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-                        <span v-if="selectedProject.location" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
-                            <span class="material-symbols-outlined" style="font-size:16px;">location_on</span>
-                            {{ selectedProject.location }}
-                        </span>
-                        <span v-if="selectedProject.type" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
-                            <span class="material-symbols-outlined" style="font-size:16px;">domain</span>
-                            {{ selectedProject.type }}
-                        </span>
-                    </div>
+                    <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 6px;">{{ selectedProject.title || selectedProject.name }}</h2>
 
                     <!-- الشركة -->
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
                         <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">business</span>
                         <a :href="'company.html?id=' + encodeURIComponent(company.name)" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">{{ company.name }}</a>
                         <svg v-if="company.verified" style="width:16px;height:16px;color:#4caf50;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
+
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                        <div v-if="selectedProject.location" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">location_on</span>
+                            <span>{{ selectedProject.location }}</span>
+                        </div>
+                        <div v-if="selectedProject.rating" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:#f1c40f;">star</span>
+                            <span>{{ selectedProject.rating }}</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+                        <div v-if="selectedProject.type" style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.type }}
+                        </div>
+                        <div v-if="selectedProject.cost" style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.cost }}
+                        </div>
+                        <div v-if="selectedProject.area" style="flex:1;min-width:120px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border-light);font-size:13px;color:var(--text-white);">
+                            {{ selectedProject.area }}
+                        </div>
                     </div>
 
                     <!-- الوصف -->
