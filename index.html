@@ -1046,12 +1046,21 @@
                     view.value = 'otp-verify';
                 };
 
+                const logOtpAttempt = (phone, status) => {
+                    var log = JSON.parse(localStorage.getItem('bunean-otp-log') || '[]');
+                    log.push({ phone: phone, status: status, time: new Date().toISOString() });
+                    if (log.length > 100) log = log.slice(-100);
+                    localStorage.setItem('bunean-otp-log', JSON.stringify(log));
+                };
+
                 const verifyOtp = () => {
                     otpError.value = '';
                     if (otpCode.value !== '123456') {
+                        logOtpAttempt(pendingPhone.value, 'فاشل');
                         otpError.value = 'رمز التحقق غير صحيح';
                         return;
                     }
+                    logOtpAttempt(pendingPhone.value, 'ناجح');
                     var pd = pendingRegData.value;
                     if (!pd) { showBrandAlert('خطأ في بيانات التسجيل'); return; }
 
@@ -1091,9 +1100,11 @@
                 const handleResetOtp = () => {
                     forgotError.value = '';
                     if (resetOtp.value !== '123456') {
+                        logOtpAttempt(resetPhone.value, 'فاشل - نسيت كلمة المرور');
                         forgotError.value = 'رمز التحقق غير صحيح';
                         return;
                     }
+                    logOtpAttempt(resetPhone.value, 'ناجح - نسيت كلمة المرور');
                     forgotStep.value = 'reset';
                 };
 

@@ -879,6 +879,19 @@ html.light-mode .search-panel input {
   font-size: 16px;
   font-weight: 700;
   color: var(--accent-gold);
+  position: relative;
+  padding-bottom: 4px;
+  display: inline-block;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  right: 0;
+  width: 28px;
+  height: 3px;
+  background: #FF8800;
+  border-radius: 2px;
 }
 
 .section-link {
@@ -3815,6 +3828,19 @@ html.light-mode .ideas-show-all-btn {
   color: var(--text-white);
   margin: 0;
   line-height: 1.3;
+  display: inline-block;
+  position: relative;
+  padding-bottom: 4px;
+}
+.ideas-projects-header h2::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  right: 0;
+  width: 28px;
+  height: 3px;
+  background: #FF8800;
+  border-radius: 2px;
 }
 
 .ideas-projects-header p {

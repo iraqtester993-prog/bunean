@@ -65,20 +65,12 @@
 
                 <!-- سياسة الخصوصية -->
                 <div class="privacy-content" v-if="tab === 'privacy'">
-                    <div class="privacy-text">
-                        <div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">
-                            قريباً...
-                        </div>
-                    </div>
+                    <div class="privacy-text" v-html="privacyContent"></div>
                 </div>
 
                 <!-- الشروط والأحكام -->
                 <div class="privacy-content" v-if="tab === 'terms'">
-                    <div class="privacy-text">
-                        <div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">
-                            قريباً...
-                        </div>
-                    </div>
+                    <div class="privacy-text" v-html="termsContent"></div>
                 </div>
             </div>
         </div>
@@ -90,11 +82,14 @@
         document.getElementById('header').innerHTML = renderHeader({});
         document.getElementById('bottomNav').innerHTML = renderNav('account');
 
-        const { createApp, ref } = Vue;
+        const { createApp, ref, computed } = Vue;
         createApp({
             setup() {
                 const tab = ref('privacy');
-                return { tab };
+                var saved = JSON.parse(localStorage.getItem('bunean-privacy-content') || '{}');
+                const privacyContent = ref(saved.privacy || '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">قريباً...</div>');
+                const termsContent = ref(saved.terms || '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">قريباً...</div>');
+                return { tab, privacyContent, termsContent };
             }
         }).mount('#app');
     </script>

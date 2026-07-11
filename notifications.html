@@ -58,6 +58,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
             </div>
             <!-- Tabs row -->
             <div style="display:flex;gap:6px;padding:4px 16px 0;flex-shrink:0;overflow-x:auto;">
+                <button class="notif-tab" data-tab="all" @click="switchTab('all')">الكل</button>
                 <button class="notif-tab" data-tab="support" @click="switchTab('support')">الدعم الفني</button>
                 <button class="notif-tab" data-tab="offer" @click="switchTab('offer')">العروض</button>
                 <button class="notif-tab" data-tab="service" @click="switchTab('service')">طلب الخدمة</button>
@@ -164,13 +165,54 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                 }
 
                 var notifications = computed(function() {
-                    var all = staticNotifications.value.slice();
+                    var all = [];
+                    // Load static notifications
+                    var staticList = staticNotifications.value;
+                    for (var s = 0; s < staticList.length; s++) {
+                        all.push(staticList[s]);
+                    }
+                    // Load from bunean-notifications (dashboard)
+                    try {
+                        var dashNotifs = JSON.parse(localStorage.getItem('bunean-notifications') || '[]');
+                        var currentUser = localStorage.getItem('bunean-user-auth') || '';
+                        var companyAuth = JSON.parse(localStorage.getItem('bunean-company-auth') || 'null');
+                        var companyName = companyAuth ? companyAuth.name : '';
+                        for (var d = 0; d < dashNotifs.length; d++) {
+                            var dn = dashNotifs[d];
+                            // Check if this notification is for this user
+                            var showForMe = false;
+                            if (dn.targetType === 'all' || dn.targetType === undefined) showForMe = true;
+                            else if (dn.targetType === 'users' && !isCompany) showForMe = true;
+                            else if (dn.targetType === 'companies' && isCompany) showForMe = true;
+                            else if (dn.targetType === 'user' && dn.target === currentUser) showForMe = true;
+                            else if (dn.targetType === 'company' && companyName && dn.target === companyName) showForMe = true;
+                            if (showForMe) {
+                                all.push({
+                                    id: 'dash_' + dn.id,
+                                    type: dn.targetType === 'offer' ? 'offer' : 'support',
+                                    read: dn.read || false,
+                                    title: dn.title || 'إشعار',
+                                    preview: dn.message || '',
+                                    time: dn.date || '',
+                                    message: dn.message || '',
+                                    fromDashboard: true
+                                });
+                            }
+                        }
+                    } catch(e) {}
+                    // Load quote requests
                     var qr = loadQuoteRequestNotifs();
+                    for (var q = 0; q < qr.length; q++) all.push(qr[q]);
+                    // Load service requests
                     var sr = loadServiceRequestNotifs();
-                    return all.concat(qr).concat(sr);
+                    for (var sv = 0; sv < sr.length; sv++) all.push(sr[sv]);
+                    // Sort by newest first
+                    all.sort(function(a,b){ return (b.id || 0) - (a.id || 0); });
+                    return all;
                 });
 
                 var filtered = computed(function() {
+                    if (activeTab.value === 'all') return notifications.value;
                     return notifications.value.filter(function(n) { return n.type === activeTab.value; });
                 });
 
