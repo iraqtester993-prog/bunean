@@ -27,6 +27,7 @@
     <script src="js/bottom-nav.js"></script>
     <script src="js/router.js"></script>
     <script src="js/companies.js"></script>
+    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll,.page-content::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}</style>
 </head>
 <body>
     <div id="app" v-cloak>
@@ -34,7 +35,7 @@
             <div id="header"></div>
 
             <!-- كارت الرجوع تحت الهدر -->
-            <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;">
+            <div v-if="!showAllProjects && !selectedProject" style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;display:flex;align-items:center;padding:4px 12px;">
                 <a href="javascript:history.back()" style="display:flex;align-items:center;gap:4px;color:var(--text-light);text-decoration:none;font-size:13px;font-weight:500;">
                     <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
                 </a>
@@ -43,7 +44,7 @@
                 </div>
             </div>
 
-            <div class="page-content">
+            <div class="page-content" v-if="!showAllProjects && !selectedProject">
                 <!-- الغلاف والشعار -->
                 <div style="position:relative;">
                     <img :src="company.cover" class="company-cover" alt="cover" style="display:block;width:100%;">
@@ -112,9 +113,10 @@
 
                 <!-- أعمال الشركة -->
                 <div v-if="company.workImages && company.workImages.length" style="padding:0 16px 16px;">
-                    <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                    <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin-bottom:14px;display:inline-flex;align-items:center;gap:6px;position:relative;padding-bottom:6px;">
                         <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">image</span>
                         أعمال الشركة
+                        <span style="position:absolute;bottom:0;right:0;width:28px;height:3px;background:#FF8800;border-radius:2px;"></span>
                     </h3>
                     <div class="exec-slider" style="border-radius:12px;overflow:hidden;"
                          @touchstart.passive="workSwipe.onTouchStart"
@@ -138,13 +140,13 @@
                             معرض المشاريع
                             <span style="position:absolute;bottom:-4px;right:0;width:28px;height:3px;background:#FF8800;border-radius:2px;"></span>
                         </h3>
-                        <button v-if="company.projects.length > 4" @click="showAllProjects = !showAllProjects"
+                        <button v-if="company.projects.length > 0" @click="showAllProjects = true"
                                 style="background:none;border:none;color:var(--accent-gold);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;">
-                            {{ showAllProjects ? 'عرض أقل' : 'عرض الكل' }} ({{ company.projects.length }})
+                            عرض الكل ({{ company.projects.length }})
                         </button>
                     </div>
-                    <div class="projects-grid" style="padding:0;">
-                        <div v-for="(project, i) in visibleProjects" :key="i" class="project-card" @click="selectedProject = project; detailSlide = 0;">
+                    <div style="display:flex;gap:14px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+                        <div v-for="(project, i) in visibleProjects" :key="i" class="project-card" @click="selectedProject = project; detailSlide = 0;" style="min-width:220px;max-width:220px;flex-shrink:0;">
                             <div class="card-image">
                                 <img :src="project.images ? project.images[0] : project.image" alt="" style="width:100%;height:100%;object-fit:cover;">
                             </div>
@@ -161,139 +163,179 @@
                     </div>
                 </div>
 
-                <!-- أزرار الإجراءات -->
-                <div v-if="!isCompany" style="padding:20px 16px 30px;">
-                    <a :href="'service-request.html?company=' + encodeURIComponent(company.name)" class="btn-outline" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:700;">
-                        <span class="material-symbols-outlined" style="font-size:20px;">handyman</span>
-                        طلب خدمة
-                    </a>
-                </div>
-            </div>
-
-            <!-- مودال معاينة المشروع -->
-            <div v-if="selectedProject" class="project-modal" @click.self="closeProjectModal">
-                <div class="modal-content" :style="{ transform: pullTransform }"
-                     @touchstart.passive="modalTouch.onTouchStart"
-                     @touchmove.passive="modalTouch.onTouchMove"
-                     @touchend="modalTouch.onTouchEnd($event, closeProjectModal)">
-                    <div class="modal-pull-bar"><span></span></div>
-                    <button class="modal-close" @click="closeProjectModal">
-                        <span class="material-symbols-outlined close-icon">close</span>
-                        <span class="material-symbols-outlined arrow-icon">arrow_back</span>
-                    </button>
-                    <div class="modal-slider" @click="openViewer(detailSlide)">
-                        <div class="modal-slider-track" dir="ltr" :style="{ transform: `translateX(-${detailSlide * 100}%)` }">
-                            <div v-for="(img, i) in (selectedProject.images || [selectedProject.image])" :key="i" class="modal-slide">
-                                <div class="modal-slide-img">
-                                    <img :src="img" alt="">
-                                </div>
+                <!-- كارت هل ترغب بتنفيذ مشروعك -->
+                <div v-if="!isCompany" style="padding:0 16px 30px;">
+                    <div class="cta-card">
+                        <div class="cta-card-bg"></div>
+                        <div class="cta-card-body">
+                            <div>
+                                <h3 class="cta-card-title">هل ترغب بتنفيذ مشروعك؟</h3>
+                                <p class="cta-card-subtitle">احصل على عرض سعر من {{ company.name }}</p>
                             </div>
-                        </div>
-                        <div v-if="(selectedProject.images || []).length > 1" class="modal-slider-dots">
-                            <span v-for="(img, i) in selectedProject.images" :key="i"
-                                  class="dot" :class="{ active: i === detailSlide }"
-                                  @click.stop="detailSlide = i"></span>
-                        </div>
-                    </div>
-                    <div v-if="(selectedProject.images || []).length > 1" class="modal-thumbs">
-                        <div v-for="(img, i) in selectedProject.images" :key="i"
-                             class="modal-thumb" :class="{ active: i === detailSlide }"
-                             @click="detailSlide = i">
-                            <img :src="img" alt="">
-                        </div>
-                    </div>
-                    <div class="modal-details">
-                        <h2>{{ selectedProject.title || selectedProject.name }}</h2>
-                        <div v-if="selectedProject.cost" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
-                            <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ selectedProject.cost }}</span>
-                        </div>
-                        <div class="modal-company">
-                            <span class="material-symbols-outlined">business</span>
-                            <a :href="'company.html?id=' + encodeURIComponent(company.name)" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">
-                                {{ company.name }}
-                            </a>
-                        </div>
-                        <p class="modal-desc">{{ selectedProject.desc }}</p>
-                        <div v-if="selectedProject.meta" class="modal-meta">
-                            <div v-for="(item, i) in selectedProject.meta" :key="i" class="modal-meta-item">
-                                <span class="material-symbols-outlined">{{ item.icon }}</span>
-                                <span>{{ item.label }}: {{ item.value }}</span>
-                            </div>
-                        </div>
-                        <div style="display:flex;gap:10px;margin-top:16px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));">
-                            <button class="btn-outline" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 0;color:var(--accent-gold);border-color:var(--accent-gold);" @click="showProjectDetail(selectedProject)">
-                                <span class="material-symbols-outlined" style="font-size:18px;">description</span>
-                                تفاصيل
+                            <button @click="showConfirmModal = true" class="cta-card-btn">
+                                <span class="material-symbols-outlined" style="font-size:18px;">request_quote</span>
+                                طلب عرض سعر
                             </button>
                         </div>
                     </div>
                 </div>
+
+                <!-- مودال تأكيد إرسال الطلب -->
+                <div v-if="showConfirmModal" class="project-modal" @click.self="showConfirmModal = false" style="z-index:600;">
+                    <div class="modal-content" style="margin:auto;width:90%;max-width:340px;border-radius:16px;overflow:hidden;">
+                        <div style="padding:28px 20px 20px;text-align:center;">
+                            <div style="width:56px;height:56px;border-radius:50%;background:rgba(201,162,67,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                                <span class="material-symbols-outlined" style="font-size:28px;color:var(--accent-gold);">send</span>
+                            </div>
+                            <h3 style="font-size:16px;font-weight:700;color:var(--text-white);margin:0 0 6px;">تأكيد إرسال الطلب</h3>
+                            <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">سيتم إرسال طلب عرض سعر إلى <strong style="color:var(--accent-gold);">{{ company.name }}</strong> وسنتصل بك خلال 24 ساعة</p>
+                            <div style="display:flex;gap:10px;">
+                                <button @click="showConfirmModal = false" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border-light);background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;font-family:Cairo,sans-serif;">إلغاء</button>
+                                <a :href="'service-request.html?company=' + encodeURIComponent(company.name) + '&type=quote'" style="flex:1;padding:12px;border-radius:10px;background:var(--accent-gold);color:var(--primary-dark);font-size:13px;font-weight:700;text-decoration:none;text-align:center;font-family:Cairo,sans-serif;">تأكيد وإرسال</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- مودال تفاصيل المشروع كاملة (شاشة كاملة) -->
-            <div v-if="projectDetail" class="project-modal" @click.self="closeProjectDetail">
-                <div class="modal-content" style="padding-top:calc(62px + env(safe-area-inset-top,0px));position:relative;">
-                    <button class="modal-close" @click="backToPreview" style="z-index:301;right:12px;left:auto;top:calc(62px + env(safe-area-inset-top,0px));">
+            <!-- صفحة عرض كل المشاريع -->
+            <div v-if="showAllProjects" class="page-content" style="padding-bottom:80px;">
+                <!-- كارت الرجوع -->
+                <div style="margin:8px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;align-items:center;padding:4px 12px;">
+                    <button @click="showAllProjects = false" style="background:none;border:none;color:var(--text-light);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;">
                         <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+                        العودة
                     </button>
-                    <button class="modal-close" @click="closeProjectDetail" style="z-index:301;left:12px;right:auto;top:calc(62px + env(safe-area-inset-top,0px));">
-                        <span class="material-symbols-outlined close-icon">close</span>
-                        <span class="material-symbols-outlined arrow-icon">arrow_back</span>
-                    </button>
-                    <div class="modal-slider" style="border-radius:0;"
-                         @touchstart.passive="detailSwipe.onTouchStart"
-                         @touchmove.passive="detailSwipe.onTouchMove"
-                         @touchend="detailSwipe.onTouchEnd"
-                         @click="openDetailViewer(detailSlide2)">
-                        <div class="modal-slider-track" dir="ltr" :style="{ transform: `translateX(-${detailSlide2 * 100}%)` }">
-                            <div v-for="(img, i) in (projectDetail.images || [projectDetail.image])" :key="i" class="modal-slide">
-                                <div class="modal-slide-img">
-                                    <img :src="img" alt="" @click.stop="openDetailViewer(i)">
+                    <div style="flex:1;text-align:center;">
+                        <span style="font-size:15px;font-weight:600;color:var(--accent-gold);">جميع المشاريع</span>
+                    </div>
+                    <span style="font-size:11px;color:var(--text-muted);">{{ company.projects.length }} مشروع</span>
+                </div>
+
+                <!-- قائمة المشاريع -->
+                <div style="padding:12px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div v-for="(project, i) in company.projects" :key="i" class="project-card" @click="selectedProject = project; detailSlide = 0; showAllProjects = false;">
+                            <div class="card-image">
+                                <img :src="project.images ? project.images[0] : project.image" alt="" style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <div class="card-body">
+                                <div class="card-title">{{ project.title || project.name }}</div>
+                                <div class="company-project-meta">
+                                    <span><span class="material-symbols-outlined">location_on</span> {{ project.location || '---' }}</span>
+                                    <span><span class="material-symbols-outlined">domain</span> {{ project.type || '---' }}</span>
+                                    <span><span class="material-symbols-outlined">calendar_today</span> {{ project.year || '---' }}</span>
+                                    <span><span class="material-symbols-outlined">payments</span> {{ project.cost || '---' }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="(projectDetail.images || []).length > 1" class="modal-slider-dots">
-                            <span v-for="(img, i) in projectDetail.images" :key="i"
-                                  class="dot" :class="{ active: i === detailSlide2 }"
-                                  @click.stop="detailSlide2 = i"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة تفاصيل المشروع (شاشة كاملة مع الهدر والنايف) -->
+            <div v-if="selectedProject" class="page-content" style="padding-bottom:80px;">
+                <!-- سلايدر الصور -->
+                <div style="position:relative;background:#000;margin-bottom:12px;" @click="openViewerFromMaterial(detailSlide)">
+                    <div style="display:flex;transition:transform 0.3s;" :style="{ transform: 'translateX(' + (detailSlide * 100) + '%)' }">
+                        <div v-for="(img, i) in (selectedProject.images || [selectedProject.image])" :key="i" style="min-width:100%;aspect-ratio:4/3;">
+                            <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
                         </div>
                     </div>
-                    <div class="modal-details">
-                        <h2>{{ projectDetail.title || projectDetail.name }}</h2>
-                        <div v-if="projectDetail.cost" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
-                            <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ projectDetail.cost }}</span>
+                    <div v-if="(selectedProject.images || []).length > 1" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;">
+                        <span v-for="(img, i) in selectedProject.images" :key="i"
+                              style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.5);transition:all 0.3s;"
+                              :style="{ background: i === detailSlide ? '#c9a243' : 'rgba(255,255,255,0.5)', transform: i === detailSlide ? 'scale(1.3)' : '' }"
+                              @click.stop="detailSlide = i"></span>
+                    </div>
+                    <div v-if="(selectedProject.images || []).length > 1" style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;direction:ltr;" dir="ltr">
+                        {{ detailSlide + 1 }} / {{ (selectedProject.images || []).length }}
+                    </div>
+                </div>
+
+                <!-- صور مصغرة -->
+                <div v-if="(selectedProject.images || []).length > 1" style="display:flex;gap:6px;overflow-x:auto;padding:0 12px 12px;" class="hide-scroll">
+                    <div v-for="(img, i) in selectedProject.images" :key="i"
+                         style="flex-shrink:0;width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border-color 0.2s;"
+                         :style="{ borderColor: i === detailSlide ? 'var(--accent-gold)' : 'transparent' }"
+                         @click="detailSlide = i">
+                        <img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">
+                    </div>
+                </div>
+
+                <!-- التفاصيل -->
+                <div style="padding:0 12px;">
+                    <!-- العنوان -->
+                    <h2 style="font-size:18px;font-weight:700;color:var(--text-white);margin:0 0 10px;">{{ selectedProject.title || selectedProject.name }}</h2>
+
+                    <!-- التكلفة -->
+                    <div v-if="selectedProject.cost" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                        <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">payments</span>
+                        <span style="color:#4caf50;font-size:16px;font-weight:700;">{{ selectedProject.cost }}</span>
+                    </div>
+
+                    <!-- معلومات الموقع والنوع -->
+                    <div v-if="selectedProject.location || selectedProject.type" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                        <span v-if="selectedProject.location" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
+                            <span class="material-symbols-outlined" style="font-size:16px;">location_on</span>
+                            {{ selectedProject.location }}
+                        </span>
+                        <span v-if="selectedProject.type" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);">
+                            <span class="material-symbols-outlined" style="font-size:16px;">domain</span>
+                            {{ selectedProject.type }}
+                        </span>
+                    </div>
+
+                    <!-- الشركة -->
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-gold);">business</span>
+                        <a :href="'company.html?id=' + encodeURIComponent(company.name)" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">{{ company.name }}</a>
+                        <svg v-if="company.verified" style="width:16px;height:16px;color:#4caf50;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
+
+                    <!-- الوصف -->
+                    <div v-if="selectedProject.desc" style="margin-bottom:16px;">
+                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 6px;">وصف المشروع</h3>
+                        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin:0;">{{ selectedProject.desc }}</p>
+                    </div>
+
+                    <!-- الميتا -->
+                    <div v-if="selectedProject.meta && selectedProject.meta.length" style="margin-bottom:16px;">
+                        <div v-for="(item, i) in selectedProject.meta" :key="i"
+                             style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-light);">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">{{ item.icon }}</span>
+                            <span style="font-size:13px;color:var(--text-muted);">{{ item.label }}: <strong style="color:var(--text-white);">{{ item.value }}</strong></span>
                         </div>
-                        <div class="modal-company">
-                            <span class="material-symbols-outlined">business</span>
-                            <a :href="'company.html?id=' + encodeURIComponent(company.name)" style="color:var(--accent-gold);text-decoration:none;font-size:14px;font-weight:600;">{{ company.name }}</a>
-                        </div>
-                        <p class="modal-desc">{{ projectDetail.desc }}</p>
-                        <div v-if="projectDetail.meta" class="modal-meta">
-                            <div v-for="(item, i) in projectDetail.meta" :key="i" class="modal-meta-item">
-                                <span class="material-symbols-outlined">{{ item.icon }}</span>
-                                <span>{{ item.label }}: {{ item.value }}</span>
-                            </div>
-                        </div>
-                        <div v-if="projectDetail.materials" style="margin-top:20px;">
-                            <h3 style="color:var(--text-white);font-size:16px;font-weight:700;margin:0 0 12px;">
-                                <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
-                                المواد المستخدمة
-                            </h3>
-                            <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
-                                <div v-for="(mat, i) in projectDetail.materials" :key="i" style="flex-shrink:0;width:120px;background:var(--card-bg);border-radius:12px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;" @click.stop="openDetailViewer((projectDetail.images || []).indexOf(mat.image))">
-                                    <div style="width:120px;height:90px;overflow:hidden;">
-                                        <img :src="mat.image" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">
-                                    </div>
-                                    <div style="padding:6px 8px 10px;text-align:center;">
-                                        <span style="color:var(--text-white);font-size:12px;font-weight:600;">{{ mat.name }}</span>
-                                    </div>
+                    </div>
+
+                    <!-- المواد المستخدمة -->
+                    <div v-if="selectedProject.materials && selectedProject.materials.length" style="margin-bottom:20px;">
+                        <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin:0 0 8px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-left:4px;color:var(--accent-gold);">inventory_2</span>
+                            المواد المستخدمة
+                        </h3>
+                        <div style="display:flex;gap:8px;overflow-x:auto;" class="hide-scroll">
+                            <div v-for="(mat, i) in selectedProject.materials" :key="i"
+                                 style="flex-shrink:0;width:110px;background:var(--card-bg);border-radius:10px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;"
+                                 @click.stop="openViewerFromMaterial((selectedProject.images || []).indexOf(mat.image))">
+                                <div style="width:110px;height:80px;overflow:hidden;">
+                                    <img :src="mat.image" style="width:100%;height:100%;object-fit:cover;display:block;">
+                                </div>
+                                <div style="padding:6px;text-align:center;">
+                                    <span style="color:var(--text-white);font-size:11px;font-weight:600;">{{ mat.name }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div style="margin-top:24px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));"></div>
                     </div>
+                </div>
+
+                <!-- زر صفحة الشركة ثابت في الأسفل -->
+                <div style="padding:12px;padding-bottom:80px;">
+                    <a :href="'company.html?id=' + encodeURIComponent(company.name)"
+                       style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">
+                        <span class="material-symbols-outlined" style="font-size:20px;">storefront</span>
+                        صفحة الشركة
+                    </a>
                 </div>
             </div>
 
@@ -435,6 +477,7 @@
                 var workSlide = ref(0);
                 var workTimer = null;
                 var showAllProjects = ref(false);
+                var showConfirmModal = ref(false);
                 var pullY = ref(0);
                 var modalClosing = ref(false);
 
@@ -577,7 +620,6 @@
 
                 var visibleProjects = computed(function() {
                     var all = company.value.projects || [];
-                    if (showAllProjects.value) return all;
                     return all.slice(0, 4);
                 });
 
@@ -613,7 +655,7 @@
                 onMounted(function() { resetWorkTimer(); });
                 onUnmounted(function() { if (workTimer) clearInterval(workTimer); });
 
-                return { isCompany, company, aboutPreview, selectedProject, detailSlide, projectDetail, detailSlide2, workSlide, workSwipe, resetWorkTimer, showAllProjects, visibleProjects,
+                return { isCompany, company, aboutPreview, selectedProject, detailSlide, projectDetail, detailSlide2, workSlide, workSwipe, resetWorkTimer, showAllProjects, showConfirmModal, visibleProjects,
                          pullTransform, pullY, modalTouch, detailSwipe, viewerTouch,
                          viewerOpen, viewerIndex, viewerScale, viewerPanX, viewerPanY, viewerImages, isPinch,
                          openViewer, closeViewer, nextViewer, prevViewer, openViewerFromMaterial,
