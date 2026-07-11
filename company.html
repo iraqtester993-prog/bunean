@@ -113,10 +113,10 @@
 
                 <!-- أعمال الشركة -->
                 <div v-if="company.workImages && company.workImages.length" style="padding:0 16px 16px;">
-                    <h3 style="font-size:14px;font-weight:700;color:var(--text-white);margin-bottom:14px;display:inline-flex;align-items:center;gap:6px;position:relative;padding-bottom:6px;">
+                    <h3 style="font-size:14px;font-weight:700;color:var(--accent-gold);margin-bottom:14px;display:inline-flex;align-items:center;gap:6px;position:relative;padding-bottom:6px;">
                         <span class="material-symbols-outlined" style="font-size:18px;color:var(--accent-gold);">image</span>
                         أعمال الشركة
-                        <span style="position:absolute;bottom:0;right:0;width:28px;height:3px;background:#FF8800;border-radius:2px;"></span>
+                        <span style="position:absolute;bottom:0;right:0;width:28px;height:3px;background:var(--accent-gold);border-radius:2px;"></span>
                     </h3>
                     <div class="exec-slider" style="border-radius:12px;overflow:hidden;"
                          @touchstart.passive="workSwipe.onTouchStart"
@@ -138,7 +138,7 @@
                         <h3 style="font-size:14px;font-weight:700;color:var(--accent-gold);display:inline-flex;align-items:center;gap:6px;margin:0;position:relative;padding-bottom:4px;">
                             <span class="material-symbols-outlined" style="font-size:18px;">gallery_thumbnail</span>
                             معرض المشاريع
-                            <span style="position:absolute;bottom:-4px;right:0;width:28px;height:3px;background:#FF8800;border-radius:2px;"></span>
+                            <span style="position:absolute;bottom:-4px;right:0;width:28px;height:3px;background:var(--accent-gold);border-radius:2px;"></span>
                         </h3>
                         <button v-if="company.projects.length > 0" @click="showAllProjects = true"
                                 style="background:none;border:none;color:var(--accent-gold);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;">
