@@ -6290,7 +6290,7 @@ html.light-mode .mkt-modal-desc { color: #666; }
   inset: 0;
   z-index: 50;
   background: var(--primary-dark);
-  padding-bottom: 0;
+  padding-bottom: 100px;
   overflow-y: auto;
 }
 html.light-mode .prod-detail-page {
