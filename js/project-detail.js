@@ -35,8 +35,6 @@ window.ProjectDetailComp = {
         goSlide: function(i) { this.localSlide = i; this.$emit('slide-change', i); },
         openViewerAt: function() { this.$emit('open-viewer', this.localSlide); },
         openMatViewer: function(img) {
-            var idx = this.images.indexOf(img);
-            this.$emit('open-viewer', idx >= 0 ? idx : 0);
         }
     },
     template: '<div style="display:flex;flex-direction:column;flex:1;height:100%;min-height:0;">' +
@@ -50,7 +48,7 @@ window.ProjectDetailComp = {
         '<div class="hide-scroll" style="flex:1;overflow-y:auto;padding-bottom:180px;min-height:0;">' +
 
         '<!-- Slider -->' +
-        '<div v-if="images.length" style="position:relative;background:#000;margin-bottom:12px;" @click="openViewerAt">' +
+        '<div v-if="images.length" data-viewer-gallery style="position:relative;background:#000;margin-bottom:12px;">' +
             '<div style="display:flex;transition:transform 0.3s;" :style="{ transform: \'translateX(-\' + (localSlide * 100) + \'%)\', direction:\'ltr\' }">' +
                 '<div v-for="(img, i) in images" :key="i" style="min-width:100%;aspect-ratio:4/3;">' +
                     '<img :src="img" style="width:100%;height:100%;object-fit:cover;display:block;">' +
@@ -68,7 +66,7 @@ window.ProjectDetailComp = {
         '</div>' +
 
         '<!-- Thumbnails -->' +
-        '<div v-if="images.length > 1" style="display:flex;gap:6px;overflow-x:auto;padding:0 12px 12px;" class="hide-scroll">' +
+        '<div v-if="images.length > 1" data-viewer-ignore="1" style="display:flex;gap:6px;overflow-x:auto;padding:0 12px 12px;" class="hide-scroll">' +
             '<div v-for="(img, i) in images" :key="i"' +
                 ' style="flex-shrink:0;width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border-color 0.2s;cursor:pointer;"' +
                 ' :style="{ borderColor: i === localSlide ? \'var(--accent-gold)\' : \'transparent\' }"' +
@@ -121,7 +119,7 @@ window.ProjectDetailComp = {
                 '<div style="display:flex;gap:8px;overflow-x:auto;" class="hide-scroll">' +
                     '<div v-for="(mat, i) in p.materials" :key="i"' +
                         ' style="flex-shrink:0;width:110px;background:var(--card-bg);border-radius:10px;overflow:hidden;border:1px solid var(--border-light);cursor:pointer;"' +
-                        ' @click.stop="openMatViewer(mat.image)">' +
+                        ' @click="openMatViewer(mat.image)">' +
                         '<div style="width:110px;height:80px;overflow:hidden;">' +
                             '<img :src="mat.image" style="width:100%;height:100%;object-fit:cover;display:block;">' +
                         '</div>' +
