@@ -47,7 +47,7 @@ window.ProjectDetailComp = {
             '</button>' +
             '<div style="flex:1;text-align:center;"><span style="font-size:15px;font-weight:600;color:var(--accent-gold);">تفاصيل المشروع</span></div>' +
         '</div>' +
-        '<div class="hide-scroll" style="flex:1;overflow-y:auto;padding-bottom:140px;min-height:0;">' +
+        '<div class="hide-scroll" style="flex:1;overflow-y:auto;padding-bottom:180px;min-height:0;">' +
 
         '<!-- Slider -->' +
         '<div v-if="images.length" style="position:relative;background:#000;margin-bottom:12px;" @click="openViewerAt">' +
@@ -136,7 +136,7 @@ window.ProjectDetailComp = {
         '<!-- Company Button -->' +
         '<div v-if="showCompanyBtn && companyNameText" style="padding:12px 12px 0;">' +
             '<a :href="linkText"' +
-                ' style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">' +
+                ' style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:var(--text-on-accent);text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">' +
                 '<span class="material-symbols-outlined" style="font-size:20px;">storefront</span> صفحة الشركة' +
             '</a>' +
         '</div>' +
