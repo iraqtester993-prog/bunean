@@ -6761,6 +6761,7 @@ html.light-mode .prod-detail-page {
 }
 html.light-mode .prod-add-cart { background: #2c5f8a; color: #fff; border-color: #2c5f8a; }
 html.light-mode .prod-add-cart:hover { background: #3a6f9e; border-color: #3a6f9e; }
+html.light-mode .pd-company-btn { color: #fff !important; }
 @media (max-width: 380px) {
   .prod-hero-gallery .prod-gallery { height: 150px; }
   .prod-hero-info .prod-title { font-size: 14px; }

@@ -135,8 +135,8 @@ window.ProjectDetailComp = {
 
         '<!-- Company Button -->' +
         '<div v-if="showCompanyBtn && companyNameText" style="padding:12px 12px 0;">' +
-            '<a :href="linkText"' +
-                ' style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:var(--text-on-accent);text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">' +
+            '<a :href="linkText" class="pd-company-btn"' +
+                ' style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;text-align:center;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">' +
                 '<span class="material-symbols-outlined" style="font-size:20px;">storefront</span> صفحة الشركة' +
             '</a>' +
         '</div>' +
