@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bunean-v10';
+const CACHE_NAME = 'bunean-v13';
 const urlsToCache = [
     '/bunean/',
     '/bunean/index.html',
@@ -13,6 +13,12 @@ const urlsToCache = [
     '/bunean/market.html',
     '/bunean/account.html',
     '/bunean/privacy.html',
+    '/bunean/search.html',
+    '/bunean/all-works.html',
+    '/bunean/notifications.html',
+    '/bunean/profile.html',
+    '/bunean/request-detail.html',
+    '/bunean/quote-request.html',
     '/bunean/css/style.css',
     '/bunean/icon-192.png',
     '/bunean/icon-512.png',
@@ -21,6 +27,11 @@ const urlsToCache = [
     '/bunean/js/header.js',
     '/bunean/js/bottom-nav.js',
     '/bunean/js/project-modal.js',
+    '/bunean/js/notifications.js',
+    '/bunean/js/back-nav.js',
+    '/bunean/js/pull-to-refresh.js',
+    '/bunean/js/global-viewer.js',
+    '/bunean/js/utils.js',
     '/bunean/manifest.json',
     '/bunean/dashboard/',
     '/bunean/dashboard/index.html',
@@ -60,5 +71,46 @@ self.addEventListener('fetch', event => {
                 }
                 return fetch(event.request);
             })
+    );
+});
+
+/* ===== Push Notifications ===== */
+self.addEventListener('push', function(event) {
+    var data = { title: 'بنيان', body: 'لديك إشعار جديد', icon: '/bunean/icon-192.png', data: {} };
+    if (event.data) {
+        try { data = Object.assign(data, event.data.json()); } catch(e) { data.body = event.data.text(); }
+    }
+    event.waitUntil(
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            icon: data.icon || '/bunean/icon-192.png',
+            badge: '/bunean/icon-192.png',
+            vibrate: [200, 100, 200],
+            tag: data.tag || 'bunean-push',
+            renotify: true,
+            data: data.data || {}
+        })
+    );
+});
+
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    var url = '/bunean/home.html';
+    if (event.notification.data && event.notification.data.link) {
+        url = event.notification.data.link;
+    }
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if (client.url.indexOf('/bunean/') !== -1 && 'focus' in client) {
+                    client.navigate(url);
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
+        })
     );
 });

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - سوق البناء</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -26,6 +27,10 @@
     <script src="js/header.js"></script>
     <script src="js/bottom-nav.js"></script>
     <script src="js/router.js"></script>
+    <link rel="prefetch" href="home.html">
+    <link rel="prefetch" href="execute.html">
+    <link rel="prefetch" href="ideas.html">
+    <link rel="prefetch" href="account.html">
 </head>
 <body>
     <div id="app" v-cloak>
@@ -780,7 +785,7 @@
                             </div>
                         </div>
 
-                        <button class="mkt-checkout-btn" @click="checkoutView = true">إتمام الشراء</button>
+                        <button class="mkt-checkout-btn" @click="requireAccount(function() { checkoutView = true; })">إتمام الشراء</button>
                         <button class="mkt-cancel-btn" @click="cancelCart" style="display:block;width:calc(100% - 32px);margin:8px 16px 20px;padding:12px;background:none;border:1px solid #e74c3c;border-radius:14px;color:#e74c3c;font-size:13px;font-weight:600;cursor:pointer;">
                             <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;">delete_sweep</span>
                             إلغاء السلة بالكامل
@@ -838,7 +843,7 @@
                         </div>
                     </div>
 
-                    <button class="mkt-confirm-btn" @click="confirmOrder">
+                    <button class="mkt-confirm-btn" @click="requireAccount(function() { confirmOrder(); })">
                         <span class="material-symbols-outlined">check_circle</span>
                         تأكيد الطلب
                     </button>
@@ -981,7 +986,7 @@
 
                     <!-- ===== الزر الموحد ===== -->
                     <div class="prod-actions">
-                        <button class="prod-action-btn prod-add-cart" @click="addToCartFromDetail">
+                        <button class="prod-action-btn prod-add-cart" @click="requireAccount(function() { addToCartFromDetail(); })">
                             <span class="material-symbols-outlined">add_shopping_cart</span>
                             اضف الى السله
                         </button>
@@ -1062,6 +1067,10 @@
     </div>
 
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({ searchVModel: 'searchQuery' });
@@ -1081,9 +1090,6 @@
         var allImgs = [];
         for (var n = 1; n <= 31; n++) allImgs.push('images/img' + n + '.jpg');
         function rndImg(seed) { return allImgs[seed % 31]; }
-
-        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
-        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         const { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } = Vue;
 
@@ -1584,7 +1590,9 @@
 
                 function goToCalc() {
                     if (!selectedCalcType.value) return;
-                    calculatorView.value = true;
+                    requireAccount(function() {
+                        calculatorView.value = true;
+                    });
                 }
 
                 /* ---- متغيرات السيراميك ---- */
@@ -1615,8 +1623,6 @@
                 var gypsumType = ref('ceiling');
                 var gypsumMatched = ref([]);
                 var gypsumWaste = ref(0);
-
-                function fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
                 function selectTileSize(label) {
                     selectedTileLabel.value = label;
@@ -1743,11 +1749,11 @@
                         lines.push('كمية الدهان: ' + paintLiters.value + ' لتر');
                         lines.push('عدد العبوات: ' + paintBuckets.value + ' دلو (20 لتر)');
                     } else if (selectedCalcType.value === 'gypsum') {
-                        lines.push('واح جبس: ' + gypsumSheets.value + ' لوح (شامل الهدر)');
+                        lines.push('الواح جبس: ' + gypsumSheets.value + ' لوح (شامل الهدر)');
                     } else {
                         lines.push('سيراميك: ' + ceramicBoxes.value + ' صندوق (شامل الهدر)');
                         lines.push('دهان: ' + paintBuckets.value + ' دلو | ' + (paintBuckets.value * 20) + ' لتر');
-                        lines.push('واح جبس: ' + gypsumSheets.value + ' لوح (شامل الهدر)');
+                        lines.push('الواح جبس: ' + gypsumSheets.value + ' لوح (شامل الهدر)');
                     }
                     navigator.clipboard.writeText(lines.join('\n')).then(function() {
                         showBrandAlert('تم نسخ النتيجة');
@@ -1890,66 +1896,43 @@
                 window.addEventListener('beforeunload', saveMarketState);
 
                 /* ---- Back Button ---- */
-                var exitPending = false;
-                var exitTimer = null;
-                function handlePopState() {
-                    if (viewerOpen && viewerOpen.value) { viewerOpen.value = false; return; }
-                    if (productDetailView && productDetailView.value) { productDetailView.value = false; return; }
-                    if (selectedProduct && selectedProduct.value) { selectedProduct.value = null; return; }
-                    if (checkoutView && checkoutView.value) { checkoutView.value = false; return; }
-                    if (cartView && cartView.value) { cartView.value = false; return; }
-                    if (calculatorView && calculatorView.value) { calculatorView.value = false; return; }
-                    if (showAllView && showAllView.value) { showAllView.value = false; return; }
-                    if (showAllOffers && showAllOffers.value) { showAllOffers.value = false; return; }
-                    if (showAllSuppliers && showAllSuppliers.value) { showAllSuppliers.value = false; return; }
-                    if (activeCatView && activeCatView.value !== null) { activeCatView.value = null; return; }
-                    if (selectedSupplier && selectedSupplier.value) { closeSupplier(); return; }
-                    if (!exitPending) {
-                        exitPending = true;
-                        showExitToast();
-                        history.pushState({ action: 'exit' }, '');
-                        setTimeout(function() { exitPending = false; }, 2000);
-                        return;
-                    }
-                    window.location.replace('about:blank');
-                }
-                function showExitToast() {
-                    var t = document.getElementById('exitToast');
-                    if (t) {
-                        t.classList.add('show');
-                        clearTimeout(exitTimer);
-                        exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
-                        return;
-                    }
-                    var toast = document.createElement('div');
-                    toast.id = 'exitToast';
-                    toast.className = 'exit-toast';
-                    toast.textContent = 'اضغط مرة أخرى للخروج';
-                    document.body.appendChild(toast);
-                    requestAnimationFrame(function() { toast.classList.add('show'); });
-                    clearTimeout(exitTimer);
-                    exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
-                }
+                function handlePopState() {}
 
                 onMounted(function() {
+                    PullToRefresh.init();
+                    BackNav.init();
+                    BackNav.registerCloseHandler(function() {
+                        if (viewerOpen && viewerOpen.value) { viewerOpen.value = false; return true; }
+                        if (productDetailView && productDetailView.value) { productDetailView.value = false; return true; }
+                        if (selectedProduct && selectedProduct.value) { selectedProduct.value = null; return true; }
+                        if (checkoutView && checkoutView.value) { checkoutView.value = false; return true; }
+                        if (cartView && cartView.value) { cartView.value = false; return true; }
+                        if (calculatorView && calculatorView.value) { calculatorView.value = false; return true; }
+                        if (showAllView && showAllView.value) { showAllView.value = false; return true; }
+                        if (showAllOffers && showAllOffers.value) { showAllOffers.value = false; return true; }
+                        if (showAllSuppliers && showAllSuppliers.value) { showAllSuppliers.value = false; return true; }
+                        if (activeCatView && activeCatView.value !== null) { activeCatView.value = null; return true; }
+                        if (selectedSupplier && selectedSupplier.value) { closeSupplier(); return true; }
+                        return false;
+                    });
                     resetMktTimer();
                     window.addEventListener('mkt-toggle-cart', function() {
                         if (cartView.value) {
                             cartView.value = false;
                         } else {
-                            cartView.value = true;
-                            productDetailView.value = false;
-                            calculatorView.value = false;
-                            checkoutView.value = false;
+                            requireAccount(function() {
+                                cartView.value = true;
+                                productDetailView.value = false;
+                                calculatorView.value = false;
+                                checkoutView.value = false;
+                            });
                         }
                     });
-                    window.addEventListener('popstate', handlePopState);
                     history.pushState({ action: 'init' }, '');
                 });
                 onUnmounted(function() {
                     if (mktTimer) clearInterval(mktTimer);
                     window.removeEventListener('beforeunload', saveMarketState);
-                    window.removeEventListener('popstate', handlePopState);
                 });
 
                 watch([cartView, checkoutView], function() {
@@ -1982,7 +1965,8 @@
                     selectedSupplier, openSupplier, closeSupplier,
                     productDetailView, closeProductDetail, addToCartFromDetail, prodGalleryTouch,
                     openFromCart,
-                    fmt
+                    fmt,
+                    requireAccount, goTo
                 };
             }
         }).mount('#app');

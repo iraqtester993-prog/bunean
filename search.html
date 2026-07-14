@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <style>html,body{background:#0b1a2e!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1a2e">
+    <title>بنيان - بحث</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('bunean-theme');
+            var prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (saved === 'light' || (!saved && prefers)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+    <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/bottom-nav.js"></script>
+    <style>
+        .search-page-bar{display:flex;align-items:center;gap:8px;margin:8px 12px;padding:4px 12px;border-radius:12px;background:var(--bg-card);box-shadow:0 4px 12px rgba(0,0,0,0.2);position:relative;z-index:2;}
+        .search-page-bar .material-symbols-outlined{color:var(--text-muted);font-size:22px;}
+        .search-page-bar input{flex:1;background:transparent;border:none;color:var(--text-white);font-size:14px;font-family:Cairo,sans-serif;outline:none;padding:8px 0;}
+        .search-page-bar input::placeholder{color:var(--text-muted);}
+        .search-page-bar .clear-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;display:flex;}
+        .search-result-section{margin-bottom:16px;}
+        .search-section-title{font-size:14px;font-weight:700;color:var(--accent-gold);padding:12px 16px 8px;display:flex;align-items:center;gap:6px;}
+        .search-section-title .count{font-size:11px;color:var(--text-muted);font-weight:500;}
+        .search-item{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background 0.15s;}
+        .search-item:active{background:rgba(201,162,67,0.06);}
+        .search-item-img{width:56px;height:56px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--bg-input);border:1px solid var(--border-light);display:flex;align-items:center;justify-content:center;}
+        .search-item-img img{width:100%;height:100%;object-fit:cover;}
+        .search-item-img .material-symbols-outlined{font-size:24px;color:var(--accent-gold);}
+        .search-item-info{flex:1;min-width:0;}
+        .search-item-name{font-size:14px;font-weight:600;color:var(--text-white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .search-item-desc{font-size:12px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .search-item-meta{display:flex;align-items:center;gap:8px;margin-top:4px;}
+        .search-item-badge{font-size:10px;padding:2px 8px;border-radius:50px;background:rgba(201,162,67,0.12);color:var(--accent-gold);border:1px solid rgba(201,162,67,0.2);}
+        .search-item-price{font-size:13px;font-weight:700;color:var(--accent-gold);}
+        .search-item-rating{display:flex;align-items:center;gap:2px;font-size:11px;color:var(--accent-gold);}
+        .search-empty{text-align:center;padding:60px 20px;color:var(--text-muted);}
+        .search-empty .material-symbols-outlined{font-size:48px;opacity:0.3;display:block;margin-bottom:12px;}
+        .search-tags{display:flex;flex-wrap:wrap;gap:6px;padding:4px 16px 8px;}
+        .search-tag{padding:6px 14px;border-radius:50px;font-size:12px;font-weight:600;border:1px solid var(--border-light);background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.2s;font-family:Cairo,sans-serif;}
+        .search-tag.active{background:rgba(201,162,67,0.15);color:var(--accent-gold);border-color:var(--accent-gold);}
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="app" v-cloak>
+        <div class="app-container">
+            <!-- شريط البحث -->
+            <div class="search-page-bar">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" v-model="query" @input="doSearch" placeholder="ابحث عن منتج، مشروع، أو شركة..." autofocus>
+                <button v-if="query" class="clear-btn" @click="query=''; doSearch();">
+                    <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+                </button>
+            </div>
+
+            <!-- فلاتر -->
+            <div class="search-tags">
+                <button class="search-tag" :class="{ active: filter === 'all' }" @click="filter='all'; doSearch();">الكل</button>
+                <button class="search-tag" :class="{ active: filter === 'companies' }" @click="filter='companies'; doSearch();">شركات</button>
+                <button class="search-tag" :class="{ active: filter === 'projects' }" @click="filter='projects'; doSearch();">مشاريع</button>
+                <button class="search-tag" :class="{ active: filter === 'products' }" @click="filter='products'; doSearch();">منتجات</button>
+            </div>
+
+            <div class="page-content">
+                <!-- نتائج البحث -->
+                <div v-if="hasResults">
+                    <!-- الشركات -->
+                    <div v-if="filteredCompanies.length" class="search-result-section">
+                        <div class="search-section-title">
+                            <span class="material-symbols-outlined" style="font-size:18px;">business</span>
+                            شركات
+                            <span class="count">({{ filteredCompanies.length }})</span>
+                        </div>
+                        <a v-for="c in filteredCompanies" :key="c.id" :href="'company.html?id=' + encodeURIComponent(c.name)" class="search-item" style="text-decoration:none;">
+                            <div class="search-item-img">
+                                <img :src="c.logo" :alt="c.name">
+                            </div>
+                            <div class="search-item-info">
+                                <div class="search-item-name">{{ c.name }}</div>
+                                <div class="search-item-desc">{{ c.category }}</div>
+                                <div class="search-item-meta">
+                                    <span class="search-item-badge">{{ c.category }}</span>
+                                    <div class="search-item-rating">
+                                        <span class="material-symbols-outlined" style="font-size:12px;">star</span>
+                                        {{ c.rating }}
+                                    </div>
+                                    <span style="font-size:11px;color:var(--text-muted);">{{ c.location }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- المشاريع -->
+                    <div v-if="filteredProjects.length" class="search-result-section">
+                        <div class="search-section-title">
+                            <span class="material-symbols-outlined" style="font-size:18px;">apartment</span>
+                            مشاريع
+                            <span class="count">({{ filteredProjects.length }})</span>
+                        </div>
+                        <div v-for="p in filteredProjects" :key="p.title + p.companyName" class="search-item" @click="requireAccount(function(){ window.location.href='company.html?id=' + encodeURIComponent(p.companyName); })">
+                            <div class="search-item-img">
+                                <img :src="p.images[0]" :alt="p.title">
+                            </div>
+                            <div class="search-item-info">
+                                <div class="search-item-name">{{ p.title }}</div>
+                                <div class="search-item-desc">{{ p.companyName }}</div>
+                                <div class="search-item-meta">
+                                    <span class="search-item-badge">{{ p.type || 'مشروع' }}</span>
+                                    <span style="font-size:11px;color:var(--text-muted);">{{ p.area }}</span>
+                                    <span v-if="p.cost" class="search-item-price">{{ p.cost }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المنتجات -->
+                    <div v-if="filteredProducts.length" class="search-result-section">
+                        <div class="search-section-title">
+                            <span class="material-symbols-outlined" style="font-size:18px;">inventory_2</span>
+                            منتجات
+                            <span class="count">({{ filteredProducts.length }})</span>
+                        </div>
+                        <div v-for="p in filteredProducts" :key="p.name" class="search-item" @click="requireAccount(function(){ window.location.href='product.html?name=' + encodeURIComponent(p.name); })">
+                            <div class="search-item-img">
+                                <img :src="p.img" :alt="p.name">
+                            </div>
+                            <div class="search-item-info">
+                                <div class="search-item-name">{{ p.name }}</div>
+                                <div class="search-item-desc">{{ p.desc }}</div>
+                                <div class="search-item-meta">
+                                    <span class="search-item-badge">{{ categories[p.cat] }}</span>
+                                    <span class="search-item-price">{{ formatPrice(p.price) }} د.ع</span>
+                                    <div class="search-item-rating">
+                                        <span class="material-symbols-outlined" style="font-size:12px;">star</span>
+                                        {{ p.rating }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- لا توجد نتائج -->
+                <div v-else-if="query.length > 0" class="search-empty">
+                    <span class="material-symbols-outlined">search_off</span>
+                    <div style="font-size:15px;font-weight:600;margin-bottom:4px;">لا توجد نتائج</div>
+                    <div style="font-size:13px;">جرّب كلمات بحث مختلفة</div>
+                </div>
+
+                <!-- اقتراحات عند عدم البحث -->
+                <div v-else style="padding:16px;">
+                    <div style="font-size:14px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">بحث شائع</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        <button v-for="s in suggestions" :key="s" class="search-tag" @click="query=s; doSearch();">{{ s }}</button>
+                    </div>
+                </div>
+
+                <div style="height:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bottomNav"></div>
+
+    <script src="js/companies.js"></script>
+    <script src="js/project-data.js"></script>
+    <script src="js/nav.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader({});
+        document.getElementById('bottomNav').innerHTML = renderNav('home');
+
+        var _searchProducts = [
+            { name:'إسمنت أخضر 50 كجم', price:18000, cat:0, rating:5, img:'images/img1.jpg', desc:'إسمنت بورتلاندي عالي الجودة' },
+            { name:'حديد تسليح 12 مم', price:350000, cat:0, rating:5, img:'images/img2.jpg', desc:'حديد تسليح عالي المقاومة' },
+            { name:'حصى ناعم 1 م³', price:95000, cat:0, rating:4, img:'images/img3.jpg', desc:'حصى ناعم مناسب للخرسانة' },
+            { name:'رمل ساخن 1 م³', price:75000, cat:0, rating:4, img:'images/img4.jpg', desc:'رمل ساخن نقي للبناء' },
+            { name:'طوب أحمر عادي', price:45000, cat:0, rating:4, img:'images/img5.jpg', desc:'طوب أحمر عالي الجودة' },
+            { name:'بلاط بورسلان 60x60', price:22000, cat:1, rating:5, img:'images/img6.jpg', desc:'بلاط بورسلان بلمعان طبيعي' },
+            { name:'سيراميك أرضي 30x30', price:14000, cat:1, rating:4, img:'images/img7.jpg', desc:'سيراميك أرضي مقاوم للخدش' },
+            { name:'بلاط بورسلان 120x60', price:28000, cat:1, rating:5, img:'images/img8.jpg', desc:'بلاط بورسلان كبير القياس' },
+            { name:'دهان جوتن داخلي', price:45000, cat:1, rating:5, img:'images/img9.jpg', desc:'دهان جوتن داخلي مقاوم للرطوبة' },
+            { name:'لوح جبس اعتيادي', price:18000, cat:1, rating:4, img:'images/img10.jpg', desc:'لوح جبس بورد للأسقف المعلقة' },
+            { name:'لوح جبس مقاوم للرطوبة', price:24000, cat:1, rating:4, img:'images/img11.jpg', desc:'لوح جبس مقاوم للماء' },
+            { name:'دهان نيبون ديكوري', price:38000, cat:1, rating:5, img:'images/img12.jpg', desc:'دهان ديكوري بتأثيرات ميتاليك' },
+            { name:'سيراميك حمام 30x60', price:15000, cat:1, rating:4, img:'images/img13.jpg', desc:'سيراميك مقاوم للماء' },
+            { name:'حوض استحمام كربيست', price:350000, cat:2, rating:5, img:'images/img14.jpg', desc:'حوض استحمام فاخر بتصميم عصري' },
+            { name:'خزان مياه بلاستيك', price:180000, cat:2, rating:4, img:'images/img15.jpg', desc:'خزان مياه مقاوم للعوامل الجوية' },
+            { name:'أنابيب PVC 4 بوصة', price:8000, cat:2, rating:4, img:'images/img16.jpg', desc:'أنابيب PVC للصرف الصحي' },
+            { name:'مغسلة حوض', price:250000, cat:2, rating:5, img:'images/img17.jpg', desc:'مغسلة سيراميك فاخرة' },
+            { name:'شطاف حمام', price:95000, cat:2, rating:4, img:'images/img18.jpg', desc:'شطاف حمام بجودة عالية' },
+            { name:'كابل كهرباء 2.5 مم', price:5000, cat:3, rating:4, img:'images/img19.jpg', desc:'كابل نحاسي عالي الجودة' },
+            { name:'قاطع كهربائي 20 أمبير', price:15000, cat:3, rating:5, img:'images/img20.jpg', desc:'قاطع دائرة كهربائي آمن' },
+            { name:'لوحة توزيع 12 مصباح', price:180000, cat:3, rating:4, img:'images/img21.jpg', desc:'لوحة توزيع كهربائي' },
+            { name:'مفتاح ربط لاسلكي', price:25000, cat:3, rating:5, img:'images/img22.jpg', desc:'مفتاح ربط لاسلكي ذكي' },
+            { name:'براقة LED 18 واط', price:12000, cat:3, rating:5, img:'images/img23.jpg', desc:'براقة LED موفرة للطاقة' },
+            { name:'باب خشب زان', price:450000, cat:4, rating:5, img:'images/img24.jpg', desc:'باب خشب زان طبيعي فاخر' },
+            { name:'نافذة ألمنيوم', price:280000, cat:4, rating:4, img:'images/img25.jpg', desc:'نافذة ألمنيوم بزجاج مزدوج' },
+            { name:'باب حديد مصفح', price:550000, cat:4, rating:5, img:'images/img26.jpg', desc:'باب حديد مصفح مقاوم للسرقة' },
+            { name:'ستارة ألمنيوم', price:120000, cat:4, rating:4, img:'images/img27.jpg', desc:'ستارة ألمنيوم للنوافذ' },
+            { name:'مفصلة باب', price:8000, cat:4, rating:4, img:'images/img28.jpg', desc:'مفصلة باب حديدية متينة' },
+            { name:'تكييف سبليت 1 طن', price:850000, cat:5, rating:5, img:'images/img29.jpg', desc:'تكييف سبليت موفر للطاقة' },
+            { name:'مكيف شباك 18000 BTU', price:650000, cat:5, rating:5, img:'images/img30.jpg', desc:'مكيف شباك قوي التبريد' },
+            { name:'فريون R410A', price:45000, cat:5, rating:4, img:'images/img31.jpg', desc:'فريون صديق للبيئة' },
+            { name:'شلال حدائق', price:350000, cat:6, rating:5, img:'images/img1.jpg', desc:'شلال ديكوري للحدائق' },
+            { name:'عشب صناعي 1 م²', price:25000, cat:6, rating:4, img:'images/img2.jpg', desc:'عشب صناعي عالي الجودة' },
+            { name:'نافورة ديكورية', price:180000, cat:6, rating:5, img:'images/img3.jpg', desc:'نافورة ديكورية متوهجة' },
+            { name:'إضاءة حدائق LED', price:35000, cat:6, rating:4, img:'images/img4.jpg', desc:'إضاءة LED مقاومة للماء' },
+            { name:'مثقف يدوي', price:45000, cat:7, rating:5, img:'images/img5.jpg', desc:'مثقف يدوي متعدد الاستخدامات' },
+            { name:'شريط قياس 5 متر', price:12000, cat:7, rating:4, img:'images/img6.jpg', desc:'شريط قياس مرن ومتين' },
+            { name:'مطرقة', price:25000, cat:7, rating:5, img:'images/img7.jpg', desc:'مطرقة يدوية متعددة الاستخدامات' },
+            { name:'منشار يدوي', price:35000, cat:7, rating:4, img:'images/img8.jpg', desc:'منشار يدوي للقطع' }
+        ];
+
+        var _searchCategories = ['مواد انشائية', 'اصباغ وديكور', 'صحيات', 'كهرباء', 'أبواب ونوافذ', 'تكييفات', 'حدائق', 'أدوات ومعدات'];
+
+        var _searchSuggestions = ['إسمنت', 'حديد', 'سيراميك', 'دهان', 'تكييف', 'سباكة', 'كهرباء', 'أبواب', 'شركة بناء', 'تشطيب'];
+
+        var _searchCompanies = Object.values(companiesData);
+
+        var _searchProjects = [];
+        _searchCompanies.forEach(function(c) {
+            (c.projects || []).forEach(function(p) {
+                _searchProjects.push({
+                    title: p.title,
+                    desc: p.desc,
+                    images: p.images || [],
+                    cost: p.cost || '',
+                    area: p.area || '',
+                    type: p.type || '',
+                    companyName: c.name,
+                    companyCategory: c.category
+                });
+            });
+        });
+
+        var _searchApproved = ProjectData.getApprovedProjects();
+        var _searchFeatured = ProjectData.getFeaturedProjects();
+        _searchApproved.concat(_searchFeatured).forEach(function(p) {
+            _searchProjects.push({
+                title: p.title || '',
+                desc: p.desc || '',
+                images: p.images || (p.image ? [p.image] : []),
+                cost: p.cost || '',
+                area: p.area || '',
+                type: p.type || '',
+                companyName: p.company || '',
+                companyCategory: ''
+            });
+        });
+
+        function formatPrice(n) {
+            return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                initTheme();
+
+                var params = new URLSearchParams(window.location.search);
+                var query = ref(params.get('q') || '');
+                var filter = ref('all');
+                var suggestions = ref(_searchSuggestions);
+
+                var filteredCompanies = ref([]);
+                var filteredProjects = ref([]);
+                var filteredProducts = ref([]);
+                var hasResults = computed(function() {
+                    return filteredCompanies.value.length + filteredProjects.value.length + filteredProducts.value.length > 0;
+                });
+
+                function matchText(text, q) {
+                    if (!text || !q) return false;
+                    return text.toLowerCase().indexOf(q.toLowerCase()) !== -1;
+                }
+
+                function doSearch() {
+                    var q = query.value.trim();
+
+                    if (!q) {
+                        filteredCompanies.value = [];
+                        filteredProjects.value = [];
+                        filteredProducts.value = [];
+                        return;
+                    }
+
+                    if (filter.value === 'all' || filter.value === 'companies') {
+                        filteredCompanies.value = _searchCompanies.filter(function(c) {
+                            return matchText(c.name, q) || matchText(c.category, q) || matchText(c.location, q) || (c.specs || []).some(function(s) { return matchText(s, q); });
+                        });
+                    } else {
+                        filteredCompanies.value = [];
+                    }
+
+                    if (filter.value === 'all' || filter.value === 'projects') {
+                        filteredProjects.value = _searchProjects.filter(function(p) {
+                            return matchText(p.title, q) || matchText(p.desc, q) || matchText(p.companyName, q) || matchText(p.type, q);
+                        });
+                    } else {
+                        filteredProjects.value = [];
+                    }
+
+                    if (filter.value === 'all' || filter.value === 'products') {
+                        filteredProducts.value = _searchProducts.filter(function(p) {
+                            return matchText(p.name, q) || matchText(p.desc, q) || matchText(_searchCategories[p.cat], q);
+                        });
+                    } else {
+                        filteredProducts.value = [];
+                    }
+                }
+
+                doSearch();
+
+                return {
+                    query, filter, suggestions,
+                    filteredCompanies, filteredProjects, filteredProducts,
+                    hasResults, doSearch, categories: _searchCategories,
+                    formatPrice: formatPrice
+                };
+            }
+        }).mount('#app');
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(function() { console.log('SW registered'); })
+                .catch(function(err) { console.log('SW registration failed'); });
+        }
+    </script>
+</body>
+</html>

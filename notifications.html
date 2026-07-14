@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - الإشعارات</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -61,12 +62,25 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                 <button class="notif-tab" data-tab="all" @click="switchTab('all')">الكل</button>
                 <button class="notif-tab" data-tab="support" @click="switchTab('support')">الدعم الفني</button>
                 <button class="notif-tab" data-tab="offer" @click="switchTab('offer')">العروض</button>
-                <button class="notif-tab" data-tab="service" @click="switchTab('service')">طلب الخدمة</button>
+                <button class="notif-tab" data-tab="service" @click="switchTab('service')">طلب عرض سعر</button>
                 <button class="notif-tab" data-tab="quote_request" id="tab-quote-request" style="display:none;" @click="switchTab('quote_request')">طلبات العروض</button>
-                <button class="notif-tab" data-tab="service_request" id="tab-service-request" style="display:none;" @click="switchTab('service_request')">طلب الخدمة</button>
+                <button class="notif-tab" data-tab="service_request" id="tab-service-request" style="display:none;" @click="switchTab('service_request')">طلب عرض سعر</button>
             </div>
 
             <div class="page-content" style="padding-right:0;padding-left:0;display:flex;flex-direction:column;">
+
+                <!-- طلب إذن الإشعارات -->
+                <div v-if="showPermissionBanner" style="margin:8px 16px;padding:12px 14px;border-radius:12px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);display:flex;align-items:center;gap:10px;">
+                    <span class="material-symbols-outlined" style="font-size:22px;color:#3b82f6;">notifications_active</span>
+                    <div style="flex:1;">
+                        <div style="font-size:13px;font-weight:600;color:var(--text-white);">تفعيل إشعارات التطبيق</div>
+                        <div style="font-size:11px;color:var(--text-muted);">ليصلك تنبيه فوري عند وصول إشعار جديد</div>
+                    </div>
+                    <button @click="enableNotifications" style="padding:6px 14px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;white-space:nowrap;">تفعيل</button>
+                    <button @click="showPermissionBanner=false" style="padding:4px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;">
+                        <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+                    </button>
+                </div>
 
                 <!-- Notifications List -->
                 <div v-if="filtered.length" style="flex:1;padding:20px 16px 16px;display:flex;flex-direction:column;gap:10px;">
@@ -97,6 +111,8 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
     </div>
 
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notifications.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         initTheme();
@@ -110,6 +126,20 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                 initTheme();
 
                 var activeTab = ref('support');
+                var showPermissionBanner = ref(BuneanNotif.getPermission() === 'default');
+
+                function enableNotifications() {
+                    BuneanNotif.requestPermission(function(permission) {
+                        showPermissionBanner.value = (permission === 'default');
+                        if (permission === 'granted') {
+                            showBrandAlert('تم تفعيل الإشعارات بنجاح');
+                            BuneanNotif.playNotifSound();
+                        } else {
+                            showBrandAlert('لم يتم التفعيل - يمكنك تفعيلها من إعدادات المتصفح');
+                        }
+                    });
+                }
+
                 var userData = JSON.parse(localStorage.getItem('bunean-user-data') || '{}');
                 var isCompany = userData.role === 'company';
                 var replyText = ref('');
@@ -130,7 +160,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                         { id: 1, type: 'support', read: false, title: 'تم الرد على استفسارك', preview: 'شكراً لتواصلك مع بنيان، تم حل مشكلتك وسيتم التواصل معك قريباً لمتابعة التفاصيل.', time: 'منذ 15 دقيقة', message: 'شكراً لتواصلك مع فريق الدعم الفني في بنيان.\n\nنؤكد لك أنه تم حل المشكلة التي أبلغت عنها وسيتم التواصل معك خلال 24 ساعة لمتابعة التفاصيل الكاملة.\n\nمع جزيل الشكر،\nفريق بنيان' },
                         { id: 2, type: 'offer', read: false, offerId: 1, title: 'عرض من شركة المستقبل للمقاولات', preview: 'تقدم شركة المستقبل للمقاولات عرضاً لتنفيذ مشروعك بقيمة 75,000,000 دينار.', time: 'منذ 3 ساعات', company: 'شركة المستقبل للمقاولات', price: '75,000,000 د.ع', duration: '6 أشهر', details: 'يسر شركة المستقبل للمقاولات أن تتقدم إليكم بعرضها لتنفيذ المشروع المطلوب وفق المواصفات المرفقة. تتمتع الشركة بخبرة تزيد عن 15 عاماً في مجال المقاولات العامة وتنفيذ المشاريع السكنية والتجارية.', companyLink: 'company.html' },
                         { id: 3, type: 'offer', read: false, offerId: 2, title: 'عرض من شركة البناء الذكي', preview: 'عرض تنافسي من شركة البناء الذكي لتنفيذ مشروعك بقيمة 82,500,000 دينار.', time: 'منذ 5 ساعات', company: 'شركة البناء الذكي', price: '82,500,000 د.ع', duration: '6 أشهر', details: 'تتشرف شركة البناء الذكي بتقديم عرضها لتنفيذ مشروعكم بأعلى معايير الجودة وباستخدام أحدث التقنيات في مجال البناء.', companyLink: 'company.html' },
-                        { id: 4, type: 'service', read: true, title: 'تم استلام طلب الخدمة', preview: 'تم إرسال طلب الخدمة الخاصة بك بنجاح، سيتم الرد عليك من قبل المختصين قريباً.', time: 'منذ يوم', message: 'تم استلام طلب الخدمة الذي أرسلته بنجاح. فريقنا المختص سيقوم بمراجعة طلبك والرد عليك في أقرب وقت ممكن.\n\nشكراً لثقتك ببنيان.' },
+                        { id: 4, type: 'service', read: true, title: 'تم استلام طلب عرض سعر', preview: 'تم إرسال طلب عرض سعر الخاصة بك بنجاح، سيتم الرد عليك من قبل المختصين قريباً.', time: 'منذ يوم', message: 'تم استلام طلب عرض سعر الذي أرسلته بنجاح. فريقنا المختص سيقوم بمراجعة طلبك والرد عليك في أقرب وقت ممكن.\n\nشكراً لثقتك ببنيان.' },
                         { id: 5, type: 'support', read: true, title: 'تم تحديث تذكرتك الدعم', preview: 'تم تحديث حالة تذكرتك الدعم الفني رقم #BN-2505-88901', time: 'منذ يومين', message: 'تذكرة الدعم الفني الخاصة بك رقم #BN-2505-88901\nالحالة: قيد المعالجة\n\nسيتم إعلامك فور اكتمال المعالجة.' },
                         { id: 6, type: 'offer', read: true, offerId: 3, title: 'عرض من شركة دار الإنجاز', preview: 'عرض جديد من شركة دار الإنجاز لتنفيذ مشروعك بقيمة 87,000,000 دينار.', time: 'منذ 3 أيام', company: 'شركة دار الإنجاز', price: '87,000,000 د.ع', duration: '7 أشهر', details: 'شركة دار الإنجاز للمقاولات تقدم لكم عرضها المتكامل لتنفيذ المشروع. الشركة متخصصة في المشاريع السكنية والتجارية مع سجل حافل من المشاريع الناجحة.', companyLink: 'company.html' }
                     ];
@@ -236,7 +266,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                 function openNotif(n) {
                     n.read = true;
                     if (n.type === 'offer') {
-                        window.location.href = 'account.html?section=user-offers&offerId=' + n.offerId;
+                        requireAccount(function() { goTo('account.html?section=user-offers&offerId=' + n.offerId); });
                         return;
                     }
                     if (n.type === 'support') {
@@ -365,6 +395,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                 }
 
                 window.sendNotifReply = function() {
+                    requireAccount(function() {
                     var textEl = document.getElementById('notif-reply-text');
                     var amountEl = document.getElementById('notif-reply-amount');
                     var text = textEl ? textEl.value.trim() : '';
@@ -398,6 +429,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                     var overlay = document.getElementById('qr-overlay');
                     if (overlay) overlay.remove();
                     showBrandAlert('✅ تم إرسال الرد وإنشاء العرض');
+                    });
                 };
 
                 function loadServiceRequestNotifs() {
@@ -410,7 +442,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                             id: 'sr_' + r.id,
                             type: 'service_request',
                             read: readIds.indexOf(r.id) !== -1,
-                            title: 'طلب خدمة جديد',
+                            title: 'طلب عرض سعر جديد',
                             preview: (r.consultType || 'خدمة') + ' - ' + r.name,
                             time: timeAgo(r.createdAt),
                             request: r
@@ -450,7 +482,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                         '<div style="padding:20px 16px;text-align:center;border-bottom:1px solid var(--border-light);position:relative;">'
                         + '<button onclick="this.closest(\'.notif-overlay\').remove()" style="position:absolute;top:12px;left:12px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,0.1);color:var(--text-white);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span class="material-symbols-outlined" style="font-size:20px;">close</span></button>'
                         + '<div style="width:48px;height:48px;border-radius:14px;background:#f59e0b;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><span class="material-symbols-outlined" style="font-size:24px;color:#fff;">build</span></div>'
-                        + '<h3 style="color:var(--text-white);font-size:16px;font-weight:700;margin:0;">طلب خدمة</h3>'
+                        + '<h3 style="color:var(--text-white);font-size:16px;font-weight:700;margin:0;">طلب عرض سعر</h3>'
                         + '<p style="color:var(--text-muted);font-size:11px;margin:4px 0 0;">' + n.time + '</p>'
                         + '</div>'
                         + '<div style="padding:16px;">'
@@ -472,6 +504,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                 }
 
                 window.sendServiceNotifReply = function() {
+                    requireAccount(function() {
                     var textEl = document.getElementById('sr-reply-text');
                     var amountEl = document.getElementById('sr-reply-amount');
                     var text = textEl ? textEl.value.trim() : '';
@@ -492,7 +525,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                         id: Date.now(),
                         requestId: req.id,
                         client: req.name || 'عميل',
-                        project: req.consultType || 'طلب خدمة',
+                        project: req.consultType || 'طلب عرض سعر',
                         amount: amount || '',
                         notes: text,
                         status: 'قيد المراجعة',
@@ -502,6 +535,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                     var overlay = document.getElementById('sr-overlay');
                     if (overlay) overlay.remove();
                     showBrandAlert('✅ تم إرسال الرد وإنشاء العرض');
+                    });
                 };
 
                 function showServiceModal(n) {
@@ -514,7 +548,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                     modal.innerHTML =
                         '<div style="padding:20px 16px;text-align:center;border-bottom:1px solid var(--border-light);">'
                         + '<div style="width:48px;height:48px;border-radius:14px;background:#4caf50;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><span class="material-symbols-outlined" style="font-size:24px;color:#fff;">handyman</span></div>'
-                        + '<h3 style="color:var(--text-white);font-size:16px;font-weight:700;margin:0;">طلب خدمة</h3>'
+                        + '<h3 style="color:var(--text-white);font-size:16px;font-weight:700;margin:0;">طلب عرض سعر</h3>'
                         + '<p style="color:var(--text-muted);font-size:11px;margin:4px 0 0;">' + n.time + '</p>'
                         + '</div>'
                         + '<div style="padding:16px;"><p style="color:var(--text-white);font-size:13px;line-height:1.8;margin:0;white-space:pre-wrap;">' + n.message + '</p></div>'
@@ -555,7 +589,7 @@ html.light-mode .notif-tab { background:rgba(44,95,138,0.08); color:#2c5f8a; bor
                     }
                 });
 
-                return { activeTab, isCompany, notifications, filtered, iconName, iconBg, openNotif, switchTab, replyText, replyAmount };
+                return { activeTab, isCompany, notifications, filtered, iconName, iconBg, openNotif, switchTab, replyText, replyAmount, goTo, showPermissionBanner, enableNotifications };
             }
         }).mount('#app');
 

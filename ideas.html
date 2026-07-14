@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - أفكار وتصاميم</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -237,6 +238,10 @@
             display: none;
         }
     </style>
+    <link rel="prefetch" href="home.html">
+    <link rel="prefetch" href="execute.html">
+    <link rel="prefetch" href="market.html">
+    <link rel="prefetch" href="account.html">
 </head>
 <body>
     <div id="header"></div>
@@ -417,19 +422,18 @@
     <script src="js/project-data.js"></script>
     <script src="js/project-detail.js"></script>
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({ searchVModel: 'searchQuery', searchPlaceholder: 'ابحث عن أفكار ومشاريع...' });
         document.getElementById('bottomNav').innerHTML = renderNav('ideas');
 
-        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
-        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
-
         const { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } = Vue;
 
         function img(n) { return 'images/img' + n + '.jpg'; }
 
-        function fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
         function fmtM(n) { return (n / 1000000) + ' مليون'; }
 
         function parseNum(s) { return parseInt(s.replace(/,/g, ''), 10) || 0; }
@@ -760,43 +764,7 @@
                 });
 
                 /* ---- Back Button (History API) ---- */
-                var exitPending = false;
-                var exitTimer = null;
-                function handlePopState() {
-                    if (viewerOpen.value) {
-                        viewerOpen.value = false;
-                        return;
-                    }
-                    if (selectedProject.value) {
-                        selectedProject.value = null;
-                        return;
-                    }
-                    if (!exitPending) {
-                        exitPending = true;
-                        showExitToast();
-                        history.pushState({ action: 'exit' }, '');
-                        setTimeout(function() { exitPending = false; }, 2000);
-                        return;
-                    }
-                    window.location.replace('about:blank');
-                }
-                function showExitToast() {
-                    var t = document.getElementById('exitToast');
-                    if (t) {
-                        t.classList.add('show');
-                        clearTimeout(exitTimer);
-                        exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
-                        return;
-                    }
-                    var toast = document.createElement('div');
-                    toast.id = 'exitToast';
-                    toast.className = 'exit-toast';
-                    toast.textContent = 'اضغط مرة أخرى للخروج';
-                    document.body.appendChild(toast);
-                    requestAnimationFrame(function() { toast.classList.add('show'); });
-                    clearTimeout(exitTimer);
-                    exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
-                }
+                function handlePopState() {}
 
                 function formatInput(v) {
                     var num = v.replace(/[^0-9]/g, '');
@@ -858,9 +826,16 @@
                 }
                 window.addEventListener('beforeunload', saveIdeasState);
 
-                onMounted(function() { window.addEventListener('popstate', handlePopState); });
+                onMounted(function() {
+                    PullToRefresh.init();
+                    BackNav.init();
+                    BackNav.registerCloseHandler(function() {
+                        if (viewerOpen.value) { viewerOpen.value = false; return true; }
+                        if (selectedProject.value) { selectedProject.value = null; return true; }
+                        return false;
+                    });
+                });
                 onUnmounted(function() {
-                    window.removeEventListener('popstate', handlePopState);
                     window.removeEventListener('beforeunload', saveIdeasState);
                 });
 

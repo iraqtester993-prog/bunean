@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - الرئيسية</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -29,6 +30,10 @@
     <script src="js/project-modal.js"></script>
     <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content::-webkit-scrollbar{display:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}
 .partners-track-wrapper{overflow:hidden;padding:0 14px 12px;position:relative;}.partners-track{display:flex;gap:12px;width:fit-content;}.partner-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;width:90px;cursor:pointer;transition:transform 0.2s;}.partner-item:active{transform:scale(0.92);}.partner-icon{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--bg-card-light);border:2px solid var(--border-input);display:flex;align-items:center;justify-content:center;transition:all 0.3s;}.partner-icon img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;filter:grayscale(40%);transition:filter 0.3s;}.partner-item:active .partner-icon img{filter:grayscale(0%);}.partner-item:active .partner-icon{border-color:var(--accent-gold);}.partner-name{font-size:10px;font-weight:600;color:var(--text-light);text-align:center;line-height:1.2;white-space:nowrap;}</style>
+    <link rel="prefetch" href="account.html">
+    <link rel="prefetch" href="execute.html">
+    <link rel="prefetch" href="market.html">
+    <link rel="prefetch" href="ideas.html">
 </head>
 <body>
     <div id="header"></div>
@@ -61,11 +66,12 @@
 
                 <!-- Home Sections -->
                 <div class="home-sections">
-                    <a v-for="(sec, i) in sections" :key="i" :href="sec.link"
-                         class="home-section-item">
+<a v-for="(sec, i) in sections" :key="i" :href="sec.link"
+                     class="home-section-item"
+                     @click.prevent="requireAccount(function() { goTo(sec.link); })">
                         <div class="home-section-icon">
                             <span class="material-symbols-outlined">{{ sec.icon }}</span>
-                            <span class="home-section-name">{{ sec.name }}</span>
+                            <span class="home-section-name" v-html="sec.name"></span>
                         </div>
                     </a>
                 </div>
@@ -78,7 +84,7 @@
                      @touchstart.passive="adSwipe.onTouchStart"
                      @touchend="adSwipe.onTouchEnd">
                     <div class="ad-slider-track" dir="ltr" :style="{ transform: `translateX(-${adSlide * 100}%)` }">
-                        <div v-for="(ad, i) in ads" :key="i" class="ad-slider-slide" :class="'ad-type-' + (ad.type === 'عرض خاص' ? 'offer' : ad.type === 'تخفيض' ? 'discount' : 'project')" @click="openProject(ad)">
+                        <div v-for="(ad, i) in ads" :key="i" class="ad-slider-slide" :class="'ad-type-' + (ad.type === 'عرض خاص' ? 'offer' : ad.type === 'تخفيض' ? 'discount' : 'project')" @click="requireAccount(function() { openProject(ad); })">
                             <div class="ad-slider-img">
                                 <img :src="ad.bg" alt="">
                                 <span class="ad-type-badge" :class="'badge-' + (ad.type === 'عرض خاص' ? 'offer' : ad.type === 'تخفيض' ? 'discount' : 'project')">{{ ad.type }}</span>
@@ -100,7 +106,7 @@
                 </div>
                 <div class="works-carousel">
                     <div v-for="(work, i) in latestWorks" :key="i"
-                         class="work-card" @click="openProject(work)">
+                         class="work-card" @click="requireAccount(function() { openProject(work); })">
                         <div class="work-card-img">
                             <img :src="work.bg" alt="">
                             <span class="work-type-badge badge-project">{{ work.type }}</span>
@@ -195,13 +201,14 @@
     <script src="js/project-data.js"></script>
     <script src="js/project-detail.js"></script>
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({ searchVModel: 'searchQuery', searchPlaceholder: 'ابحث عن مشاريع، مقاولين، منتجات...' });
         document.getElementById('bottomNav').innerHTML = renderNav('home');
-
-        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
-        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
@@ -226,7 +233,6 @@
                 const adSlide = ref(0);
                 let slideTimer = null;
                 let adTimer = null;
-                let exitTimer = null;
 
                 /* ---- Unified Touch Handlers ---- */
                 // Modal: horizontal → navigate slides, vertical down → close
@@ -369,43 +375,7 @@
                 });
 
                 /* ---- Back Button (History API) ---- */
-                let exitPending = false;
-                function handlePopState() {
-                    if (viewerOpen.value) {
-                        viewerOpen.value = false;
-                        return;
-                    }
-                    if (selectedProject.value) {
-                        selectedProject.value = null;
-                        startSlideTimer();
-                        return;
-                    }
-                    if (!exitPending) {
-                        exitPending = true;
-                        showExitToast();
-                        history.pushState({ action: 'exit' }, '');
-                        setTimeout(() => { exitPending = false; }, 2000);
-                        return;
-                    }
-                    window.location.replace('about:blank');
-                }
-                function showExitToast() {
-                    const t = document.getElementById('exitToast');
-                    if (t) {
-                        t.classList.add('show');
-                        clearTimeout(exitTimer);
-                        exitTimer = setTimeout(() => t.classList.remove('show'), 2000);
-                        return;
-                    }
-                    const toast = document.createElement('div');
-                    toast.id = 'exitToast';
-                    toast.className = 'exit-toast';
-                    toast.textContent = 'اضغط مرة أخرى للخروج';
-                    document.body.appendChild(toast);
-                    requestAnimationFrame(() => toast.classList.add('show'));
-                    clearTimeout(exitTimer);
-                    exitTimer = setTimeout(() => toast.classList.remove('show'), 2000);
-                }
+                function handlePopState() {}
 
                 /* ---- Data ---- */
                 const slides = ref([
@@ -438,7 +408,7 @@
 
                 const sections = computed(function() {
                     return [
-                        { name: 'طلب عرض سعر', icon: 'request_quote', link: 'quotes.html?type=quote' },
+                        isCompany ? { name: 'عروض<br>المستخدمين', icon: 'request_quote', link: 'account.html?section=company-offers' } : { name: 'طلب عرض سعر', icon: 'request_quote', link: 'quotes.html?type=quote' },
                         { name: 'تصميم داخلي', icon: 'chair', link: 'execute.html?cat=تصميم%20داخلي' },
                         { name: 'تشطيب', icon: 'format_paint', link: 'execute.html?cat=تشطيبات%20داخلية' },
                         { name: 'شراء مواد', icon: 'storefront', link: 'market.html' },
@@ -896,14 +866,20 @@
                     startSlideTimer();
                     startAdTimer();
                     startGalleryTimer();
-                    window.addEventListener('popstate', handlePopState);
+                    BuneanNotif.updateBadge();
+                    PullToRefresh.init();
+                    BackNav.init();
+                    BackNav.registerCloseHandler(function() {
+                        if (viewerOpen.value) { viewerOpen.value = false; return true; }
+                        if (selectedProject.value) { selectedProject.value = null; startSlideTimer(); return true; }
+                        return false;
+                    });
                 });
 
                 onUnmounted(() => {
                     stopSlideTimer();
                     stopAdTimer();
                     stopGalleryTimer();
-                    window.removeEventListener('popstate', handlePopState);
                     window.removeEventListener('beforeunload', saveHomeState);
                 });
 
@@ -919,7 +895,8 @@
                     modalPullY, pullTransform, modalClosing,
                     adSlide, resetAdTimer,
                     partners,
-                    galleryImages, gallerySlide, gallerySwipe
+                    galleryImages, gallerySlide, gallerySwipe,
+                    requireAccount, goTo
                 };
             }
         });

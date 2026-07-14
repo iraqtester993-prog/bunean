@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - طلب منتج</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -136,7 +137,7 @@
 
                 <!-- أزرار الإجراءات -->
                 <div class="product-actions">
-                    <button class="btn-cart btn-outline" style="flex:1;" @click="addToCart">
+                    <button class="btn-cart btn-outline" style="flex:1;" @click="requireAccount(function() { addToCart(); })">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
                             <line x1="3" y1="6" x2="21" y2="6"/>
@@ -144,7 +145,7 @@
                         </svg>
                         أضف للسلة
                     </button>
-                    <button class="btn-primary" style="flex:1;" @click="orderNow">اطلب الآن</button>
+                    <button class="btn-primary" style="flex:1;" @click="requireAccount(function() { orderNow(); })">اطلب الآن</button>
                 </div>
             </div>
 
@@ -153,15 +154,15 @@
     </div>
 
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({ showBack: true, backLink: 'javascript:history.back()', cartBadge: true });
         document.getElementById('bottomNav').innerHTML = renderNav('market');
 
-        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
-        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
-
-        const { createApp, ref, computed } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
@@ -206,7 +207,9 @@
                     showBrandAlert('تم إرسال طلب المنتج بنجاح!');
                 };
 
-                return { cartCount, quantity, selectedColorIndex, selectedSize, colors, sizes, selectedColor, total, addToCart, orderNow };
+                onMounted(function() { BackNav.init(); PullToRefresh.init(); });
+
+                return { cartCount, quantity, selectedColorIndex, selectedSize, colors, sizes, selectedColor, total, addToCart, orderNow, requireAccount, goTo };
             }
         }).mount('#app');
     </script>

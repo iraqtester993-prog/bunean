@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - ملف الشركة</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -167,7 +168,8 @@
 
                 <!-- زر طلب عرض سعر عائم -->
                 <a v-if="!isCompany" :href="'quotes.html?type=quote&company=' + encodeURIComponent(company.name)"
-                   class="company-register-fab" style="text-decoration:none;">
+                   class="company-register-fab" style="text-decoration:none;"
+                   @click.prevent="requireAccount(function() { goTo('quotes.html?type=quote&company=' + encodeURIComponent(company.name)); })">
                     <span>طلب عرض سعر</span>
                 </a>
             </div>
@@ -222,7 +224,9 @@
 
             <!-- زر طلب عرض سعر لهذا التصميم -->
             <div v-if="selectedProject" style="padding:12px;">
-                <a :href="'quote-request.html?company=' + encodeURIComponent(company.name) + '&project=' + encodeURIComponent(selectedProject.title) + '&type=' + encodeURIComponent(selectedProject.type || '')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;font-family:Cairo,sans-serif;">
+                <a :href="'quote-request.html?company=' + encodeURIComponent(company.name) + '&project=' + encodeURIComponent(selectedProject.title) + '&type=' + encodeURIComponent(selectedProject.type || '')"
+                   style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;background:var(--accent-gold);color:#000;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;font-family:Cairo,sans-serif;"
+                   @click.prevent="requireAccount(function() { goTo('quote-request.html?company=' + encodeURIComponent(company.name) + '&project=' + encodeURIComponent(selectedProject.title) + '&type=' + encodeURIComponent(selectedProject.type || '')); })">
                     <span class="material-symbols-outlined" style="font-size:20px;">request_quote</span>
                     طلب عرض سعر لهذا التصميم
                 </a>
@@ -257,15 +261,15 @@
     <script src="js/project-data.js"></script>
     <script src="js/project-detail.js"></script>
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({});
         document.getElementById('bottomNav').innerHTML = renderNav('execute');
 
         const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
-
-        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
-        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         var params = new URLSearchParams(window.location.search);
         var urlCompanyId = params.get('id') ? decodeURIComponent(params.get('id')) : null;
@@ -570,68 +574,32 @@
                 window.addEventListener('beforeunload', saveCurrentState);
 
                 /* ---- Back Button ---- */
-                var exitPending = false;
-                var exitTimer = null;
-                function handlePopState() {
-                    if (viewerOpen.value) {
-                        viewerOpen.value = false;
-                        return;
-                    }
-                    if (selectedProject.value) {
-                        selectedProject.value = null;
-                        return;
-                    }
-                    if (projectDetail.value) {
-                        projectDetail.value = null;
-                        return;
-                    }
-                    if (showAllProjects.value) {
-                        showAllProjects.value = false;
-                        return;
-                    }
-                    if (!exitPending) {
-                        exitPending = true;
-                        showExitToast();
-                        history.pushState({ action: 'exit' }, '');
-                        setTimeout(function() { exitPending = false; }, 2000);
-                        return;
-                    }
-                    window.location.replace('about:blank');
-                }
-                function showExitToast() {
-                    var t = document.getElementById('exitToast');
-                    if (t) {
-                        t.classList.add('show');
-                        clearTimeout(exitTimer);
-                        exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
-                        return;
-                    }
-                    var toast = document.createElement('div');
-                    toast.id = 'exitToast';
-                    toast.className = 'exit-toast';
-                    toast.textContent = 'اضغط مرة أخرى للخروج';
-                    document.body.appendChild(toast);
-                    requestAnimationFrame(function() { toast.classList.add('show'); });
-                    clearTimeout(exitTimer);
-                    exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
-                }
+                function handlePopState() {}
 
                 onMounted(function() {
+                    PullToRefresh.init();
+                    BackNav.init();
+                    BackNav.registerCloseHandler(function() {
+                        if (viewerOpen.value) { viewerOpen.value = false; return true; }
+                        if (selectedProject.value) { selectedProject.value = null; return true; }
+                        if (projectDetail.value) { projectDetail.value = null; return true; }
+                        if (showAllProjects.value) { showAllProjects.value = false; return true; }
+                        return false;
+                    });
                     resetWorkTimer();
-                    window.addEventListener('popstate', handlePopState);
                     history.pushState({ action: 'init' }, '');
                 });
                 onUnmounted(function() {
                     if (workTimer) clearInterval(workTimer);
                     window.removeEventListener('beforeunload', saveCurrentState);
-                    window.removeEventListener('popstate', handlePopState);
                 });
 
                 return { isCompany, company, aboutPreview, selectedProject, detailSlide, projectDetail, detailSlide2, workSlide, workSwipe, resetWorkTimer, showAllProjects, onSlideChange, visibleProjects,
                          pullTransform, pullY, modalTouch, detailSwipe, viewerTouch,
                          viewerOpen, viewerIndex, viewerScale, viewerPanX, viewerPanY, viewerImages, isPinch,
                          openViewer, closeViewer, nextViewer, prevViewer, openViewerFromMaterial,
-                         closeProjectModal, showProjectDetail, closeProjectDetail, backToPreview, openDetailViewer };
+                         closeProjectModal, showProjectDetail, closeProjectDetail, backToPreview, openDetailViewer,
+                         requireAccount, goTo };
             }
         });
         _vueApp.component('project-detail', ProjectDetailComp);

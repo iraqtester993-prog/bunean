@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - حسابي</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -71,6 +72,12 @@
         .social-icon.instagram { background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
         .social-icon.tiktok { background:#010101; }
     </style>
+    <link rel="prefetch" href="home.html">
+    <link rel="prefetch" href="execute.html">
+    <link rel="prefetch" href="market.html">
+    <link rel="prefetch" href="ideas.html">
+    <link rel="prefetch" href="profile.html">
+    <link rel="prefetch" href="notifications.html">
 </head>
 <body>
     <div id="app" v-cloak>
@@ -134,14 +141,14 @@
                     <!-- القائمة -->
                     <div class="menu-section">
                         <template v-for="(item, index) in menuItems" :key="index">
-                            <a v-if="!item.section" :href="item.link" class="menu-item">
+                            <a v-if="!item.section" :href="item.link" class="menu-item" @click.prevent="requireAccount(function() { goTo(item.link); })">
                                 <div class="menu-item-left">
                                     <div class="menu-item-icon" v-html="item.icon"></div>
                                     <span class="menu-item-label" :style="{ color: item.color || '' }">{{ item.label }}</span>
                                 </div>
                                 <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </a>
-                            <div v-else class="menu-item" @click="activeUserSection = item.section" style="cursor:pointer;">
+                            <div v-else class="menu-item" @click="requireAccount(function() { activeUserSection = item.section; })" style="cursor:pointer;">
                                 <div class="menu-item-left">
                                     <div class="menu-item-icon" v-html="item.icon"></div>
                                     <span class="menu-item-label" :style="{ color: item.color || '' }">{{ item.label }}</span>
@@ -344,7 +351,7 @@
                         <!-- تبويبات -->
                         <div style="display:flex;gap:6px;padding:4px 16px 0;flex-shrink:0;">
                             <button @click="companyOffersTab = 'incoming'" :style="{flex:'1',padding:'8px',borderRadius:'10px',border:'1px solid '+(companyOffersTab==='incoming'?'var(--accent-gold)':'var(--border-light)'),background:companyOffersTab==='incoming'?'rgba(201,162,67,0.15)':'transparent',color:companyOffersTab==='incoming'?'var(--accent-gold)':'var(--text-muted)',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Cairo,sans-serif'}">طلبات العروض</button>
-                            <button @click="companyOffersTab = 'service'" :style="{flex:'1',padding:'8px',borderRadius:'10px',border:'1px solid '+(companyOffersTab==='service'?'var(--accent-gold)':'var(--border-light)'),background:companyOffersTab==='service'?'rgba(201,162,67,0.15)':'transparent',color:companyOffersTab==='service'?'var(--accent-gold)':'var(--text-muted)',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Cairo,sans-serif'}">طلب الخدمة</button>
+                            <button @click="companyOffersTab = 'service'" :style="{flex:'1',padding:'8px',borderRadius:'10px',border:'1px solid '+(companyOffersTab==='service'?'var(--accent-gold)':'var(--border-light)'),background:companyOffersTab==='service'?'rgba(201,162,67,0.15)':'transparent',color:companyOffersTab==='service'?'var(--accent-gold)':'var(--text-muted)',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Cairo,sans-serif'}">طلب عرض سعر</button>
                             <button @click="companyOffersTab = 'mine'" :style="{flex:'1',padding:'8px',borderRadius:'10px',border:'1px solid '+(companyOffersTab==='mine'?'var(--accent-gold)':'var(--border-light)'),background:companyOffersTab==='mine'?'rgba(201,162,67,0.15)':'transparent',color:companyOffersTab==='mine'?'var(--accent-gold)':'var(--text-muted)',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Cairo,sans-serif'}">عروضي المقدمة</button>
                         </div>
 
@@ -363,7 +370,7 @@
                             </div>
                         </div>
 
-                        <!-- تبويب طلب الخدمة -->
+                        <!-- تبويب طلب عرض سعر -->
                         <div v-if="companyOffersTab === 'service'" style="padding:8px 16px 20px;">
                             <div v-if="serviceRequests.length === 0" style="text-align:center;padding:30px 16px;color:var(--text-muted);font-size:13px;">لا توجد طلبات خدمة حتى الآن</div>
                             <div v-for="(sr, i) in serviceRequests" :key="sr.id || i" class="section-card" style="cursor:pointer;" @click="activeServiceRequest = sr">
@@ -429,14 +436,14 @@
                             </div>
                         </div>
 
-                        <!-- مودال تفاصيل طلب الخدمة -->
+                        <!-- مودال تفاصيل طلب عرض سعر -->
                         <div v-if="activeServiceRequest" class="project-modal modal-center" @click.self="activeServiceRequest = null">
                             <div class="modal-content" @touchstart.passive="modalTouch.onTouchStart" @touchmove.passive="modalTouch.onTouchMove" @touchend="modalTouch.onTouchEnd($event, function(){ activeServiceRequest = null })">
                                 <div style="padding:14px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border-light);">
                                     <button class="modal-close" @click="activeServiceRequest=null" style="position:static;"><span class="material-symbols-outlined close-icon">arrow_forward</span></button>
                                     <div style="width:40px;height:40px;border-radius:12px;background:var(--accent-gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span class="material-symbols-outlined" style="font-size:20px;color:var(--primary-dark);">build</span></div>
                                     <div>
-                                        <h3 style="color:var(--text-white);font-size:15px;font-weight:700;margin:0;">طلب خدمة</h3>
+                                        <h3 style="color:var(--text-white);font-size:15px;font-weight:700;margin:0;">طلب عرض سعر</h3>
                                         <p style="color:var(--text-muted);font-size:11px;margin:0;">{{ activeServiceRequest.createdAt }}</p>
                                     </div>
                                 </div>
@@ -1017,13 +1024,14 @@
     </div>
 
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({ userNameVue: true });
         document.getElementById('bottomNav').innerHTML = renderNav('account');
-
-        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
-        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         const { createApp, ref, computed, watch, nextTick } = Vue;
 
@@ -1232,7 +1240,7 @@
                         id: Date.now(),
                         requestId: req.id,
                         client: req.name || 'عميل',
-                        project: req.consultType || 'طلب خدمة',
+                        project: req.consultType || 'طلب عرض سعر',
                         amount: serviceReplyAmount.value.trim() || '',
                         notes: serviceReplyText.value.trim(),
                         status: 'قيد المراجعة',
@@ -1906,6 +1914,8 @@
                     var offerId = params.get('offerId');
                     if (section === 'company-ads') {
                         activeUserSection.value = 'company-ads';
+                    } else if (section === 'company-offers') {
+                        activeUserSection.value = 'company-offers';
                     } else if (section === 'user-offers' && offerId) {
                         activeUserSection.value = 'user-offers';
                         var off = userOffers.value.find(function(o) { return o.id === parseInt(offerId); });
@@ -1944,7 +1954,8 @@
                     handleEditProjectImages, removeEditImage,
                     editProfile, addSpec, removeSpec, saveProfileEdit, deleteCompanyProfile, handleLogout,
                     activeUserSection, userOffers, selectedOffer, viewOfferDetail, acceptOffer, revokeOffer,
-                    supportMessage, submitSupport
+                    supportMessage, submitSupport,
+                    requireAccount, goTo
                 };
             }
         }).mount('#app');
@@ -1954,28 +1965,14 @@
         (function() {
             var appEl = document.getElementById('app');
             if (!appEl || !appEl.__vue_app__) return;
-            var exitPending = false, exitTimer = null;
-            function handlePopState() {
+            PullToRefresh.init();
+            BackNav.init();
+            BackNav.registerCloseHandler(function() {
                 var vm = appEl.__vue_app__._instance.setupState;
-                if (vm.viewerOpen && vm.viewerOpen.value) { vm.viewerOpen.value = false; return; }
-                if (vm.activeUserSection && vm.activeUserSection.value) { vm.activeUserSection.value = ''; return; }
-                if (!exitPending) {
-                    exitPending = true;
-                    var t = document.getElementById('exitToast');
-                    if (t) { t.classList.add('show'); clearTimeout(exitTimer); exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000); }
-                    else {
-                        var toast = document.createElement('div'); toast.id = 'exitToast'; toast.className = 'exit-toast';
-                        toast.textContent = 'اضغط مرة أخرى للخروج'; document.body.appendChild(toast);
-                        requestAnimationFrame(function() { toast.classList.add('show'); });
-                        exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
-                    }
-                    history.pushState({ action: 'exit' }, '');
-                    setTimeout(function() { exitPending = false; }, 2000);
-                    return;
-                }
-                window.location.replace('about:blank');
-            }
-            window.addEventListener('popstate', handlePopState);
+                if (vm.viewerOpen && vm.viewerOpen.value) { vm.viewerOpen.value = false; return true; }
+                if (vm.activeUserSection && vm.activeUserSection.value) { vm.activeUserSection.value = ''; return true; }
+                return false;
+            });
             history.pushState({ action: 'init' }, '');
         })();
 

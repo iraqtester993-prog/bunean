@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - تفاصيل الطلب</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -120,17 +121,20 @@
     </div>
 
     <script src="js/nav.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         initTheme();
         document.getElementById('header').innerHTML = renderHeader({});
         document.getElementById('bottomNav').innerHTML = renderNav('home');
 
-        const { createApp, ref } = Vue;
+        const { createApp, ref, onMounted } = Vue;
 
         createApp({
             setup() {
                 initTheme();
+                requireAccount();
 
                 var item = ref(null);
 
@@ -160,6 +164,8 @@
                     if (status === 'ملغي') return { background: 'rgba(231,76,60,0.15)', color: '#e74c3c', fontSize:'11px', padding:'3px 8px', borderRadius:'20px', fontWeight:'600', whiteSpace:'nowrap' };
                     return { background: 'rgba(79,195,247,0.15)', color: '#4fc3f7', fontSize:'11px', padding:'3px 8px', borderRadius:'20px', fontWeight:'600', whiteSpace:'nowrap' };
                 }
+
+                onMounted(function() { BackNav.init(); PullToRefresh.init(); });
 
                 return { item, formatDate, consultStatusStyle };
             }

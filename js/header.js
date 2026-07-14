@@ -13,13 +13,12 @@ function renderHeader(options) {
 
     var searchHtml = title
         ? '<div style="flex:1;display:flex;align-items:center;justify-content:center;"><span class="header-title" style="font-size:16px;font-weight:700;font-family:Cairo,sans-serif;">' + title + '</span></div>'
-        : '<div class="search-bar"><span class="material-symbols-outlined">search</span>'
-        + (searchVModel
-            ? '<input type="text" v-model="' + searchVModel + '" placeholder="' + searchPlaceholder + '">'
-            : '<input type="text" placeholder="' + searchPlaceholder + '">')
-        + '</div>';
+        : '<form class="search-bar" onsubmit="var q=this.querySelector(\'input\').value.trim(); if(q){window.location.href=\'search.html?q=\'+encodeURIComponent(q);}else{window.location.href=\'search.html\';} return false;">'
+        + '<span class="material-symbols-outlined" style="cursor:pointer;" onclick="var f=this.closest(\'form\'); f.dispatchEvent(new Event(\'submit\'));">search</span>'
+        + '<input type="search" inputmode="search" placeholder="' + searchPlaceholder + '">'
+        + '</form>';
 
-    var notifHtml = '<a href="notifications.html" class="nav-icon material-symbols-outlined" id="headerNotifBtn">notifications</a>';
+    var notifHtml = '<a href="javascript:void(0)" onclick="requireAccount(function() { window.location.href=\'notifications.html\'; })" class="nav-icon material-symbols-outlined" id="headerNotifBtn" style="position:relative;">notifications<span class="notif-badge" style="position:absolute;top:6px;left:6px;min-width:16px;height:16px;border-radius:8px;background:#e74c3c;color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;font-family:Cairo,sans-serif;"></span></a>';
 
     return '<header class="top-nav">'
         + backBtn

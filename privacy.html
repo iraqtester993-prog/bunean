@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - الشروط والخصوصية</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -25,6 +26,8 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="js/header.js"></script>
     <script src="js/bottom-nav.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { display: none; }
@@ -82,11 +85,12 @@
         document.getElementById('header').innerHTML = renderHeader({});
         document.getElementById('bottomNav').innerHTML = renderNav('account');
 
-        const { createApp, ref, computed } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
         createApp({
             setup() {
                 const tab = ref('privacy');
                 var saved = JSON.parse(localStorage.getItem('bunean-privacy-content') || '{}');
+                onMounted(function() { BackNav.init(); PullToRefresh.init(); });
                 const privacyContent = ref(saved.privacy || '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">قريباً...</div>');
                 const termsContent = ref(saved.terms || '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">قريباً...</div>');
                 return { tab, privacyContent, termsContent };

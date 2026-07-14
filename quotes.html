@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - الاستشارات وطلبات عروض الأسعار</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -195,6 +196,8 @@
     </div>
 
     <script src="js/nav.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         initTheme();
@@ -204,11 +207,12 @@
         document.getElementById('header').innerHTML = renderHeader({ title: headerTitle });
         document.getElementById('bottomNav').innerHTML = renderNav('home');
 
-        const { createApp, ref } = Vue;
+        const { createApp, ref, onMounted } = Vue;
 
         createApp({
             setup() {
                 initTheme();
+                requireAccount();
                 var urlParams = new URLSearchParams(window.location.search);
                 var targetCompany = ref(urlParams.get('company') || '');
                 var targetProject = ref(urlParams.get('project') || '');
@@ -233,7 +237,7 @@
                     reader.readAsDataURL(file);
                     e.target.value = '';
                 }
-                function submitNewQuoteRequest() {
+function submitNewQuoteRequest() {
                     requireAccount(function() {
                     if (!newQR.value.name.trim()) { showBrandAlert('أدخل الاسم'); return; }
                     if (!newQR.value.phone.trim()) { showBrandAlert('أدخل رقم الهاتف'); return; }
@@ -274,7 +278,7 @@
                     reader.readAsDataURL(file);
                     e.target.value = '';
                 }
-                function submitNewConsult() {
+function submitNewConsult() {
                     requireAccount(function() {
                     if (!newConsult.value.name.trim()) { showBrandAlert('أدخل الاسم'); return; }
                     if (!newConsult.value.phone.trim()) { showBrandAlert('أدخل رقم الهاتف'); return; }
@@ -301,6 +305,8 @@
                     showSuccess.value = true;
                     });
                 }
+
+                onMounted(function() { BackNav.init(); PullToRefresh.init(); });
 
                 return {
                     pageType, activeForm, showSuccess, lastSubmitType,

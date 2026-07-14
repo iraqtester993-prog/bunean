@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style>html,body{background:#0b1a2e!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +10,7 @@
     <title>بنيان - تتبع الطلب</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -323,6 +324,9 @@
     </div>
 
     <script src="js/nav.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/global-viewer.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({});
@@ -334,6 +338,7 @@
         createApp({
             setup() {
                 initTheme();
+                requireAccount();
 
                 var steps = ref([
                     { label: 'تم استلام الطلب', status: 'done', icon: 'assignment', lineClass: 'done', time: '20 مايو 2025 - 12:13 م' },
@@ -374,10 +379,6 @@
                 var toastVisible = ref(false);
                 var toastText = ref('');
 
-                function fmt(num) {
-                    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                }
-
                 function showToast(msg) {
                     toastText.value = msg;
                     toastVisible.value = true;
@@ -404,35 +405,19 @@
                 }
 
                 /* ---- Back Button ---- */
-                var exitPending = false;
-                var exitTimer = null;
-                function handlePopState() {
-                    if (showInvoiceModal.value) { showInvoiceModal.value = false; return; }
-                    if (showCancelModal.value) { showCancelModal.value = false; return; }
-                    if (!exitPending) {
-                        exitPending = true;
-                        var t = document.getElementById('exitToast');
-                        if (t) { t.classList.add('show'); clearTimeout(exitTimer); exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000); }
-                        else {
-                            var toast = document.createElement('div'); toast.id = 'exitToast'; toast.className = 'exit-toast';
-                            toast.textContent = 'اضغط مرة أخرى للخروج'; document.body.appendChild(toast);
-                            requestAnimationFrame(function() { toast.classList.add('show'); });
-                            exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
-                        }
-                        history.pushState({ action: 'exit' }, '');
-                        setTimeout(function() { exitPending = false; }, 2000);
-                        return;
-                    }
-                    window.location.replace('about:blank');
-                }
+                function handlePopState() {}
 
                 onMounted(function() {
-                    window.addEventListener('popstate', handlePopState);
+                    PullToRefresh.init();
+                    BackNav.init();
+                    BackNav.registerCloseHandler(function() {
+                        if (showInvoiceModal.value) { showInvoiceModal.value = false; return true; }
+                        if (showCancelModal.value) { showCancelModal.value = false; return true; }
+                        return false;
+                    });
                     history.pushState({ action: 'init' }, '');
                 });
-                onUnmounted(function() {
-                    window.removeEventListener('popstate', handlePopState);
-                });
+                onUnmounted(function() {});
 
                 return {
                     steps, order, product,
