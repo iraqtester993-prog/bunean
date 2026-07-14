@@ -356,97 +356,381 @@
                 <!-- ===== صفحة الحاسبة ===== -->
                 <div v-if="calculatorView && !checkoutView" class="mkt-calc-view">
 
-                    <!-- إدخال الأبعاد -->
-                    <div class="mkt-calc-inputs-card">
-                        <div class="mkt-calc-dim-row">
-                            <div class="mkt-calc-dim">
-                                <label>الطول (م)</label>
-                                <input type="text" inputmode="decimal" v-model="calcLength" placeholder="0">
-                            </div>
-                            <div class="mkt-calc-dim">
-                                <label>العرض (م)</label>
-                                <input type="text" inputmode="decimal" v-model="calcWidth" placeholder="0">
-                            </div>
-                            <div class="mkt-calc-dim">
-                                <label>الارتفاع (م)</label>
-                                <input type="text" inputmode="decimal" v-model="calcHeight" placeholder="0">
-                            </div>
-                        </div>
-                        <button class="mkt-calc-calc-btn" @click="doCalc">
-                            <span class="material-symbols-outlined">calculate</span>
-                            احسب الكمية
-                        </button>
-                    </div>
+                    <!-- ===== سيراميك ===== -->
+                    <template v-if="selectedCalcType === 'ceramic'">
 
-                    <!-- النتائج -->
-                    <div v-if="calcDone">
-                        <div class="section-header">
-                            <span class="section-title">النتائج</span>
+                        <!-- ===== هيكل الحاسبة ===== -->
+                        <div style="background:var(--accent-gold);border-radius:12px;padding:16px 12px;text-align:center;position:relative;overflow:hidden;margin:12px 12px 0;">
+                            <h3 style="font-size:20px;font-weight:800;color:#fff;margin:0 0 6px;">حاسبة السيراميك</h3>
+                            <p style="font-size:11px;color:#fff;margin:0;">تهدف الحاسبة الى حساب عدد البلاطات المطلوبة وعرض منتجات سيراميك مقترحة حسب المقاس المختار</p>
                         </div>
 
-                        <!-- سيراميك -->
-                        <div v-if="selectedCalcType === 'all' || selectedCalcType === 'ceramic' || !selectedCalcType" class="mkt-calc-result-card">
-                            <div class="mkt-calc-result-header">
-                                <span class="material-symbols-outlined">grid_view</span>
-                                <h4>سيراميك</h4>
-                            </div>
-                            <div class="mkt-calc-result-body">
-                                <div class="mkt-calc-result-row">
-                                    <span>المساحة</span>
-                                    <span>{{ Math.ceil(calcLength * calcWidth) }} م²</span>
+                        <!-- اختيار مقاس البلاطة -->
+                        <div class="mkt-calc-inputs-card" style="margin-top:12px;">
+                            <div class="mkt-calc-dim-row" style="align-items:flex-end;">
+                                <div class="mkt-calc-dim">
+                                    <label>الطول (م)</label>
+                                    <input type="text" inputmode="decimal" v-model="calcLength" placeholder="0">
                                 </div>
-                                <div class="mkt-calc-result-row waste">
-                                    <span>عدد الصناديق (شامل الهدر)</span>
-                                    <span>{{ ceramicBoxes }} صندوق</span>
+                                <div class="mkt-calc-dim">
+                                    <label>العرض (م)</label>
+                                    <input type="text" inputmode="decimal" v-model="calcWidth" placeholder="0">
+                                </div>
+                                <div class="mkt-calc-dim">
+                                    <label>مقاس البلاطة</label>
+                                    <div style="position:relative;width:100%;">
+                                        <select :value="selectedTileLabel" @change="selectTileSize($event.target.value)"
+                                                class="tile-size-select">
+                                            <option v-for="s in TILE_SIZES" :key="s.label" :value="s.label">{{ s.label }}</option>
+                                        </select>
+                                        <span class="material-symbols-outlined" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:20px;">arrow_drop_down</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="mkt-calc-calc-btn" @click="doCalc">
+                                <span class="material-symbols-outlined">calculate</span>
+                                احسب الكمية
+                            </button>
+                        </div>
+
+                        <!-- نتائج السيراميك -->
+                        <div v-if="calcDone">
+                            <div class="section-header">
+                                <span class="section-title">نتائج السيراميك</span>
+                            </div>
+
+                            <div class="mkt-calc-result-card">
+                                <div class="mkt-calc-result-header">
+                                    <span class="material-symbols-outlined">grid_view</span>
+                                    <h4>سيراميك - {{ selectedTileLabel }}</h4>
+                                </div>
+                                <div class="mkt-calc-result-body">
+                                    <div class="mkt-calc-result-row">
+                                        <span>المساحة الكلية</span>
+                                        <span>{{ totalArea }} م²</span>
+                                    </div>
+                                    <div class="mkt-calc-result-row waste">
+                                        <span>المساحة بعد الهدر ({{ wastePercent }}%)</span>
+                                        <span>{{ areaWithWaste }} م²</span>
+                                    </div>
+                                    <div class="mkt-calc-result-row waste">
+                                        <span>عدد البلاطات المطلوبة</span>
+                                        <span>{{ tileCount }} بلاطة</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- منتجات مقترحة -->
+                            <div v-if="matchedProducts.length" class="section-header" style="margin-top:12px;">
+                                <span class="section-title">منتجات مقترحة للمقاس {{ selectedTileLabel }}</span>
+                            </div>
+                            <div v-if="matchedProducts.length" style="padding:0 16px 12px;display:flex;flex-direction:column;gap:10px;">
+                                <div v-for="(p, i) in matchedProducts" :key="i"
+                                     style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:0;overflow:hidden;">
+                                    <!-- رأس البطاقة: صورة + اسم + مورد -->
+                                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px 6px;">
+                                        <div style="width:56px;height:56px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                                            <img :src="p.img" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                        </div>
+                                        <div style="flex:1;min-width:0;">
+                                            <div style="font-size:13px;font-weight:700;color:var(--text-white);">{{ p.name }}</div>
+                                            <div style="font-size:11px;color:var(--text-muted);">{{ p.supplierName }}</div>
+                                            <div style="font-size:13px;font-weight:700;color:var(--accent-gold);margin-top:2px;">{{ fmt(p.price) }} د.ع / صندوق</div>
+                                        </div>
+                                    </div>
+                                    <!-- حاسبة المنتج -->
+                                    <div v-if="calcDone" style="padding:0 12px 8px;border-top:1px solid var(--border-light);margin:0 12px;padding-top:8px;">
+                                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+                                            <span>عدد البلاطات المطلوبة</span>
+                                            <span style="font-weight:700;color:var(--text-white);">{{ tileCount }} بلاطة</span>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+                                            <span>البلاط في كل صندوق</span>
+                                            <span style="font-weight:700;color:var(--text-white);">{{ getTilesPerBox(p, selectedTileLabel) }} بلاطة</span>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--text-white);margin-bottom:4px;">
+                                            <span>عدد الصناديق المطلوبة</span>
+                                            <span style="color:var(--accent-gold);">{{ Math.ceil(tileCount / getTilesPerBox(p, selectedTileLabel)) }} صندوق</span>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;margin-bottom:6px;">
+                                            <span style="color:var(--text-muted);">المجموع الكلي</span>
+                                            <span style="color:#4caf50;">{{ fmt(p.price * Math.ceil(tileCount / getTilesPerBox(p, selectedTileLabel))) }} د.ع</span>
+                                        </div>
+                                        <button @click="openCalcProduct(p)"
+                                                style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--accent-gold);background:transparent;color:var(--accent-gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">
+                                            عرض التفاصيل
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else-if="calcDone" style="padding:12px 16px;text-align:center;color:var(--text-muted);font-size:13px;">
+                                لا توجد منتجات متاحة لهذا المقاس حالياً
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ===== دهان ===== -->
+                    <template v-if="selectedCalcType === 'paint'">
+                        <!-- ===== هيكل الحاسبة ===== -->
+                        <div class="mkt-calc-inputs-card" style="border-radius:0 0 16px 16px;background:var(--bg-card);padding:16px;margin:12px;margin-top:0;">
+                            <div style="background:var(--accent-gold);border-radius:12px;padding:16px 12px;text-align:center;position:relative;overflow:hidden;margin-bottom:12px;">
+                                <div style="position:absolute;top:10px;left:10px;opacity:0.08;">
+                                    <span class="material-symbols-outlined" style="font-size:60px;color:var(--accent-gold);">diamond</span>
+                                </div>
+                                <div style="position:absolute;top:10px;right:10px;opacity:0.08;">
+                                    <span class="material-symbols-outlined" style="font-size:60px;color:var(--accent-gold);">diamond</span>
+                                </div>
+                                <h3 style="font-size:20px;font-weight:800;color:#fff;margin:0 0 6px;">حاسبة الدهان</h3>
+                                <p style="font-size:11px;color:#fff;margin:0;">تساعدك على حساب كمية الدهان المطلوب لجدران غرفتك بدقة وحسب الابعاد وعدد الابواب والشبابيك</p>
+                            </div>
+                            <!-- المدخلات -->
+                            <div style="display:flex;gap:6px;margin-bottom:12px;">
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">الطول (م)</div>
+                                    <input type="text" inputmode="decimal" v-model="calcLength"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">العرض (م)</div>
+                                    <input type="text" inputmode="decimal" v-model="calcWidth"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">الارتفاع (م)</div>
+                                    <input type="text" inputmode="decimal" v-model="calcHeight"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">الأبواب</div>
+                                    <input type="text" inputmode="numeric" v-model="paintDoors"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">الشبابيك</div>
+                                    <input type="text" inputmode="numeric" v-model="paintWindows"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
+                                </div>
+                            </div>
+                            <!-- ملاحظات -->
+                            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;">
+                                <span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-gold);flex-shrink:0;margin-top:2px;">lightbulb</span>
+                                <div style="font-size:11px;color:var(--text-muted);line-height:1.8;">
+                                    • يتم حساب مساحة الجدران بأبعاد الغرفة (أربعة جدران).<br>
+                                    • يتم احتساب مساحة الباب القياسية 2 م² لكل باب.<br>
+                                    • يتم احتساب مساحة الشباك القياسية 1.5 م² لكل شباك.<br>
+                                    • 1 لتر يغطي 10 م².
+                                </div>
+                            </div>
+                            <button class="mkt-calc-calc-btn" @click="doCalc">
+                                <span class="material-symbols-outlined">calculate</span>
+                                احسب الكمية
+                            </button>
+                        </div>
+
+                        <!-- ===== النتائج ===== -->
+                        <div v-if="calcDone" style="padding:0 16px 12px;">
+                            <div style="text-align:center;margin-bottom:12px;">
+                                <span style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-gold);color:#fff;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;font-family:Cairo,sans-serif;">
+                                    <span class="material-symbols-outlined" style="font-size:18px;">bar_chart</span>
+                                    النتائج
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:6px;">
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">مساحة الجدران</div>
+                                    <div style="font-size:18px;font-weight:800;color:var(--accent-gold);">{{ paintArea }}</div>
+                                    <div style="font-size:10px;color:var(--text-muted);">م²</div>
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">المساحة الصافية</div>
+                                    <div style="font-size:18px;font-weight:800;color:var(--accent-gold);">{{ paintNetArea }}</div>
+                                    <div style="font-size:10px;color:var(--text-muted);">م²</div>
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">الدهان المطلوب</div>
+                                    <div style="font-size:18px;font-weight:800;color:var(--accent-gold);">{{ paintLiters }}</div>
+                                    <div style="font-size:10px;color:var(--text-muted);">لتر</div>
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">عدد العبوات</div>
+                                    <div style="font-size:18px;font-weight:800;color:var(--accent-gold);">{{ paintBuckets }}</div>
+                                    <div style="font-size:10px;color:var(--text-muted);">عبوة</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- دهان -->
-                        <div v-if="selectedCalcType === 'all' || selectedCalcType === 'paint' || !selectedCalcType" class="mkt-calc-result-card">
-                            <div class="mkt-calc-result-header">
-                                <span class="material-symbols-outlined">format_paint</span>
-                                <h4>دهان</h4>
+                        <!-- ===== الدهانات المقترحة ===== -->
+                        <div v-if="calcDone && paintMatched.length" style="padding:0 16px 12px;">
+                            <div style="text-align:center;margin-bottom:12px;">
+                                <span style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-gold);color:#fff;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;font-family:Cairo,sans-serif;">
+                                    <span class="material-symbols-outlined" style="font-size:18px;">format_paint</span>
+                                    الدهانات المقترحة
+                                </span>
                             </div>
-                            <div class="mkt-calc-result-body">
-                                <div class="mkt-calc-result-row">
-                                    <span>مساحة الدهان</span>
-                                    <span>{{ paintArea }} م²</span>
+                            <div style="display:flex;flex-direction:column;gap:10px;">
+                                <div v-for="(p, i) in paintMatched" :key="i"
+                                     style="display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px;cursor:pointer;"
+                                     @click="openPaintProduct(p)">
+                                    <div style="width:56px;height:56px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                                        <img :src="p.img" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:13px;font-weight:700;color:var(--text-white);">{{ p.name }}</div>
+                                        <div style="font-size:11px;color:var(--text-muted);">{{ p.supplierName }}</div>
+                                        <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(201,162,67,0.12);border-radius:6px;padding:2px 8px;margin-top:4px;">
+                                            <span style="font-size:11px;font-weight:600;color:var(--accent-gold);">{{ paintLiters }} لتر</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:left;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                                        <div style="font-size:12px;font-weight:700;color:var(--accent-gold);white-space:nowrap;">{{ fmt(p.price) }} د.ع</div>
+                                        <button @click.stop="openPaintProduct(p)"
+                                                style="padding:6px 10px;border-radius:8px;border:1px solid var(--accent-gold);background:transparent;color:var(--accent-gold);font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">
+                                            تفاصيل المنتج
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="mkt-calc-result-row">
-                                    <span>عدد العلب (20 لتر)</span>
-                                    <span>{{ paintBuckets }} دلو</span>
+                            </div>
+                        </div>
+                        <div v-else-if="calcDone" style="padding:12px 16px;text-align:center;color:var(--text-muted);font-size:13px;">
+                            لا توجد منتجات دهان متاحة حالياً
+                        </div>
+                    </template>
+
+                    <!-- ===== واح جبس ===== -->
+                    <template v-if="selectedCalcType === 'gypsum'">
+
+                        <!-- ===== هيكل الحاسبة ===== -->
+                        <div style="background:var(--accent-gold);border-radius:12px;padding:16px 12px;text-align:center;position:relative;overflow:hidden;margin:12px 12px 0;">
+                            <h3 style="font-size:20px;font-weight:800;color:#fff;margin:0 0 6px;">حاسبة الجبس</h3>
+                            <p style="font-size:11px;color:#fff;margin:0;">احسب كمية الواح الجبس المطلوبة حسب الخيار المختار (سقف أو جدران أو سقف وجدران)</p>
+                        </div>
+
+                        <div class="mkt-calc-inputs-card" style="margin-top:12px;">
+                            <!-- المدخلات -->
+                            <div style="display:flex;gap:6px;margin-bottom:12px;">
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">الطول (م)</div>
+                                    <input type="text" inputmode="decimal" v-model="calcLength"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
                                 </div>
-                                <div class="mkt-calc-result-row waste">
-                                    <span>إجمالي الترات</span>
-                                    <span>{{ paintBuckets * 20 }} لتر</span>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">العرض (م)</div>
+                                    <input type="text" inputmode="decimal" v-model="calcWidth"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">الارتفاع (م)</div>
+                                    <input type="text" inputmode="decimal" v-model="calcHeight"
+                                        style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;text-align:center;">
+                                </div>
+                            </div>
+
+                            <!-- نوع الحساب -->
+                            <div style="margin-bottom:12px;">
+                                <div style="font-size:12px;font-weight:700;color:var(--text-white);margin-bottom:8px;text-align:center;">نوع الحساب</div>
+                                <div style="display:flex;gap:6px;">
+                                    <label style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg-card);border:2px solid var(--border-light);border-radius:12px;padding:12px 6px;cursor:pointer;transition:all 0.2s;"
+                                           :style="gypsumType === 'ceiling' ? 'border-color:var(--accent-gold);background:rgba(201,162,67,0.1)' : ''">
+                                        <input type="radio" v-model="gypsumType" value="ceiling" style="display:none;">
+                                        <span class="material-symbols-outlined" style="font-size:28px;" :style="gypsumType === 'ceiling' ? 'color:var(--accent-gold)' : 'color:var(--text-muted)'">crop_square</span>
+                                        <span style="font-size:11px;font-weight:600;" :style="gypsumType === 'ceiling' ? 'color:var(--accent-gold)' : 'color:var(--text-muted)'">سقف</span>
+                                    </label>
+                                    <label style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg-card);border:2px solid var(--border-light);border-radius:12px;padding:12px 6px;cursor:pointer;transition:all 0.2s;"
+                                           :style="gypsumType === 'walls' ? 'border-color:var(--accent-gold);background:rgba(201,162,67,0.1)' : ''">
+                                        <input type="radio" v-model="gypsumType" value="walls" style="display:none;">
+                                        <span class="material-symbols-outlined" style="font-size:28px;" :style="gypsumType === 'walls' ? 'color:var(--accent-gold)' : 'color:var(--text-muted)'">wall_art</span>
+                                        <span style="font-size:11px;font-weight:600;" :style="gypsumType === 'walls' ? 'color:var(--accent-gold)' : 'color:var(--text-muted)'">جدران</span>
+                                    </label>
+                                    <label style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg-card);border:2px solid var(--border-light);border-radius:12px;padding:12px 6px;cursor:pointer;transition:all 0.2s;"
+                                           :style="gypsumType === 'both' ? 'border-color:var(--accent-gold);background:rgba(201,162,67,0.1)' : ''">
+                                        <input type="radio" v-model="gypsumType" value="both" style="display:none;">
+                                        <span class="material-symbols-outlined" style="font-size:28px;" :style="gypsumType === 'both' ? 'color:var(--accent-gold)' : 'color:var(--text-muted)'">dashboard</span>
+                                        <span style="font-size:11px;font-weight:600;" :style="gypsumType === 'both' ? 'color:var(--accent-gold)' : 'color:var(--text-muted)'">سقف وجدران</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- ملاحظات -->
+                            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;">
+                                <span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-gold);flex-shrink:0;margin-top:2px;">lightbulb</span>
+                                <div style="font-size:11px;color:var(--text-muted);line-height:1.8;">
+                                    • يتم حساب كمية الجبس حسب الخيار المختار (سقف أو جدران أو سقف وجدران).<br>
+                                    • قياس لوح الجبس القياسي 240 × 120 سم.<br>
+                                    • مساحة لوح الجبس الواحد 2.88 م².<br>
+                                    • نسبة الهدر المعتمدة 10%.
+                                </div>
+                            </div>
+
+                            <button class="mkt-calc-calc-btn" @click="doCalc">
+                                <span class="material-symbols-outlined">calculate</span>
+                                احسب الكمية
+                            </button>
+                        </div>
+
+                        <!-- ===== النتائج ===== -->
+                        <div v-if="calcDone" style="padding:0 16px 12px;">
+                            <div style="text-align:center;margin-bottom:12px;">
+                                <span style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-gold);color:#fff;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;font-family:Cairo,sans-serif;">
+                                    <span class="material-symbols-outlined" style="font-size:18px;">bar_chart</span>
+                                    النتائج
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:6px;">
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">المساحة المطلوبة</div>
+                                    <div style="font-size:18px;font-weight:800;color:var(--accent-gold);">{{ gypsumArea }}</div>
+                                    <div style="font-size:10px;color:var(--text-muted);">م²</div>
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">المساحة بعد الهدر</div>
+                                    <div style="font-size:18px;font-weight:800;color:var(--accent-gold);">{{ gypsumAreaWithWaste }}</div>
+                                    <div style="font-size:10px;color:var(--text-muted);">م²</div>
+                                </div>
+                                <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px 6px;text-align:center;">
+                                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">عدد الواح الجبس</div>
+                                    <div style="font-size:18px;font-weight:800;color:var(--accent-gold);">{{ gypsumSheets }}</div>
+                                    <div style="font-size:10px;color:var(--text-muted);">لوح</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- واح جبس -->
-                        <div v-if="selectedCalcType === 'all' || selectedCalcType === 'gypsum' || !selectedCalcType" class="mkt-calc-result-card">
-                            <div class="mkt-calc-result-header">
-                                <span class="material-symbols-outlined">crop_square</span>
-                                <h4>واح جبس</h4>
+                        <!-- ===== منتجات الجبس المقترحة ===== -->
+                        <div v-if="calcDone && gypsumMatched.length" style="padding:0 16px 12px;">
+                            <div style="text-align:center;margin-bottom:12px;">
+                                <span style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-gold);color:#fff;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;font-family:Cairo,sans-serif;">
+                                    <span class="material-symbols-outlined" style="font-size:18px;">crop_square</span>
+                                    منتجات الجبس المقترحة
+                                </span>
                             </div>
-                            <div class="mkt-calc-result-body">
-                                <div class="mkt-calc-result-row">
-                                    <span>مساحة السقف</span>
-                                    <span>{{ gypsumArea }} م²</span>
-                                </div>
-                                <div class="mkt-calc-result-row waste">
-                                    <span>الناتج النهائي شامل الهدر</span>
-                                    <span>{{ gypsumSheets }} لوح</span>
+                            <div style="display:flex;flex-direction:column;gap:10px;">
+                                <div v-for="(p, i) in gypsumMatched" :key="i"
+                                     style="display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border-light);border-radius:12px;padding:10px;cursor:pointer;"
+                                     @click="openGypsumProduct(p)">
+                                    <div style="width:56px;height:56px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                                        <img :src="p.img" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:13px;font-weight:700;color:var(--text-white);">{{ p.name }}</div>
+                                        <div style="font-size:11px;color:var(--text-muted);">{{ p.supplierName }}</div>
+                                        <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(201,162,67,0.12);border-radius:6px;padding:2px 8px;margin-top:4px;">
+                                            <span style="font-size:11px;font-weight:600;color:var(--accent-gold);">240 × 120 سم</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:left;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                                        <div style="font-size:12px;font-weight:700;color:var(--accent-gold);white-space:nowrap;">{{ fmt(p.price) }} د.ع</div>
+                                        <button @click.stop="openGypsumProduct(p)"
+                                                style="padding:6px 10px;border-radius:8px;border:1px solid var(--accent-gold);background:transparent;color:var(--accent-gold);font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">
+                                            تفاصيل المنتج
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <div v-else-if="calcDone" style="padding:12px 16px;text-align:center;color:var(--text-muted);font-size:13px;">
+                            لا توجد منتجات جبس متاحة حالياً
+                        </div>
+                    </template>
 
-                        <button class="mkt-calc-copy-btn" @click="copyCalcResult">
-                            <span class="material-symbols-outlined">content_copy</span>
-                            نسخ النتيجة
-                        </button>
-                    </div>
                 </div>
 
                 <!-- ===== صفحة السلة ===== -->
@@ -629,14 +913,15 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="prod-opt-row">
-                            <span class="prod-opt-label"><span class="material-symbols-outlined">inventory_2</span> حجم العبوة</span>
+                        <div class="prod-opt-row" v-if="selectedProduct.sizes && selectedProduct.sizes.length">
+                            <span class="prod-opt-label"><span class="material-symbols-outlined">inventory_2</span> {{ selectedProduct.cat === 1 && selectedProduct.name.includes('دهان') ? 'الحجم' : 'مقاس البلاط' }}</span>
                             <div class="prod-opt-value">
-                                <div class="prod-opt-btns">
-                                    <button v-for="(sz, i) in selectedProduct.sizes" :key="i"
-                                            class="prod-opt-btn"
-                                            :class="{ active: selectedSize === i }"
-                                            @click="selectedSize = i">{{ sz }}</button>
+                                <div style="position:relative;width:100%;">
+                                    <select :value="selectedSize" @change="selectedSize = parseInt($event.target.value)"
+                                            style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border-light);background:var(--bg-input);color:var(--text-white);font-size:13px;font-family:Cairo,sans-serif;appearance:none;-webkit-appearance:none;cursor:pointer;">
+                                        <option v-for="(sz, i) in selectedProduct.sizes" :key="i" :value="i">{{ sz }}</option>
+                                    </select>
+                                    <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:20px;">arrow_drop_down</span>
                                 </div>
                             </div>
                         </div>
@@ -811,7 +1096,10 @@
                 var cartView = ref(autoOpenCart);
                 watch(cartView, function(v) { if (v) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); });
                 var calculatorView = ref(false);
-                watch(calculatorView, function(v) { if (v) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); });
+                watch(calculatorView, function(v) {
+                    if (v) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; });
+                    if (!v) { calcDone.value = false; calcLength.value = ''; calcWidth.value = ''; calcHeight.value = ''; totalArea.value = 0; areaWithWaste.value = 0; tileCount.value = 0; matchedProducts.value = []; paintDoors.value = 0; paintWindows.value = 0; paintArea.value = 0; paintNetArea.value = 0; paintLiters.value = 0; paintBuckets.value = 0; paintMatched.value = []; gypsumArea.value = 0; gypsumAreaWithWaste.value = 0; gypsumSheets.value = 0; gypsumMatched.value = []; }
+                });
                 var checkoutView = ref(false);
                 watch(checkoutView, function(v) { if (v) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); });
                 var searchQuery = ref('');
@@ -902,18 +1190,42 @@
                         boxes: '4 قطع / صندوق = 1.44 م²',
                         desc: 'بلاط بورسلان عالي الجودة بلمعان طبيعي، مناسب للأرضيات.'
                     }),
+                    makeProduct('سيراميك أرضي 30x30', 14000, 1, 4, 33, {
+                        colors: [{ name: 'بيج', hex: '#d4c5a9' }, { name: 'رمادي', hex: '#9e9e9e' }, { name: 'أبيض', hex: '#f5f5f5' }],
+                        sizes: ['30x30'],
+                        boxes: '10 قطع / صندوق = 0.9 م²',
+                        desc: 'سيراميك أرضي مقاوم للخدش مناسب للممرات والغرف.'
+                    }),
+                    makeProduct('بلاط بورسلان 120x60', 28000, 1, 5, 34, {
+                        colors: [{ name: 'رمادي غامق', hex: '#616161' }, { name: 'بيج', hex: '#d4c5a9' }, { name: 'أبيض', hex: '#fafafa' }],
+                        sizes: ['120x60'],
+                        boxes: '2 قطع / صندوق = 1.44 م²',
+                        desc: 'بلاط بورسلان كبير القياس عصري للصالات والقاعات الفاخرة.'
+                    }),
                     makeProduct('دهان جوتن داخلي', 45000, 1, 5, 4, {
                         colors: [{ name: 'أبيض', hex: '#ffffff' }, { name: 'كريمي', hex: '#f5e6cc' }, { name: 'رمادي فاتح', hex: '#e0e0e0' }, { name: 'أزرق فاتح', hex: '#bbdefb' }, { name: 'أخضر فاتح', hex: '#c8e6c9' }],
+                        sizes: ['6 لتر', '12 لتر', '18 لتر'],
                         boxes: 'دلو = 20 لتر يكفي 20 م²',
                         desc: 'دهان جوتن داخلي مقاوم للرطوبة، ألوان متعددة.'
                     }),
-                    makeProduct('جبس بورد 1.2x2.4', 12000, 1, 4, 6, {
-                        sizes: ['1.2x2.4', '1.2x3.0'],
+                    makeProduct('لوح جبس اعتيادي', 18000, 1, 4, 6, {
+                        sizes: ['240 × 120 سم'],
                         boxes: 'لوح واحد = 2.88 م²',
-                        desc: 'واح جبس بورد مناسب للأسقف المعلقة والجدران.'
+                        desc: 'واح جبس بورد اعتيادي مناسب للأسقف المعلقة والجدران.'
+                    }),
+                    makeProduct('لوح جبس مقاوم للرطوبة', 24000, 1, 4, 35, {
+                        sizes: ['240 × 120 سم'],
+                        boxes: 'لوح واحد = 2.88 م²',
+                        desc: 'واح جبس بورد مقاوم للماء مناسب للحمامات والمطابخ.'
+                    }),
+                    makeProduct('لوح جبس مقاوم للحريق', 28000, 1, 4, 36, {
+                        sizes: ['240 × 120 سم'],
+                        boxes: 'لوح واحد = 2.88 م²',
+                        desc: 'واح جبس بورد مقاوم للحريق للأماكن التي تتطلب أمان عالي.'
                     }),
                     makeProduct('دهان نيبون ديكوري', 38000, 1, 5, 8, {
                         colors: [{ name: 'ذهبي', hex: '#c9a243' }, { name: 'نحاسي', hex: '#b87333' }, { name: 'فضي', hex: '#c0c0c0' }, { name: 'أبيض لامع', hex: '#f8f8f8' }],
+                        sizes: ['6 لتر', '12 لتر', '18 لتر'],
                         boxes: 'دلو = 1 لتر',
                         desc: 'دهان نيبون ديكوري بتأثيرات ميتاليك فاخرة.'
                     }),
@@ -1054,7 +1366,7 @@
 
                 function updateFloatingCartBadge(items) {
                     var fc = document.querySelector('.mkt-floating-cart');
-                    var count = items.reduce(function(s, c) { return s + (c.qty || 0); }, 0);
+                    var count = items.length;
                     if (fc) {
                         var badge = fc.querySelector('.mkt-cart-badge');
                         if (badge) badge.textContent = count;
@@ -1108,6 +1420,24 @@
                     calculatorView.value = false;
                     checkoutView.value = false;
                     productDetailView.value = true;
+                }
+
+                function openCalcProduct(p) {
+                    openProduct(p);
+                    /* ضبط المقاس المختار تلقائياً ليطابق مقاس الحاسبة */
+                    var dimMatch = selectedTileLabel.value.replace(' سم', '').replace('×', 'x');
+                    if (p.sizes && p.sizes.length) {
+                        for (var si = 0; si < p.sizes.length; si++) {
+                            if (p.sizes[si].trim() === dimMatch.trim()) {
+                                selectedSize.value = si;
+                                break;
+                            }
+                        }
+                    }
+                    /* ضبط الكمية = عدد الكراتين المحسوبة */
+                    var tpb = getTilesPerBox(p, selectedTileLabel.value);
+                    var boxes = Math.ceil(tileCount.value / tpb);
+                    if (boxes > 0) selectedQty.value = boxes;
                 }
 
                 function openFromCart(item) {
@@ -1211,9 +1541,7 @@
                 })();
 
                 var cartCount = computed(function() {
-                    var total = 0;
-                    cart.value.forEach(function(c) { total += c.qty; });
-                    return total;
+                    return cart.value.length;
                 });
 
                 var cartSubtotal = computed(function() {
@@ -1228,68 +1556,197 @@
                     return sub.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                 });
 
+                /* ---- حاسبة السيراميك - مقاسات ثابتة ---- */
+                const TILE_SIZES = [
+                    { label: '30×30 سم', value: 30, tilesPerM2: 11.11, tilesPerBox: 10 },
+                    { label: '60×60 سم', value: 60, tilesPerM2: 2.75, tilesPerBox: 4 },
+                    { label: '80×80 سم', value: 80, tilesPerM2: 1.56, tilesPerBox: 3 },
+                    { label: '120×60 سم', value: 120, tilesPerM2: 1.39, tilesPerBox: 2 }
+                ];
+                function getTilesPerBox(product, sizeLabel) {
+                    /* تفضيل القيمة الثابتة من TILE_SIZES حسب المقاس */
+                    for (var i = 0; i < TILE_SIZES.length; i++) {
+                        if (TILE_SIZES[i].label === sizeLabel) return TILE_SIZES[i].tilesPerBox;
+                    }
+                    /* محاولة قراءة عدد القطع من product.boxes كاحتياطي */
+                    var box = product.boxes || '';
+                    var m = box.match(/(\d+)\s*قطع/);
+                    if (m) return parseInt(m[1], 10);
+                    return 4;
+                }
+
                 var calcLength = ref('');
                 var calcWidth = ref('');
                 var calcHeight = ref('');
                 var calcDone = ref(false);
-                var selectedCalcType = ref('');
+                var selectedCalcType = ref((function() { try { return localStorage.getItem('bunean-calc-type') || 'ceramic'; } catch(e) { return 'ceramic'; } })());
+                watch(selectedCalcType, function(v) { try { localStorage.setItem('bunean-calc-type', v); } catch(e) {} });
 
                 function goToCalc() {
                     if (!selectedCalcType.value) return;
                     calculatorView.value = true;
                 }
 
+                /* ---- متغيرات السيراميك ---- */
+                var selectedTileLabel = ref(TILE_SIZES[0].label);
+                var selectedTilesPerM2 = ref(TILE_SIZES[0].tilesPerM2);
+                var wastePercent = ref((function() {
+                    try { var c = JSON.parse(localStorage.getItem('bunean-calc-config')); return (c && c.wastePercent) ? c.wastePercent : 10; } catch(e) { return 10; }
+                })());
+                var totalArea = ref(0);
+                var areaWithWaste = ref(0);
+                var tileCount = ref(0);
+                var matchedProducts = ref([]);
+
                 var ceramicArea = ref(0);
                 var ceramicBoxes = ref(0);
                 var ceramicWaste = ref(0);
                 var paintArea = ref(0);
+                var paintNetArea = ref(0);
+                var paintLiters = ref(0);
                 var paintBuckets = ref(0);
+                var paintDoors = ref(0);
+                var paintWindows = ref(0);
+                var paintMatched = ref([]);
                 var paintWaste = ref(0);
                 var gypsumArea = ref(0);
+                var gypsumAreaWithWaste = ref(0);
                 var gypsumSheets = ref(0);
+                var gypsumType = ref('ceiling');
+                var gypsumMatched = ref([]);
                 var gypsumWaste = ref(0);
 
                 function fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
+                function selectTileSize(label) {
+                    selectedTileLabel.value = label;
+                    for (var i = 0; i < TILE_SIZES.length; i++) {
+                        if (TILE_SIZES[i].label === label) {
+                            selectedTilesPerM2.value = TILE_SIZES[i].tilesPerM2;
+                            break;
+                        }
+                    }
+                }
+
+                function findMatchingTileProducts(sizeValue) {
+                    /* sizeValue comes as the label e.g. "30×30 سم" → extract first dim */
+                    var dim = sizeValue.split('×')[0].trim();
+                    return allProducts.value.filter(function(p) {
+                        var name = p.name.toLowerCase();
+                        if (!name.includes('سيراميك') && !name.includes('بلاط') && !name.includes('بورسلان')) return false;
+                        if (!p.sizes || !p.sizes.length) return false;
+                        return p.sizes.some(function(s) {
+                            /* s is like "60x60" – normalise both sides */
+                            return s.replace('x', '×').startsWith(dim + '×');
+                        });
+                    });
+                }
+
+                function findMatchingPaintProducts() {
+                    return allProducts.value.filter(function(p) {
+                        var name = p.name.toLowerCase();
+                        return name.includes('دهان');
+                    });
+                }
+
+                function openPaintProduct(p) {
+                    openProduct(p);
+                    selectedQty.value = paintBuckets.value;
+                }
+
+                function findMatchingGypsumProducts() {
+                    return allProducts.value.filter(function(p) {
+                        var name = p.name.toLowerCase();
+                        return name.includes('جبس');
+                    });
+                }
+
+                function openGypsumProduct(p) {
+                    openProduct(p);
+                    selectedQty.value = gypsumSheets.value;
+                }
+
                 function doCalc() {
                     var l = parseFloat(calcLength.value) || 0;
                     var w = parseFloat(calcWidth.value) || 0;
-                    var h = parseFloat(calcHeight.value) || 0;
                     if (l <= 0 || w <= 0) { showBrandAlert('أدخل الأبعاد بشكل صحيح'); return; }
 
                     var floorArea = l * w;
-                    var wallArea = 2 * (l + w) * h;
+                    var tpm = selectedTilesPerM2.value;
+                    var wp = wastePercent.value / 100;
+                    var aww = Math.ceil(floorArea * (1 + wp));
+                    var tc = Math.ceil(aww * tpm);
 
+                    totalArea.value = floorArea;
+                    areaWithWaste.value = aww;
+                    tileCount.value = tc;
+
+                    /* حاسبة السيراميك - باقي الحسابات */
                     var cArea = Math.ceil(floorArea * 1.1);
                     var cBoxes = Math.ceil(cArea / 3);
                     ceramicArea.value = cArea;
                     ceramicBoxes.value = cBoxes;
                     ceramicWaste.value = cArea - floorArea;
 
-                    var pArea = Math.ceil(wallArea * 0.85);
-                    var pBuckets = Math.ceil(pArea / 2);
-                    paintArea.value = pArea;
-                    paintBuckets.value = pBuckets;
-                    paintWaste.value = pBuckets - (pArea / 2);
+                    /* حاسبة الدهان */
+                    var h = parseFloat(calcHeight.value) || 0;
+                    var wallArea = 2 * (l + w) * h;
+                    var doors = parseInt(paintDoors.value) || 0;
+                    var windows = parseInt(paintWindows.value) || 0;
+                    var doorArea = doors * 2;
+                    var windowArea = windows * 1.5;
+                    var netArea = wallArea - doorArea - windowArea;
+                    if (netArea < 0) netArea = 0;
+                    var liters = Math.ceil(netArea / 10);
+                    var bucketSize = 20;
+                    var buckets = Math.ceil(liters / bucketSize);
+                    paintArea.value = Math.ceil(wallArea);
+                    paintNetArea.value = Math.ceil(netArea);
+                    paintLiters.value = liters;
+                    paintBuckets.value = buckets;
+                    paintMatched.value = findMatchingPaintProducts();
 
-                    var gArea = Math.ceil(floorArea);
-                    var gSheets = Math.ceil(gArea / 2.88);
-                    gypsumArea.value = gArea;
+                    /* حاسبة الجبس */
+                    var h = parseFloat(calcHeight.value) || 0;
+                    var gArea = 0;
+                    if (gypsumType.value === 'ceiling') {
+                        gArea = l * w;
+                    } else if (gypsumType.value === 'walls') {
+                        gArea = 2 * (l + w) * h;
+                    } else {
+                        gArea = (l * w) + (2 * (l + w) * h);
+                    }
+                    var gAreaWithWaste = Math.ceil(gArea * 1.1);
+                    var gSheets = Math.ceil(gAreaWithWaste / 2.88);
+                    gypsumArea.value = Math.ceil(gArea);
+                    gypsumAreaWithWaste.value = gAreaWithWaste;
                     gypsumSheets.value = gSheets;
-                    gypsumWaste.value = gSheets - (gArea / 2.88);
+                    gypsumMatched.value = findMatchingGypsumProducts();
+
+                    /* منتجات مقترحة */
+                    matchedProducts.value = findMatchingTileProducts(selectedTileLabel.value);
 
                     calcDone.value = true;
                 }
 
                 function copyCalcResult() {
                     var lines = [];
-                    if (selectedCalcType.value === 'all' || selectedCalcType.value === 'ceramic' || !selectedCalcType.value) {
+                    if (selectedCalcType.value === 'ceramic') {
+                        lines.push('سيراميك - ' + selectedTileLabel.value);
+                        lines.push('المساحة الكلية: ' + totalArea.value + ' م²');
+                        lines.push('المساحة بعد الهدر (' + wastePercent.value + '%): ' + areaWithWaste.value + ' م²');
+                        lines.push('عدد البلاطات المطلوبة: ' + tileCount.value + ' بلاطة');
+                    } else if (selectedCalcType.value === 'paint') {
+                        lines.push('دهان');
+                        lines.push('مساحة الجدران الكلية: ' + paintArea.value + ' م²');
+                        lines.push('المساحة الصافية: ' + paintNetArea.value + ' م²');
+                        lines.push('كمية الدهان: ' + paintLiters.value + ' لتر');
+                        lines.push('عدد العبوات: ' + paintBuckets.value + ' دلو (20 لتر)');
+                    } else if (selectedCalcType.value === 'gypsum') {
+                        lines.push('واح جبس: ' + gypsumSheets.value + ' لوح (شامل الهدر)');
+                    } else {
                         lines.push('سيراميك: ' + ceramicBoxes.value + ' صندوق (شامل الهدر)');
-                    }
-                    if (selectedCalcType.value === 'all' || selectedCalcType.value === 'paint' || !selectedCalcType.value) {
                         lines.push('دهان: ' + paintBuckets.value + ' دلو | ' + (paintBuckets.value * 20) + ' لتر');
-                    }
-                    if (selectedCalcType.value === 'all' || selectedCalcType.value === 'gypsum' || !selectedCalcType.value) {
                         lines.push('واح جبس: ' + gypsumSheets.value + ' لوح (شامل الهدر)');
                     }
                     navigator.clipboard.writeText(lines.join('\n')).then(function() {
@@ -1511,9 +1968,12 @@
                     catProducts, filteredCatProducts, selectCat, openProduct, addToCart,
                     cart, cartCount, cartSubtotal, cartTotal, saveCart,
                     calcLength, calcWidth, calcHeight, calcDone, doCalc, selectedCalcType, goToCalc,
+                    TILE_SIZES, selectedTileLabel, selectedTilesPerM2, wastePercent,
+                    totalArea, areaWithWaste, tileCount, matchedProducts,
+                    selectTileSize, findMatchingTileProducts, getTilesPerBox, openCalcProduct,
                     ceramicArea, ceramicBoxes, ceramicWaste,
-                    paintArea, paintBuckets, paintWaste,
-                    gypsumArea, gypsumSheets, gypsumWaste,
+                    paintArea, paintNetArea, paintLiters, paintBuckets, paintDoors, paintWindows, paintMatched, paintWaste, findMatchingPaintProducts, openPaintProduct,
+                    gypsumArea, gypsumAreaWithWaste, gypsumSheets, gypsumType, gypsumMatched, gypsumWaste, findMatchingGypsumProducts, openGypsumProduct,
                     copyCalcResult, confirmOrder, cancelCart,
                     checkoutName, checkoutPhone, checkoutGov, checkoutAddress, checkoutNotes, governorates,
                     selectedProduct, selectedColor, selectedSize, selectedFinish, selectedQty, modalSlide,

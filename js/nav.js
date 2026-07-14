@@ -173,7 +173,7 @@ function initFloatingCart() {
             localStorage.removeItem('bunean-market-cart');
             return;
         }
-        var count = valid.reduce(function(s, c) { return s + (c.qty || 0); }, 0);
+        var count = valid.length;
         if (count < 1) { localStorage.removeItem('bunean-market-cart'); return; }
         var div = document.createElement('div');
         div.className = 'mkt-floating-cart';
