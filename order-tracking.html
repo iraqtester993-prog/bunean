@@ -194,7 +194,7 @@
                             <span class="tr-pricing-value">{{ fmt(product.price) }} د.ع</span>
                         </div>
                         <div class="tr-pricing-row">
-                            <span class="tr-pricing-label">أجور التوصيل</span>
+                            <span class="tr-pricing-label">عمولة خدمة</span>
                             <span class="tr-pricing-value">{{ fmt(deliveryFee) }} د.ع</span>
                         </div>
                         <div class="tr-pricing-row">
@@ -297,7 +297,7 @@
                     </div>
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         <div style="display:flex;justify-content:space-between;">
-                            <span style="color:var(--text-muted);font-size:13px;">أجور التوصيل</span>
+                            <span style="color:var(--text-muted);font-size:13px;">عمولة خدمة</span>
                             <span style="color:var(--text-white);font-size:13px;">{{ fmt(deliveryFee) }} د.ع</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;">
@@ -329,7 +329,7 @@
 
         document.getElementById('bottomNav').innerHTML = renderNav('account');
 
-        const { createApp, ref } = Vue;
+        const { createApp, ref, onMounted, onUnmounted } = Vue;
 
         createApp({
             setup() {
@@ -402,6 +402,37 @@
                 function viewInvoice() {
                     showInvoiceModal.value = true;
                 }
+
+                /* ---- Back Button ---- */
+                var exitPending = false;
+                var exitTimer = null;
+                function handlePopState() {
+                    if (showInvoiceModal.value) { showInvoiceModal.value = false; return; }
+                    if (showCancelModal.value) { showCancelModal.value = false; return; }
+                    if (!exitPending) {
+                        exitPending = true;
+                        var t = document.getElementById('exitToast');
+                        if (t) { t.classList.add('show'); clearTimeout(exitTimer); exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000); }
+                        else {
+                            var toast = document.createElement('div'); toast.id = 'exitToast'; toast.className = 'exit-toast';
+                            toast.textContent = 'اضغط مرة أخرى للخروج'; document.body.appendChild(toast);
+                            requestAnimationFrame(function() { toast.classList.add('show'); });
+                            exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+                        }
+                        history.pushState({ action: 'exit' }, '');
+                        setTimeout(function() { exitPending = false; }, 2000);
+                        return;
+                    }
+                    window.location.replace('about:blank');
+                }
+
+                onMounted(function() {
+                    window.addEventListener('popstate', handlePopState);
+                    history.pushState({ action: 'init' }, '');
+                });
+                onUnmounted(function() {
+                    window.removeEventListener('popstate', handlePopState);
+                });
 
                 return {
                     steps, order, product,

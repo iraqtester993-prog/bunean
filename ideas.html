@@ -337,10 +337,10 @@
                             <div class="idea-project-info">
                                 <h3>{{ proj.title }}</h3>
                                 <div class="idea-project-meta idea-project-meta-col">
+                                    <span><span class="material-symbols-outlined">business</span> {{ proj.company }}</span>
                                     <span><span class="material-symbols-outlined">location_on</span> {{ proj.governorate || '---' }}</span>
                                     <span><span class="material-symbols-outlined">domain</span> {{ proj.type || '---' }}</span>
                                     <span><span class="material-symbols-outlined">calendar_today</span> {{ proj.year || '---' }}</span>
-                                    <span><span class="material-symbols-outlined">payments</span> {{ proj.price }}</span>
                                 </div>
                             </div>
                         </div>
@@ -421,6 +421,9 @@
     <script>
         document.getElementById('header').innerHTML = renderHeader({ searchVModel: 'searchQuery', searchPlaceholder: 'ابحث عن أفكار ومشاريع...' });
         document.getElementById('bottomNav').innerHTML = renderNav('ideas');
+
+        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
+        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         const { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } = Vue;
 
@@ -840,8 +843,26 @@
                 function backToPreview() { var p = projectDetail.value; closeProjectDetail(); if (p) { modalSlide.value = 0; selectedProject.value = p; } }
                 function openDetailViewer(index) { if (!projectDetail.value) return; var imgs = projectDetail.value.images; if (!imgs || !imgs.length) return; if (index < 0 || index >= imgs.length) index = 0; viewerImages.value = imgs; viewerIndex.value = index; viewerScale.value = 1; viewerPanX.value = 0; viewerPanY.value = 0; viewerOpen.value = true; }
 
+                // State preservation on refresh only
+                var isReload = false;
+                try { isReload = performance.getEntriesByType('navigation')[0].type === 'reload'; } catch(e) {}
+                try { if (performance.navigation && performance.navigation.type === 1) isReload = true; } catch(e) {}
+                if (isReload) {
+                    var savedIdeas = restoreState('ideas');
+                    if (savedIdeas) {
+                        if (savedIdeas.selectedProject) selectedProject.value = savedIdeas.selectedProject;
+                    }
+                }
+                function saveIdeasState() {
+                    preserveState('ideas', { selectedProject: selectedProject.value });
+                }
+                window.addEventListener('beforeunload', saveIdeasState);
+
                 onMounted(function() { window.addEventListener('popstate', handlePopState); });
-                onUnmounted(function() { window.removeEventListener('popstate', handlePopState); });
+                onUnmounted(function() {
+                    window.removeEventListener('popstate', handlePopState);
+                    window.removeEventListener('beforeunload', saveIdeasState);
+                });
 
                 return {
                     searchQuery, activeCategory, categories, selectedProject, modalSlide,

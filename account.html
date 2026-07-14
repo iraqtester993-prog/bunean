@@ -1022,6 +1022,9 @@
         document.getElementById('header').innerHTML = renderHeader({ userNameVue: true });
         document.getElementById('bottomNav').innerHTML = renderNav('account');
 
+        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
+        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
+
         const { createApp, ref, computed, watch, nextTick } = Vue;
 
         function loadFromStorage(key, def) {
@@ -1816,8 +1819,13 @@
                 };
 
                 // ===== User sections =====
-                var activeUserSection = ref('');
-                watch(activeUserSection, function(v) { if (v) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); });
+                var isReload = false;
+                try { isReload = performance.getEntriesByType('navigation')[0].type === 'reload'; } catch(e) {}
+                try { if (performance.navigation && performance.navigation.type === 1) isReload = true; } catch(e) {}
+                var activeUserSection = ref(isReload ? restoreState('account', '') : '');
+                function saveAccountState() { preserveState('account', activeUserSection.value); }
+                watch(activeUserSection, function(v) { if (v) nextTick(function() { var e = document.querySelector('.page-content'); if (e) e.scrollTop = 0; }); saveAccountState(); });
+                window.addEventListener('beforeunload', saveAccountState);
                 var supportMessage = ref('');
 
                 function submitSupport() {
@@ -1942,6 +1950,35 @@
         }).mount('#app');
     </script>
     <script>
+        /* ---- Back Button ---- */
+        (function() {
+            var appEl = document.getElementById('app');
+            if (!appEl || !appEl.__vue_app__) return;
+            var exitPending = false, exitTimer = null;
+            function handlePopState() {
+                var vm = appEl.__vue_app__._instance.setupState;
+                if (vm.viewerOpen && vm.viewerOpen.value) { vm.viewerOpen.value = false; return; }
+                if (vm.activeUserSection && vm.activeUserSection.value) { vm.activeUserSection.value = ''; return; }
+                if (!exitPending) {
+                    exitPending = true;
+                    var t = document.getElementById('exitToast');
+                    if (t) { t.classList.add('show'); clearTimeout(exitTimer); exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000); }
+                    else {
+                        var toast = document.createElement('div'); toast.id = 'exitToast'; toast.className = 'exit-toast';
+                        toast.textContent = 'اضغط مرة أخرى للخروج'; document.body.appendChild(toast);
+                        requestAnimationFrame(function() { toast.classList.add('show'); });
+                        exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+                    }
+                    history.pushState({ action: 'exit' }, '');
+                    setTimeout(function() { exitPending = false; }, 2000);
+                    return;
+                }
+                window.location.replace('about:blank');
+            }
+            window.addEventListener('popstate', handlePopState);
+            history.pushState({ action: 'init' }, '');
+        })();
+
         initFloatingCart();
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')

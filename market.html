@@ -490,10 +490,6 @@
                                 <span>المجموع الفرعي</span>
                                 <span>{{ cartSubtotal }} د.ع</span>
                             </div>
-                            <div class="mkt-cart-row">
-                                <span>التوصيل</span>
-                                <span>15,000 د.ع</span>
-                            </div>
                             <div class="mkt-cart-row total">
                                 <span>الإجمالي</span>
                                 <span>{{ cartTotal }} د.ع</span>
@@ -549,7 +545,7 @@
                             <span>{{ cartSubtotal }} د.ع</span>
                         </div>
                         <div class="mkt-cart-row">
-                            <span>التوصيل</span>
+                            <span>عمولة خدمة</span>
                             <span>15,000 د.ع</span>
                         </div>
                         <div class="mkt-cart-row total">
@@ -800,6 +796,9 @@
         var allImgs = [];
         for (var n = 1; n <= 31; n++) allImgs.push('images/img' + n + '.jpg');
         function rndImg(seed) { return allImgs[seed % 31]; }
+
+        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
+        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         const { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } = Vue;
 
@@ -1226,7 +1225,6 @@
                 var cartTotal = computed(function() {
                     var sub = 0;
                     cart.value.forEach(function(c) { sub += c.price * c.qty; });
-                    sub += 15000;
                     return sub.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                 });
 
@@ -1407,6 +1405,75 @@
                     };
                 })();
 
+                // State preservation on refresh only
+                var isReload = false;
+                try { isReload = performance.getEntriesByType('navigation')[0].type === 'reload'; } catch(e) {}
+                try { if (performance.navigation && performance.navigation.type === 1) isReload = true; } catch(e) {}
+                function saveMarketState() {
+                    preserveState('market', {
+                        cartView: cartView.value,
+                        checkoutView: checkoutView.value,
+                        calculatorView: calculatorView.value,
+                        showAllView: showAllView.value,
+                        showAllOffers: showAllOffers.value,
+                        showAllSuppliers: showAllSuppliers.value
+                    });
+                }
+                if (isReload) {
+                    var savedMarket = restoreState('market');
+                    if (savedMarket) {
+                        if (savedMarket.cartView) cartView.value = true;
+                        if (savedMarket.checkoutView) checkoutView.value = true;
+                        if (savedMarket.calculatorView) calculatorView.value = true;
+                        if (savedMarket.showAllView) showAllView.value = true;
+                        if (savedMarket.showAllOffers) showAllOffers.value = true;
+                        if (savedMarket.showAllSuppliers) showAllSuppliers.value = true;
+                    }
+                }
+                window.addEventListener('beforeunload', saveMarketState);
+
+                /* ---- Back Button ---- */
+                var exitPending = false;
+                var exitTimer = null;
+                function handlePopState() {
+                    if (viewerOpen && viewerOpen.value) { viewerOpen.value = false; return; }
+                    if (productDetailView && productDetailView.value) { productDetailView.value = false; return; }
+                    if (selectedProduct && selectedProduct.value) { selectedProduct.value = null; return; }
+                    if (checkoutView && checkoutView.value) { checkoutView.value = false; return; }
+                    if (cartView && cartView.value) { cartView.value = false; return; }
+                    if (calculatorView && calculatorView.value) { calculatorView.value = false; return; }
+                    if (showAllView && showAllView.value) { showAllView.value = false; return; }
+                    if (showAllOffers && showAllOffers.value) { showAllOffers.value = false; return; }
+                    if (showAllSuppliers && showAllSuppliers.value) { showAllSuppliers.value = false; return; }
+                    if (activeCatView && activeCatView.value !== null) { activeCatView.value = null; return; }
+                    if (selectedSupplier && selectedSupplier.value) { closeSupplier(); return; }
+                    if (!exitPending) {
+                        exitPending = true;
+                        showExitToast();
+                        history.pushState({ action: 'exit' }, '');
+                        setTimeout(function() { exitPending = false; }, 2000);
+                        return;
+                    }
+                    window.location.replace('about:blank');
+                }
+                function showExitToast() {
+                    var t = document.getElementById('exitToast');
+                    if (t) {
+                        t.classList.add('show');
+                        clearTimeout(exitTimer);
+                        exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+                        return;
+                    }
+                    var toast = document.createElement('div');
+                    toast.id = 'exitToast';
+                    toast.className = 'exit-toast';
+                    toast.textContent = 'اضغط مرة أخرى للخروج';
+                    document.body.appendChild(toast);
+                    requestAnimationFrame(function() { toast.classList.add('show'); });
+                    clearTimeout(exitTimer);
+                    exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+                }
+
                 onMounted(function() {
                     resetMktTimer();
                     window.addEventListener('mkt-toggle-cart', function() {
@@ -1419,8 +1486,14 @@
                             checkoutView.value = false;
                         }
                     });
+                    window.addEventListener('popstate', handlePopState);
+                    history.pushState({ action: 'init' }, '');
                 });
-                onUnmounted(function() { if (mktTimer) clearInterval(mktTimer); });
+                onUnmounted(function() {
+                    if (mktTimer) clearInterval(mktTimer);
+                    window.removeEventListener('beforeunload', saveMarketState);
+                    window.removeEventListener('popstate', handlePopState);
+                });
 
                 watch([cartView, checkoutView], function() {
                     var el = document.querySelector('.mkt-floating-cart');

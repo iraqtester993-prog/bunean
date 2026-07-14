@@ -27,7 +27,9 @@
     <script src="js/bottom-nav.js"></script>
     <script src="js/router.js"></script>
     <script src="js/companies.js"></script>
-    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content::-webkit-scrollbar{display:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}</style>
+    <style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none;-ms-overflow-style:none}.page-content::-webkit-scrollbar{display:none}.page-content{scrollbar-width:none;-ms-overflow-style:none}
+.company-register-fab{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:14px 28px;background:var(--accent-gold);border:none;border-radius:50px;color:var(--primary-dark);font-size:15px;font-weight:800;font-family:'Cairo',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(201,162,67,0.4);z-index:50;transition:all .3s ease;white-space:nowrap;}.company-register-fab:active{transform:translateX(-50%) scale(0.96);}html.light-mode .company-register-fab{background:#3b82f6;color:#fff;box-shadow:0 4px 20px rgba(59,130,246,0.4);}
+.exit-toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:12px 28px;border-radius:16px;font-size:14px;font-weight:600;z-index:99999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}.exit-toast.show{opacity:1;}</style>
 </head>
 <body>
     <div id="header"></div>
@@ -163,22 +165,11 @@
                     </div>
                 </div>
 
-                <!-- كارت هل ترغب بتنفيذ مشروعك -->
-                <div v-if="!isCompany" style="padding:0 16px 30px;">
-                    <div class="cta-card">
-                        <div class="cta-card-bg"></div>
-                        <div class="cta-card-body">
-                            <div>
-                                <h3 class="cta-card-title">هل ترغب بتنفيذ مشروعك؟</h3>
-                                <p class="cta-card-subtitle">احصل على عرض سعر من {{ company.name }}</p>
-                            </div>
-                            <a :href="'quote-request.html?company=' + encodeURIComponent(company.name)" class="cta-card-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">
-                                <span class="material-symbols-outlined" style="font-size:18px;">request_quote</span>
-                                طلب عرض سعر
-                            </a>
-                        </div>
-                </div>
-            </div>
+                <!-- زر طلب عرض سعر عائم -->
+                <a v-if="!isCompany" :href="'quotes.html?type=quote&company=' + encodeURIComponent(company.name)"
+                   class="company-register-fab" style="text-decoration:none;">
+                    <span>طلب عرض سعر</span>
+                </a>
             </div>
 
             <!-- صفحة عرض كل المشاريع -->
@@ -272,6 +263,9 @@
         document.getElementById('bottomNav').innerHTML = renderNav('execute');
 
         const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
+        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         var params = new URLSearchParams(window.location.search);
         var urlCompanyId = params.get('id') ? decodeURIComponent(params.get('id')) : null;
@@ -554,8 +548,84 @@
                     };
                 })();
 
-                onMounted(function() { resetWorkTimer(); });
-                onUnmounted(function() { if (workTimer) clearInterval(workTimer); });
+                // State preservation on refresh only
+                var isReload = false;
+                try { isReload = performance.getEntriesByType('navigation')[0].type === 'reload'; } catch(e) {}
+                try { if (performance.navigation && performance.navigation.type === 1) isReload = true; } catch(e) {}
+                if (isReload) {
+                    var savedState = restoreState('company');
+                    if (savedState) {
+                        if (savedState.selectedProject) selectedProject.value = savedState.selectedProject;
+                        if (savedState.showAllProjects) showAllProjects.value = true;
+                        if (savedState.detailSlide) detailSlide.value = savedState.detailSlide;
+                    }
+                }
+                function saveCurrentState() {
+                    preserveState('company', {
+                        selectedProject: selectedProject.value,
+                        showAllProjects: showAllProjects.value,
+                        detailSlide: detailSlide.value
+                    });
+                }
+                window.addEventListener('beforeunload', saveCurrentState);
+
+                /* ---- Back Button ---- */
+                var exitPending = false;
+                var exitTimer = null;
+                function handlePopState() {
+                    if (viewerOpen.value) {
+                        viewerOpen.value = false;
+                        return;
+                    }
+                    if (selectedProject.value) {
+                        selectedProject.value = null;
+                        return;
+                    }
+                    if (projectDetail.value) {
+                        projectDetail.value = null;
+                        return;
+                    }
+                    if (showAllProjects.value) {
+                        showAllProjects.value = false;
+                        return;
+                    }
+                    if (!exitPending) {
+                        exitPending = true;
+                        showExitToast();
+                        history.pushState({ action: 'exit' }, '');
+                        setTimeout(function() { exitPending = false; }, 2000);
+                        return;
+                    }
+                    window.location.replace('about:blank');
+                }
+                function showExitToast() {
+                    var t = document.getElementById('exitToast');
+                    if (t) {
+                        t.classList.add('show');
+                        clearTimeout(exitTimer);
+                        exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+                        return;
+                    }
+                    var toast = document.createElement('div');
+                    toast.id = 'exitToast';
+                    toast.className = 'exit-toast';
+                    toast.textContent = 'اضغط مرة أخرى للخروج';
+                    document.body.appendChild(toast);
+                    requestAnimationFrame(function() { toast.classList.add('show'); });
+                    clearTimeout(exitTimer);
+                    exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+                }
+
+                onMounted(function() {
+                    resetWorkTimer();
+                    window.addEventListener('popstate', handlePopState);
+                    history.pushState({ action: 'init' }, '');
+                });
+                onUnmounted(function() {
+                    if (workTimer) clearInterval(workTimer);
+                    window.removeEventListener('beforeunload', saveCurrentState);
+                    window.removeEventListener('popstate', handlePopState);
+                });
 
                 return { isCompany, company, aboutPreview, selectedProject, detailSlide, projectDetail, detailSlide2, workSlide, workSwipe, resetWorkTimer, showAllProjects, onSlideChange, visibleProjects,
                          pullTransform, pullY, modalTouch, detailSwipe, viewerTouch,

@@ -97,15 +97,34 @@
                 <!-- Latest Works -->
                 <div class="section-header">
                     <span class="section-title">آخر الأعمال</span>
-                    <a class="section-link" href="all-works.html">عرض الكل</a>
                 </div>
-                <div class="works-carousel hide-scroll">
-                    <div v-for="(work, i) in latestWorks.slice(0, 4)" :key="i"
+                <div class="works-carousel">
+                    <div v-for="(work, i) in latestWorks" :key="i"
                          class="work-card" @click="openProject(work)">
-                        <img :src="work.bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
-                        <div class="work-overlay">
-                            <span class="work-title">{{ work.title }}</span>
+                        <div class="work-card-img">
+                            <img :src="work.bg" alt="">
+                            <span class="work-type-badge badge-project">{{ work.type }}</span>
                         </div>
+                        <div class="work-card-info">
+                            <div class="work-card-company">{{ work.company }}</div>
+                            <div class="work-card-title">{{ work.title }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- سلايدر صور -->
+                <div class="gallery-slider gallery-slider-spaced"
+                     @touchstart.passive="gallerySwipe.onTouchStart"
+                     @touchend="gallerySwipe.onTouchEnd">
+                    <div class="gallery-track" dir="ltr" :style="{ transform: `translateX(-${gallerySlide * 100}%)` }">
+                        <div v-for="(img, i) in galleryImages" :key="i" class="gallery-slide">
+                            <img :src="img" alt="">
+                        </div>
+                    </div>
+                    <div v-if="galleryImages.length > 1" class="gallery-dots">
+                        <span v-for="(img, i) in galleryImages" :key="i"
+                              class="dot" :class="{ active: i === gallerySlide }"
+                              @click="gallerySlide = i"></span>
                     </div>
                 </div>
 
@@ -180,6 +199,9 @@
     <script>
         document.getElementById('header').innerHTML = renderHeader({ searchVModel: 'searchQuery', searchPlaceholder: 'ابحث عن مشاريع، مقاولين، منتجات...' });
         document.getElementById('bottomNav').innerHTML = renderNav('home');
+
+        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
+        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
         const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
@@ -416,11 +438,11 @@
 
                 const sections = computed(function() {
                     return [
-                        { name: 'بناء منزل', icon: 'home', link: 'execute.html?cat=بناء%20وإنشاء' },
+                        { name: 'طلب عرض سعر', icon: 'request_quote', link: 'quotes.html?type=quote' },
                         { name: 'تصميم داخلي', icon: 'chair', link: 'execute.html?cat=تصميم%20داخلي' },
                         { name: 'تشطيب', icon: 'format_paint', link: 'execute.html?cat=تشطيبات%20داخلية' },
                         { name: 'شراء مواد', icon: 'storefront', link: 'market.html' },
-                        isCompany ? { name: 'احجز إعلانك', icon: 'campaign', link: 'account.html?section=company-ads' } : { name: 'استشارات', icon: 'engineering', link: 'quotes.html' }
+                        isCompany ? { name: 'احجز إعلانك', icon: 'campaign', link: 'account.html?section=company-ads' } : { name: 'طلب استشارة', icon: 'engineering', link: 'quotes.html?type=consult' }
                     ];
                 });
 
@@ -700,6 +722,42 @@
                     return base.concat(featured);
                 });
 
+                const galleryImages = ref([
+                    'images/img1.jpg',
+                    'images/img6.jpg',
+                    'images/img11.jpg',
+                    'images/img16.jpg',
+                    'images/img20.jpg',
+                    'images/img24.jpg',
+                    'images/img28.jpg'
+                ]);
+                var gallerySlide = ref(0);
+                var galleryTimer = null;
+                function startGalleryTimer() {
+                    stopGalleryTimer();
+                    galleryTimer = setInterval(function() {
+                        gallerySlide.value = (gallerySlide.value + 1) % galleryImages.value.length;
+                    }, 3000);
+                }
+                function stopGalleryTimer() {
+                    if (galleryTimer) { clearInterval(galleryTimer); galleryTimer = null; }
+                }
+                const gallerySwipe = (() => {
+                    var sx = 0, sy = 0, dx = 0, dy = 0;
+                    return {
+                        onTouchStart: function(e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; },
+                        onTouchEnd: function(e) {
+                            dx = e.changedTouches[0].clientX - sx;
+                            dy = e.changedTouches[0].clientY - sy;
+                            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                                if (dx < 0 && gallerySlide.value < galleryImages.value.length - 1) { gallerySlide.value++; }
+                                if (dx > 0 && gallerySlide.value > 0) { gallerySlide.value--; }
+                                startGalleryTimer();
+                            }
+                        }
+                    };
+                })();
+
                 const partners = ref([
                     { name: 'شركة البناء الحديث', logo: 'images/img1.jpg' },
                     { name: 'مقاولون العرب', logo: 'images/img5.jpg' },
@@ -819,16 +877,34 @@
                     }
                 }
 
+                // State preservation on refresh only
+                var isReload = false;
+                try { isReload = performance.getEntriesByType('navigation')[0].type === 'reload'; } catch(e) {}
+                try { if (performance.navigation && performance.navigation.type === 1) isReload = true; } catch(e) {}
+                if (isReload) {
+                    var savedHome = restoreState('home');
+                    if (savedHome) {
+                        if (savedHome.selectedProject) selectedProject.value = savedHome.selectedProject;
+                    }
+                }
+                function saveHomeState() {
+                    preserveState('home', { selectedProject: selectedProject.value });
+                }
+                window.addEventListener('beforeunload', saveHomeState);
+
                 onMounted(() => {
                     startSlideTimer();
                     startAdTimer();
+                    startGalleryTimer();
                     window.addEventListener('popstate', handlePopState);
                 });
 
                 onUnmounted(() => {
                     stopSlideTimer();
                     stopAdTimer();
+                    stopGalleryTimer();
                     window.removeEventListener('popstate', handlePopState);
+                    window.removeEventListener('beforeunload', saveHomeState);
                 });
 
                 return {
@@ -842,7 +918,8 @@
                     heroSwipe, adSwipe, modalTouch, viewerTouch, detailSwipe,
                     modalPullY, pullTransform, modalClosing,
                     adSlide, resetAdTimer,
-                    partners
+                    partners,
+                    galleryImages, gallerySlide, gallerySwipe
                 };
             }
         });

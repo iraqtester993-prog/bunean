@@ -34,11 +34,15 @@
             </div>
 
             <div class="page-content" v-if="!selectedProject">
-                <div class="works-grid">
+                <div class="works-carousel">
                     <div v-for="(work, i) in latestWorks" :key="i" class="work-card" @click="openProject(work)">
-                        <img :src="work.bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
-                        <div class="work-overlay">
-                            <span class="work-title">{{ work.title }}</span>
+                        <div class="work-card-img">
+                            <img :src="work.bg" alt="">
+                            <span class="work-type-badge badge-project">{{ work.type }}</span>
+                        </div>
+                        <div class="work-card-info">
+                            <div class="work-card-company">{{ work.company }}</div>
+                            <div class="work-card-title">{{ work.title }}</div>
                         </div>
                     </div>
                 </div>
@@ -272,6 +276,37 @@
                         }
                     };
                 })();
+
+                /* ---- Back Button ---- */
+                var exitPending = false;
+                var exitTimer = null;
+                function handlePopState() {
+                    if (viewerOpen.value) { viewerOpen.value = false; return; }
+                    if (selectedProject.value) { selectedProject.value = null; return; }
+                    if (!exitPending) {
+                        exitPending = true;
+                        var t = document.getElementById('exitToast');
+                        if (t) { t.classList.add('show'); clearTimeout(exitTimer); exitTimer = setTimeout(function() { t.classList.remove('show'); }, 2000); }
+                        else {
+                            var toast = document.createElement('div'); toast.id = 'exitToast'; toast.className = 'exit-toast';
+                            toast.textContent = 'اضغط مرة أخرى للخروج'; document.body.appendChild(toast);
+                            requestAnimationFrame(function() { toast.classList.add('show'); });
+                            exitTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+                        }
+                        history.pushState({ action: 'exit' }, '');
+                        setTimeout(function() { exitPending = false; }, 2000);
+                        return;
+                    }
+                    window.location.replace('about:blank');
+                }
+
+                onMounted(function() {
+                    window.addEventListener('popstate', handlePopState);
+                    history.pushState({ action: 'init' }, '');
+                });
+                onUnmounted(function() {
+                    window.removeEventListener('popstate', handlePopState);
+                });
 
                 return {
                     latestWorks, selectedProject, modalSlide,

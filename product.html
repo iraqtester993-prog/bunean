@@ -158,15 +158,24 @@
         document.getElementById('header').innerHTML = renderHeader({ showBack: true, backLink: 'javascript:history.back()', cartBadge: true });
         document.getElementById('bottomNav').innerHTML = renderNav('market');
 
+        function preserveState(key, data) { try { sessionStorage.setItem('bunean_state_' + key, JSON.stringify(data)); } catch(e) {} }
+        function restoreState(key, def) { try { var v = sessionStorage.getItem('bunean_state_' + key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
+
         const { createApp, ref, computed } = Vue;
 
         createApp({
             setup() {
                 initTheme();
+                var isReload = false;
+                try { isReload = performance.getEntriesByType('navigation')[0].type === 'reload'; } catch(e) {}
+                try { if (performance.navigation && performance.navigation.type === 1) isReload = true; } catch(e) {}
+                var savedProd = isReload ? restoreState('product') : null;
                 const cartCount = ref(2);
                 const quantity = ref(1);
-                const selectedColorIndex = ref(0);
-                const selectedSize = ref(1);
+                const selectedColorIndex = ref(savedProd ? savedProd.selectedColorIndex : 0);
+                const selectedSize = ref(savedProd ? savedProd.selectedSize : 1);
+                function saveProductState() { preserveState('product', { selectedColorIndex: selectedColorIndex.value, selectedSize: selectedSize.value }); }
+                window.addEventListener('beforeunload', saveProductState);
 
                 const colors = ref([
                     { name: 'أبيض ناصع', hex: '#ffffff', price: 45000 },
