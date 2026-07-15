@@ -12,7 +12,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
     <script>
         (function() {
             var saved = localStorage.getItem('bunean-theme');
@@ -179,6 +180,8 @@
     <script src="js/companies.js"></script>
     <script src="js/project-data.js"></script>
     <script src="js/nav.js"></script>
+    <script src="js/back-nav.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script>
         document.getElementById('header').innerHTML = renderHeader({});
         document.getElementById('bottomNav').innerHTML = renderNav('home');
@@ -336,11 +339,14 @@
         }).mount('#app');
     </script>
     <script>
+        if (typeof BackNav !== 'undefined') BackNav.init();
+        if (typeof PullToRefresh !== 'undefined') PullToRefresh.init();
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
                 .then(function() { console.log('SW registered'); })
                 .catch(function(err) { console.log('SW registration failed'); });
         }
     </script>
+    <script src="js/page-loader.js"></script>
 </body>
 </html>

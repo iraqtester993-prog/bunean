@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bunean-v13';
+const CACHE_NAME = 'bunean-v15';
 const urlsToCache = [
     '/bunean/',
     '/bunean/index.html',
@@ -19,7 +19,10 @@ const urlsToCache = [
     '/bunean/profile.html',
     '/bunean/request-detail.html',
     '/bunean/quote-request.html',
-    '/bunean/css/style.css',
+    '/bunean/css/base.css',
+    '/bunean/css/components.css',
+    '/bunean/css/pages.css',
+    '/bunean/css/market.css',
     '/bunean/icon-192.png',
     '/bunean/icon-512.png',
     '/bunean/js/nav.js',
@@ -32,6 +35,12 @@ const urlsToCache = [
     '/bunean/js/pull-to-refresh.js',
     '/bunean/js/global-viewer.js',
     '/bunean/js/utils.js',
+    '/bunean/js/page-home.js',
+    '/bunean/js/page-account.js',
+    '/bunean/js/page-market.js',
+    '/bunean/js/page-ideas.js',
+    '/bunean/js/page-notifications.js',
+    '/bunean/js/page-loader.js',
     '/bunean/manifest.json',
     '/bunean/dashboard/',
     '/bunean/dashboard/index.html',
